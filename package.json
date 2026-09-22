@@ -13,5 +13,12 @@
     "name": "Roman Likhadievski",
     "url": "https://github.com/reromanlee",
     "email": "contact@reromanlee.com"
-  }
+  },
+  "samples": [
+    {
+      "displayName": "Stress Test",
+      "description": "Spawns thousands of lines and boxes on orbiting bones, to profile the package in your own project.",
+      "path": "Samples~/StressTest"
+    }
+  ]
 }

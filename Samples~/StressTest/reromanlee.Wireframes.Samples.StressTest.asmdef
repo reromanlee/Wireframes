@@ -1,0 +1,16 @@
+{
+    "name": "reromanlee.Wireframes.Samples.StressTest",
+    "rootNamespace": "reromanlee.Wireframes.Samples",
+    "references": [
+        "reromanlee.Wireframes"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
