@@ -1,13 +1,21 @@
 {
   "name": "com.reromanlee.wireframes",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "displayName": "Wireframes",
-  "description": "",
+  "description": "Wireframe lines and boxes that follow Transforms through GPU skinning. Shapes are created once and cost no per-frame CPU work to animate, and every shape in a container is drawn with a single mesh.",
   "unity": "6000.0",
   "license": "MIT",
   "documentationUrl": "https://github.com/reromanlee/Wireframes#readme",
   "changelogUrl": "https://github.com/reromanlee/Wireframes/blob/main/CHANGELOG.md",
-  "keywords": [],
+  "keywords": [
+    "wireframe",
+    "lines",
+    "debug",
+    "draw",
+    "gizmos",
+    "visualization",
+    "skinning"
+  ],
   "licensesUrl": "https://github.com/reromanlee/Wireframes/blob/main/LICENSE.md",
   "author": {
     "name": "Roman Likhadievski",
