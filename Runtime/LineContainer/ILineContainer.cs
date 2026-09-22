@@ -1,18 +1,15 @@
-using reromanlee.Wireframes.Common;
-using UnityEngine;
+using System;
 
 namespace reromanlee.Wireframes
 {
-
-    public interface ILineContainer
+    /// <summary>
+    /// Creates shapes and draws all of them with one GPU-skinned mesh. Disposing the container, or unloading the
+    /// scene it was created in, disposes every shape it created.
+    /// </summary>
+    /// <remarks>Each shape type declares its factory methods in a partial file next to the shape.</remarks>
+    public partial interface ILineContainer : IDisposable
     {
-
-        ILine CreateLine();
-        ILine CreateLine(Vector3 positionA, Vector3 positionB);
-
-        IBox CreateBox();
-        IBox CreateBox(Vector3 cornerA, Vector3 cornerB);
-
+        /// <summary>True once the container was disposed or its scene was unloaded.</summary>
+        bool IsDisposed { get; }
     }
-
 }

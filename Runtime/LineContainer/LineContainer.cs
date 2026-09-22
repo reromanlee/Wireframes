@@ -1,43 +1,72 @@
-using reromanlee.Wireframes.Common;
+using System;
 using UnityEngine;
 
 namespace reromanlee.Wireframes
 {
-    public class LineContainer : ILineContainer
+    /// <inheritdoc cref="ILineContainer"/>
+    /// <remarks>
+    /// Main thread only. The container creates a GameObject in the active scene; edits made to its shapes are
+    /// uploaded once per frame at the end of LateUpdate.
+    /// </remarks>
+    public sealed partial class LineContainer : ILineContainer
     {
-        private readonly IMeshProxy _meshProxy;
+        private const string ProxyName = "Wireframes";
 
-        public LineContainer()
+        private readonly MeshProxy _proxy;
+        private bool _isDisposed;
+
+        /// <summary>Creates a container that draws with the package's vertex color material.</summary>
+        public LineContainer() : this(null)
         {
-            _meshProxy = new MeshProxy();
         }
 
-        public ILine CreateLine()
+        /// <summary>Creates a container that draws with <paramref name="material"/>, which stays owned by the caller.</summary>
+        public LineContainer(Material material)
         {
-            Line line = new(_meshProxy.RootBone);
-            _meshProxy.AddLine(line);
-            return line;
+            // The proxy lives in the active scene, so unloading that scene disposes the container.
+            GameObject proxyObject = new(ProxyName) { hideFlags = HideFlags.NotEditable };
+            try
+            {
+                _proxy = proxyObject.AddComponent<MeshProxy>();
+                _proxy.Initialize(this, material);
+            }
+            catch
+            {
+                UnityObjects.Destroy(proxyObject);
+                throw;
+            }
         }
 
-        public ILine CreateLine(Vector3 positionA, Vector3 positionB)
+        public bool IsDisposed
         {
-            Line line = new(_meshProxy.RootBone, positionA, positionB);
-            _meshProxy.AddLine(line);
-            return line;
+            get => _isDisposed;
         }
 
-        public IBox CreateBox()
+        internal MeshProxy Proxy
         {
-            Box box = new(_meshProxy.RootBone);
-            _meshProxy.AddBox(box);
-            return box;
+            get
+            {
+                if (_isDisposed)
+                {
+                    throw new ObjectDisposedException(nameof(LineContainer));
+                }
+                return _proxy;
+            }
         }
 
-        public IBox CreateBox(Vector3 cornerA, Vector3 cornerB)
+        public void Dispose()
         {
-            Box box = new(_meshProxy.RootBone, cornerA, cornerB);
-            _meshProxy.AddBox(box);
-            return box;
+            if (_isDisposed)
+            {
+                return;
+            }
+            _proxy.Shutdown();
+            UnityObjects.Destroy(_proxy.gameObject);
+        }
+
+        internal void OnProxyShutdown()
+        {
+            _isDisposed = true;
         }
     }
 }
