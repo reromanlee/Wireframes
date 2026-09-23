@@ -233,7 +233,7 @@ Two things to keep in mind:
 
 Import them from the package's **Samples** tab in the Package Manager.
 
-**Shape Gallery** lays out every shape in three rows, each turning with its own bone. Add the `ShapeGallery` component to an empty GameObject in a scene with a camera, frame the GameObject and enter Play mode.
+**Shape Gallery** lays out every shape in three rows, each turning with its own bone. Open its **ShapeGallery** scene and enter Play mode: the camera frames the rows against a dim background.
 
 **Stress Test** spawns 10,000 lines, 1,000 boxes and 2,000 other shapes on 100 orbiting bones. Add the `StressTest` component to an empty GameObject in a scene with a camera, and enter Play mode with the Profiler open. Raise **Recolor Per Frame** to measure the cost of edits.
 

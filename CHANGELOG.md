@@ -18,7 +18,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Create methods that take bones first and work in their local space, such as `CreateLine(boneA, boneB)` and
   `CreateCircle(bone, localCenter, radius)`.
 - Polylines have a bone and a color for every point.
-- Shape Gallery sample. The Stress Test sample spawns every kind of shape.
+- Shape Gallery sample, a scene with every shape. The Stress Test sample spawns every kind of shape.
 
 ### Changed
 

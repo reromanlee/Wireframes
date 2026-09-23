@@ -26,7 +26,7 @@
   "samples": [
     {
       "displayName": "Shape Gallery",
-      "description": "Every shape the package draws, laid out in rows and turning with their bones.",
+      "description": "A scene with every shape the package draws, laid out in rows and turning with their bones.",
       "path": "Samples~/ShapeGallery"
     },
     {
