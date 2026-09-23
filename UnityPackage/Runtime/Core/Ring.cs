@@ -9,6 +9,9 @@ namespace reromanlee.Wireframes
     {
         internal const int DefaultSegments = 32;
 
+        /// <summary>Edges of shapes that are one closed ring, by vertex count.</summary>
+        internal static readonly PatternCache Patterns = new(BuildEdges);
+
         // Cosine and sine around a unit circle for each segment count in use, shared by every ring with that count.
         private static readonly Dictionary<int, Vector2[]> UnitCircles = new();
 
@@ -50,7 +53,9 @@ namespace reromanlee.Wireframes
             }
         }
 
-        /// <summary>Adds the edges of a closed ring of <paramref name="count"/> vertices, starting at vertex <paramref name="first"/>.</summary>
+        /// <summary>
+        /// Adds the edges of a closed ring of <paramref name="count"/> vertices, starting at vertex <paramref name="first"/>.
+        /// </summary>
         internal static void AddEdges(int[] pattern, ref int cursor, int first, int count)
         {
             for (int i = 0; i < count; i++)
@@ -60,7 +65,11 @@ namespace reromanlee.Wireframes
             }
         }
 
-        private static Vector2[] UnitCircle(int count)
+        /// <summary>
+        /// Cosine and sine of <paramref name="count"/> angles evenly spread over a full turn, starting at 0. The table
+        /// is shared, so callers must not change it.
+        /// </summary>
+        internal static Vector2[] UnitCircle(int count)
         {
             if (!UnitCircles.TryGetValue(count, out Vector2[] circle))
             {
@@ -73,6 +82,14 @@ namespace reromanlee.Wireframes
                 UnitCircles.Add(count, circle);
             }
             return circle;
+        }
+
+        private static int[] BuildEdges(int count)
+        {
+            int[] pattern = new int[count * 2];
+            int cursor = 0;
+            AddEdges(pattern, ref cursor, 0, count);
+            return pattern;
         }
     }
 }

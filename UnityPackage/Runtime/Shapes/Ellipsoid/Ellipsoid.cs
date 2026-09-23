@@ -3,16 +3,16 @@ using UnityEngine;
 
 namespace reromanlee.Wireframes
 {
-    internal sealed class Sphere : RigidShape, ISphere
+    internal sealed class Ellipsoid : RigidShape, IEllipsoid
     {
-        private float _radius;
+        private Vector3 _radii;
 
-        internal Sphere(
+        internal Ellipsoid(
             MeshProxy proxy,
             Transform bone,
             Vector3 localCenter,
             Quaternion localRotation,
-            float radius,
+            Vector3 radii,
             int segments)
             : base(
                 proxy,
@@ -22,20 +22,20 @@ namespace reromanlee.Wireframes
                 localCenter,
                 localRotation)
         {
-            _radius = radius;
+            _radii = radii;
         }
 
-        public float Radius
+        public Vector3 Radii
         {
             get
             {
                 ThrowIfDisposed();
-                return _radius;
+                return _radii;
             }
             set
             {
                 ThrowIfDisposed();
-                _radius = value;
+                _radii = value;
                 MarkDirty(DirtyFlags.Positions);
             }
         }
@@ -51,12 +51,12 @@ namespace reromanlee.Wireframes
 
         protected override void WriteShape(Span<Vector3> positions)
         {
-            AxisRings.Write(positions, new Vector3(_radius, _radius, _radius));
+            AxisRings.Write(positions, _radii);
         }
 
         protected override void ScaleSizes(float factor)
         {
-            _radius *= factor;
+            _radii *= factor;
         }
     }
 }

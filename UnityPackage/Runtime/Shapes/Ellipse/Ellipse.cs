@@ -3,39 +3,33 @@ using UnityEngine;
 
 namespace reromanlee.Wireframes
 {
-    internal sealed class Sphere : RigidShape, ISphere
+    internal sealed class Ellipse : RigidShape, IEllipse
     {
-        private float _radius;
+        private Vector2 _radii;
 
-        internal Sphere(
+        internal Ellipse(
             MeshProxy proxy,
             Transform bone,
             Vector3 localCenter,
             Quaternion localRotation,
-            float radius,
+            Vector2 radii,
             int segments)
-            : base(
-                proxy,
-                Ring.CheckSegments(segments) * AxisRings.RingCount,
-                AxisRings.Patterns.Get(segments),
-                bone,
-                localCenter,
-                localRotation)
+            : base(proxy, Ring.CheckSegments(segments), Ring.Patterns.Get(segments), bone, localCenter, localRotation)
         {
-            _radius = radius;
+            _radii = radii;
         }
 
-        public float Radius
+        public Vector2 Radii
         {
             get
             {
                 ThrowIfDisposed();
-                return _radius;
+                return _radii;
             }
             set
             {
                 ThrowIfDisposed();
-                _radius = value;
+                _radii = value;
                 MarkDirty(DirtyFlags.Positions);
             }
         }
@@ -45,18 +39,19 @@ namespace reromanlee.Wireframes
             get
             {
                 ThrowIfDisposed();
-                return VertexCount / AxisRings.RingCount;
+                return VertexCount;
             }
         }
 
         protected override void WriteShape(Span<Vector3> positions)
         {
-            AxisRings.Write(positions, new Vector3(_radius, _radius, _radius));
+            // Starts on +Z and passes +X a quarter turn later, like a circle.
+            Ring.Write(positions, Vector3.zero, new Vector3(0f, 0f, _radii.y), new Vector3(_radii.x, 0f, 0f));
         }
 
         protected override void ScaleSizes(float factor)
         {
-            _radius *= factor;
+            _radii *= factor;
         }
     }
 }

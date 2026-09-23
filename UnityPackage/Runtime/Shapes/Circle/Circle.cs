@@ -5,8 +5,6 @@ namespace reromanlee.Wireframes
 {
     internal sealed class Circle : RigidShape, ICircle
     {
-        private static readonly PatternCache Patterns = new(BuildEdges);
-
         private float _radius;
 
         internal Circle(
@@ -16,7 +14,7 @@ namespace reromanlee.Wireframes
             Quaternion localRotation,
             float radius,
             int segments)
-            : base(proxy, Ring.CheckSegments(segments), Patterns.Get(segments), bone, localCenter, localRotation)
+            : base(proxy, Ring.CheckSegments(segments), Ring.Patterns.Get(segments), bone, localCenter, localRotation)
         {
             _radius = radius;
         }
@@ -54,14 +52,6 @@ namespace reromanlee.Wireframes
         protected override void ScaleSizes(float factor)
         {
             _radius *= factor;
-        }
-
-        private static int[] BuildEdges(int segments)
-        {
-            int[] pattern = new int[segments * 2];
-            int cursor = 0;
-            Ring.AddEdges(pattern, ref cursor, 0, segments);
-            return pattern;
         }
     }
 }
