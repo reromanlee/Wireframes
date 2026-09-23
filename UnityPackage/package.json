@@ -1,8 +1,8 @@
 {
   "name": "com.reromanlee.wireframes",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "displayName": "Wireframes",
-  "description": "Wireframe lines and boxes that follow Transforms through GPU skinning. Shapes are created once and cost no per-frame CPU work to animate, and every shape in a container is drawn with a single mesh.",
+  "description": "Wireframe shapes that follow Transforms through GPU skinning: lines, polylines, boxes, circles, spheres, capsules, cones and more. Shapes are created once and cost no per-frame CPU work to animate, and every shape in a container is drawn with a single mesh.",
   "unity": "6000.0",
   "license": "MIT",
   "documentationUrl": "https://github.com/reromanlee/Wireframes#readme",
@@ -10,6 +10,7 @@
   "keywords": [
     "wireframe",
     "lines",
+    "shapes",
     "debug",
     "draw",
     "gizmos",
@@ -24,8 +25,13 @@
   },
   "samples": [
     {
+      "displayName": "Shape Gallery",
+      "description": "Every shape the package draws, laid out in rows and turning with their bones.",
+      "path": "Samples~/ShapeGallery"
+    },
+    {
       "displayName": "Stress Test",
-      "description": "Spawns thousands of lines and boxes on orbiting bones, to profile the package in your own project.",
+      "description": "Spawns thousands of shapes on orbiting bones, to profile the package in your own project.",
       "path": "Samples~/StressTest"
     }
   ]

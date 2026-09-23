@@ -87,7 +87,7 @@ namespace reromanlee.Wireframes
 
         private static Vector3[] IcosahedronCorners()
         {
-            // The three golden rectangles (0, ±1, ±φ) in cyclic order.
+            // The three golden rectangles: (0, +-1, +-phi) and its two cyclic rotations.
             List<Vector3> corners = new();
             foreach (float one in new[] { -1f, 1f })
             {
