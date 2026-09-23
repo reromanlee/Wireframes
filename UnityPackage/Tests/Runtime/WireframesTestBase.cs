@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace reromanlee.Wireframes.Tests
 {
@@ -68,9 +70,47 @@ namespace reromanlee.Wireframes.Tests
             return vertices;
         }
 
+        /// <summary>Applies pending edits, then skins the mesh on the CPU and returns the shape's world-space vertices.</summary>
+        protected static Vector3[] BakeShape(LineContainer container, IShape shape)
+        {
+            Vector3[] baked = FlushAndBake(container);
+            Shape target = (Shape)shape;
+            Vector3[] vertices = new Vector3[target.VertexCount];
+            Array.Copy(baked, target.VertexStart, vertices, 0, vertices.Length);
+            return vertices;
+        }
+
+        /// <summary>Applies pending edits, then skins the mesh on the CPU and returns the world-space ends of the shape's edges.</summary>
+        protected static (Vector3 A, Vector3 B)[] BakeEdges(LineContainer container, IShape shape)
+        {
+            Vector3[] baked = FlushAndBake(container);
+            int[] indices = ChunkOf(container).Mesh.GetIndices(0);
+            Shape target = (Shape)shape;
+            (Vector3 A, Vector3 B)[] edges = new (Vector3, Vector3)[target.EdgeCount];
+            for (int edge = 0; edge < edges.Length; edge++)
+            {
+                int slot = target.GetEdgeSlot(edge);
+                edges[edge] = (baked[indices[slot * 2]], baked[indices[slot * 2 + 1]]);
+            }
+            return edges;
+        }
+
         protected static void AssertApproximately(Vector3 expected, Vector3 actual)
         {
             Assert.That(Vector3.Distance(expected, actual), Is.LessThan(Tolerance), $"Expected {expected:F4}, got {actual:F4}");
+        }
+
+        protected static void AssertApproximately(float expected, float actual)
+        {
+            Assert.That(actual, Is.EqualTo(expected).Within(Tolerance));
+        }
+
+        protected static void AssertApproximately(Quaternion expected, Quaternion actual)
+        {
+            // q and -q are the same rotation. |dot| is the cosine of half the angle between them, so it needs a
+            // tighter tolerance than positions do.
+            float alignment = Mathf.Abs(Quaternion.Dot(expected, actual));
+            Assert.That(alignment, Is.EqualTo(1f).Within(1e-6f), $"Expected {expected:F4}, got {actual:F4}");
         }
     }
 }

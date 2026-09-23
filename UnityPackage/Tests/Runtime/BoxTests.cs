@@ -45,7 +45,66 @@ namespace reromanlee.Wireframes.Tests
         }
 
         [Test]
-        public void ChangingBone_KeepsCornersAndAlignsBoxToBone()
+        public void CreateBox_WithoutArguments_IsUnitCubeAtOrigin()
+        {
+            IBox box = CreateContainer().CreateBox();
+
+            Assert.That(box.Size, Is.EqualTo(Vector3.one));
+            Assert.That(box.LocalPosition, Is.EqualTo(Vector3.zero));
+            Assert.That(box.LocalRotation, Is.EqualTo(Quaternion.identity));
+            Assert.That(box.Color, Is.EqualTo(Color.white));
+            AssertApproximately(new Vector3(-0.5f, -0.5f, -0.5f), box.WorldCornerA);
+            AssertApproximately(new Vector3(0.5f, 0.5f, 0.5f), box.WorldCornerB);
+        }
+
+        [Test]
+        public void Corners_ComeBackAsTheyWereSet()
+        {
+            // Corner B is below corner A on y, so the size is negative there.
+            IBox box = CreateContainer().CreateBox(new Vector3(1f, 2f, 3f), new Vector3(4f, -5f, 6f));
+
+            AssertApproximately(new Vector3(1f, 2f, 3f), box.WorldCornerA);
+            AssertApproximately(new Vector3(4f, -5f, 6f), box.WorldCornerB);
+            AssertApproximately(new Vector3(3f, -7f, 3f), box.Size);
+            AssertApproximately(new Vector3(2.5f, -1.5f, 4.5f), box.WorldPosition);
+        }
+
+        [Test]
+        public void PoseForm_TurnsTheBox()
+        {
+            LineContainer container = CreateContainer();
+            Quaternion rotation = Quaternion.Euler(0f, 45f, 0f);
+            IBox box = container.CreateBox(new Vector3(0f, 1f, 0f), rotation, new Vector3(2f, 4f, 6f));
+
+            Vector3[] corners = BakeShape(container, box);
+
+            AssertApproximately(new Vector3(0f, 1f, 0f) + rotation * new Vector3(-1f, -2f, -3f), corners[0]);
+            AssertApproximately(new Vector3(0f, 1f, 0f) + rotation * new Vector3(1f, 2f, 3f), corners[7]);
+            AssertApproximately(corners[0], box.WorldCornerA);
+            AssertApproximately(corners[7], box.WorldCornerB);
+        }
+
+        [Test]
+        public void SettingCorner_MovesOnlyThatCorner()
+        {
+            LineContainer container = CreateContainer();
+            Quaternion rotation = Quaternion.Euler(20f, 30f, 40f);
+            IBox box = container.CreateBox(Vector3.zero, rotation, Vector3.one);
+            Vector3 cornerB = box.WorldCornerB;
+            Vector3 target = rotation * new Vector3(-2f, -1f, -3f);
+
+            box.WorldCornerA = target;
+
+            AssertApproximately(target, box.WorldCornerA);
+            AssertApproximately(cornerB, box.WorldCornerB);
+            AssertApproximately(rotation, box.WorldRotation);
+            Vector3[] corners = BakeShape(container, box);
+            AssertApproximately(target, corners[0]);
+            AssertApproximately(cornerB, corners[7]);
+        }
+
+        [Test]
+        public void ChangingBone_KeepsWorldCornersAndRotation()
         {
             Transform bone = CreateBone(new Vector3(4f, 0f, 0f), Quaternion.Euler(0f, 30f, 0f), 2f);
             IBox box = CreateContainer().CreateBox(new Vector3(-1f, -1f, -1f), new Vector3(1f, 1f, 1f));
@@ -54,7 +113,25 @@ namespace reromanlee.Wireframes.Tests
 
             AssertApproximately(new Vector3(-1f, -1f, -1f), box.WorldCornerA);
             AssertApproximately(new Vector3(1f, 1f, 1f), box.WorldCornerB);
+            AssertApproximately(Quaternion.identity, box.WorldRotation);
             AssertApproximately(bone.InverseTransformPoint(new Vector3(-1f, -1f, -1f)), box.LocalCornerA);
+            AssertApproximately(Vector3.one, box.Size);
+        }
+
+        [Test]
+        public void CreateBoxOnBone_IsAlignedToTheBone()
+        {
+            LineContainer container = CreateContainer();
+            Transform bone = CreateBone(new Vector3(0f, 2f, 0f), Quaternion.Euler(10f, 20f, 30f), 1.5f);
+            Vector3 extents = new(0.5f, 1f, 1.5f);
+
+            IBox box = container.CreateBox(bone, -extents, extents);
+
+            Assert.That(box.Bone, Is.SameAs(bone));
+            Assert.That(box.LocalRotation, Is.EqualTo(Quaternion.identity));
+            Vector3[] corners = BakeShape(container, box);
+            AssertApproximately(bone.TransformPoint(-extents), corners[0]);
+            AssertApproximately(bone.TransformPoint(extents), corners[7]);
         }
 
         [Test]
@@ -85,6 +162,7 @@ namespace reromanlee.Wireframes.Tests
             box.SetColor(Color.magenta);
             container.Proxy.Flush();
 
+            Assert.That(box.Color, Is.EqualTo(Color.magenta));
             Color32[] colors = ChunkOf(container).Mesh.colors32;
             for (int i = 0; i < 8; i++)
             {

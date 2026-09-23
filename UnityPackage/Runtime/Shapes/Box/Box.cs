@@ -3,11 +3,11 @@ using UnityEngine;
 
 namespace reromanlee.Wireframes
 {
-    internal sealed class Box : Shape, IBox
+    internal sealed class Box : RigidShape, IBox
     {
         private const int CornerCount = 8;
 
-        // Corner i takes x from corner B when bit 0 is set, y when bit 1 is set and z when bit 2 is set,
+        // Corner i sits on the + side of x when bit 0 is set, of y when bit 1 is set and of z when bit 2 is set,
         // so corner 0 is A, corner 7 is B, and every edge joins two corners that differ in one bit.
         private static readonly int[] EdgePattern =
         {
@@ -16,16 +16,27 @@ namespace reromanlee.Wireframes
             0, 4, 1, 5, 2, 6, 3, 7
         };
 
-        private Vector3 _localCornerA;
-        private Vector3 _localCornerB;
-        private Color _color = Color.white;
-        private Transform _bone;
-        private int _boneSlot;
+        private Vector3 _size;
 
-        internal Box(MeshProxy proxy, Vector3 cornerA, Vector3 cornerB) : base(proxy, CornerCount, EdgePattern)
+        internal Box(MeshProxy proxy, Transform bone, Vector3 localCenter, Quaternion localRotation, Vector3 size)
+            : base(proxy, CornerCount, EdgePattern, bone, localCenter, localRotation)
         {
-            _localCornerA = cornerA;
-            _localCornerB = cornerB;
+            _size = size;
+        }
+
+        public Vector3 Size
+        {
+            get
+            {
+                ThrowIfDisposed();
+                return _size;
+            }
+            set
+            {
+                ThrowIfDisposed();
+                _size = value;
+                MarkDirty(DirtyFlags.Positions);
+            }
         }
 
         public Vector3 LocalCornerA
@@ -33,13 +44,12 @@ namespace reromanlee.Wireframes
             get
             {
                 ThrowIfDisposed();
-                return _localCornerA;
+                return LocalPosition - LocalRotation * (_size * 0.5f);
             }
             set
             {
                 ThrowIfDisposed();
-                _localCornerA = value;
-                MarkDirty(DirtyFlags.Positions);
+                SetCorners(value, LocalCornerB);
             }
         }
 
@@ -48,13 +58,12 @@ namespace reromanlee.Wireframes
             get
             {
                 ThrowIfDisposed();
-                return _localCornerB;
+                return LocalPosition + LocalRotation * (_size * 0.5f);
             }
             set
             {
                 ThrowIfDisposed();
-                _localCornerB = value;
-                MarkDirty(DirtyFlags.Positions);
+                SetCorners(LocalCornerA, value);
             }
         }
 
@@ -63,13 +72,12 @@ namespace reromanlee.Wireframes
             get
             {
                 ThrowIfDisposed();
-                return ToWorld(_bone, _localCornerA);
+                return ToWorld(Bone, LocalCornerA);
             }
             set
             {
                 ThrowIfDisposed();
-                _localCornerA = ToLocal(_bone, value);
-                MarkDirty(DirtyFlags.Positions);
+                LocalCornerA = ToLocal(Bone, value);
             }
         }
 
@@ -78,75 +86,37 @@ namespace reromanlee.Wireframes
             get
             {
                 ThrowIfDisposed();
-                return ToWorld(_bone, _localCornerB);
+                return ToWorld(Bone, LocalCornerB);
             }
             set
             {
                 ThrowIfDisposed();
-                _localCornerB = ToLocal(_bone, value);
-                MarkDirty(DirtyFlags.Positions);
+                LocalCornerB = ToLocal(Bone, value);
             }
         }
 
-        public Transform Bone
+        protected override void WriteShape(Span<Vector3> positions)
         {
-            get
-            {
-                ThrowIfDisposed();
-                return _bone;
-            }
-            set
-            {
-                ThrowIfDisposed();
-                Vector3 worldCornerA = ToWorld(_bone, _localCornerA);
-                Vector3 worldCornerB = ToWorld(_bone, _localCornerB);
-                ReplaceBone(ref _bone, ref _boneSlot, value);
-                _localCornerA = ToLocal(_bone, worldCornerA);
-                _localCornerB = ToLocal(_bone, worldCornerB);
-                MarkDirty(DirtyFlags.Positions | DirtyFlags.Bones);
-            }
-        }
-
-        public override void SetColor(Color color)
-        {
-            ThrowIfDisposed();
-            _color = color;
-            MarkDirty(DirtyFlags.Colors);
-        }
-
-        internal override void WritePositions(Span<Vector3> positions)
-        {
+            Vector3 half = _size * 0.5f;
             for (int i = 0; i < CornerCount; i++)
             {
                 positions[i] = new Vector3(
-                    (i & 1) == 0 ? _localCornerA.x : _localCornerB.x,
-                    (i & 2) == 0 ? _localCornerA.y : _localCornerB.y,
-                    (i & 4) == 0 ? _localCornerA.z : _localCornerB.z);
+                    (i & 1) == 0 ? -half.x : half.x,
+                    (i & 2) == 0 ? -half.y : half.y,
+                    (i & 4) == 0 ? -half.z : half.z);
             }
         }
 
-        internal override void WriteColors(Span<Color32> colors)
+        protected override void ScaleSizes(float factor)
         {
-            colors.Fill(_color);
+            _size *= factor;
         }
 
-        internal override void WriteBones(Span<uint> bones)
+        /// <summary>Spans the box between two local corners, keeping its rotation.</summary>
+        private void SetCorners(Vector3 cornerA, Vector3 cornerB)
         {
-            bones.Fill((uint)_boneSlot);
-        }
-
-        internal override void OnBoneDestroyed(Transform bone)
-        {
-            // Reference comparison: a destroyed bone also compares equal to null, which means "no bone".
-            if (ReferenceEquals(_bone, bone))
-            {
-                Bone = null;
-            }
-        }
-
-        protected override void ReleaseBones(BoneRegistry bones)
-        {
-            bones.Release(_boneSlot);
+            LocalPosition = (cornerA + cornerB) * 0.5f;
+            _size = Quaternion.Inverse(LocalRotation) * (cornerB - cornerA);
         }
     }
 }

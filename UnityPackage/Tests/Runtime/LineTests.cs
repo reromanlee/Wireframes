@@ -22,6 +22,24 @@ namespace reromanlee.Wireframes.Tests
         }
 
         [Test]
+        public void CreateLineFromBones_PutsEndpointsOnTheBones()
+        {
+            LineContainer container = CreateContainer();
+            Transform shoulder = CreateBone(new Vector3(0f, 1.5f, 0f), Quaternion.Euler(0f, 0f, 45f));
+            Transform elbow = CreateBone(new Vector3(0.5f, 1.2f, 0f), Quaternion.identity);
+
+            ILine line = container.CreateLine(shoulder, elbow);
+
+            Assert.That(line.BoneA, Is.SameAs(shoulder));
+            Assert.That(line.BoneB, Is.SameAs(elbow));
+            Assert.That(line.LocalPositionA, Is.EqualTo(Vector3.zero));
+            elbow.position = new Vector3(0.7f, 1f, 0.1f);
+            Vector3[] vertices = BakeShape(container, line);
+            AssertApproximately(shoulder.position, vertices[0]);
+            AssertApproximately(elbow.position, vertices[1]);
+        }
+
+        [Test]
         public void WorldPosition_IsConvertedThroughBone()
         {
             Transform bone = CreateBone(new Vector3(10f, 0f, 0f), Quaternion.Euler(0f, 90f, 0f), 2f);

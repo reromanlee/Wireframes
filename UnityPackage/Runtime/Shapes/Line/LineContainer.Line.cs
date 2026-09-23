@@ -13,5 +13,10 @@ namespace reromanlee.Wireframes
         {
             return new Line(Proxy, positionA, positionB);
         }
+
+        public ILine CreateLine(Transform boneA, Transform boneB)
+        {
+            return new Line(Proxy, boneA, boneB);
+        }
     }
 }

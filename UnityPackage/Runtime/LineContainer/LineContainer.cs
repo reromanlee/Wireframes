@@ -12,6 +12,10 @@ namespace reromanlee.Wireframes
     {
         private const string ProxyName = "Wireframes";
 
+        // Shapes created without arguments are sized like Unity's primitives: 1 unit across and 1 unit long.
+        private const float UnitSize = 1f;
+        private const float UnitRadius = 0.5f;
+
         private readonly MeshProxy _proxy;
         private bool _isDisposed;
 
