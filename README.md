@@ -2,6 +2,8 @@
 
 Wireframe lines and boxes for Unity 6 that follow Transforms at no per-frame CPU cost to your code.
 
+<img src=".github/wireframes-stress-test.jpg" alt="Wireframes stress test" width="100%">
+
 You create a shape once, attach its ends to any Transforms ("bones"), and it moves with them from then on. The GPU does the moving, through the same skinning Unity uses for animated characters. Every shape in a container is one mesh, drawn in one draw call.
 
 ## Why not `Debug.DrawLine`?
