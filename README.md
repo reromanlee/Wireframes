@@ -2,9 +2,11 @@
 
 Wireframe shapes for Unity 6 that follow Transforms at no per-frame CPU cost to your code.
 
-<img src=".github/wireframes-stress-test.jpg" alt="Wireframes stress test" width="100%">
+<img src=".github/wireframes-shapes.jpg" alt="Every shape, from the Shape Gallery sample" width="100%">
 
 You create a shape once, attach it to any Transforms ("bones"), and it moves with them from then on. The GPU does the moving, through the same skinning Unity uses for animated characters. Every shape in a container is one mesh, drawn in one draw call.
+
+<img src=".github/wireframes-stress-test.jpg" alt="Stress test running in Play Mode" width="100%">
 
 ## Why not `Debug.DrawLine`?
 
@@ -72,8 +74,6 @@ public class TargetingLine : MonoBehaviour
 There is no `Update`: every shape follows `_hand` and `_target` on its own.
 
 ## Shapes
-
-<img src=".github/wireframes-shapes.png" alt="Every shape, from the Shape Gallery sample" width="100%">
 
 | Shape | Usual Create method | What it is |
 |---|---|---|
