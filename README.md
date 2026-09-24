@@ -24,14 +24,16 @@ You create a shape once, attach it to any Transforms ("bones"), and it moves wit
 In **Window > Package Manager**, choose **+ > Install package from git URL** and enter:
 
 ```
-https://github.com/reromanlee/Wireframes.git
+https://github.com/reromanlee/Wireframes.git?path=/UnityPackage
 ```
 
 Or add it to `Packages/manifest.json`:
 
 ```json
-"com.reromanlee.wireframes": "https://github.com/reromanlee/Wireframes.git"
+"com.reromanlee.wireframes": "https://github.com/reromanlee/Wireframes.git?path=/UnityPackage"
 ```
+
+The package lives in the repository's `UnityPackage` folder, which the `path` parameter points to.
 
 ## Quick start
 
@@ -177,6 +179,14 @@ This works through a small hidden component that the package adds to every GameO
 ### Disposing shapes
 
 `shape.Dispose()` removes a shape and frees its space for the next shape with the same number of vertices. After that, `IsDisposed` is true and every other member throws `ObjectDisposedException`.
+
+## Wireframe camera
+
+Add the **WireframeCamera** component to a Camera to draw everything that camera renders as wireframe, like the Scene view's Wireframe draw mode, while other cameras draw normally.
+
+- It works under the Built-in Render Pipeline and any Scriptable Render Pipeline (URP, HDRP or custom), and follows the pipeline if it changes at runtime. The frame in which the pipeline switches is drawn without wireframe.
+- It uses `GL.wireframe`, so the graphics API must support wireframe rendering; OpenGL ES and WebGL don't.
+- The package's own shapes are lines already, so they look the same through it.
 
 ## Performance
 

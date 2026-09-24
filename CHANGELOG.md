@@ -19,9 +19,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   `CreateCircle(bone, localCenter, radius)`.
 - Polylines have a bone and a color for every point.
 - Shape Gallery sample, a scene with every shape. The Stress Test sample spawns every kind of shape.
+- `WireframeCamera`, a component that draws everything its camera renders as wireframe, under the Built-in Render
+  Pipeline or any Scriptable Render Pipeline.
 
 ### Changed
 
+- The package lives in the repository's `UnityPackage` folder. Install it from
+  `https://github.com/reromanlee/Wireframes.git?path=/UnityPackage`.
 - Boxes have a center, a rotation and a signed `Size`. Their corner properties still work, and
   `CreateBox(center, rotation, size)` creates a rotated box.
 - Changing a box's bone keeps its world rotation instead of aligning the box to the new bone's axes.
