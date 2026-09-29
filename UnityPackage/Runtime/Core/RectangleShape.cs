@@ -26,12 +26,12 @@ namespace reromanlee.Wireframes
         {
             get
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 return _size;
             }
             set
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 _size = value;
                 MarkDirty(DirtyFlags.Positions);
             }
@@ -41,12 +41,12 @@ namespace reromanlee.Wireframes
         {
             get
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 return LocalPosition - LocalRotation * HalfSize();
             }
             set
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 Vector3 cornerB = LocalCornerB;
                 SpanCorners(OntoPlane(value, cornerB), cornerB);
             }
@@ -56,12 +56,12 @@ namespace reromanlee.Wireframes
         {
             get
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 return LocalPosition + LocalRotation * HalfSize();
             }
             set
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 Vector3 cornerA = LocalCornerA;
                 SpanCorners(cornerA, OntoPlane(value, cornerA));
             }
@@ -71,12 +71,12 @@ namespace reromanlee.Wireframes
         {
             get
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 return ToWorld(Bone, LocalCornerA);
             }
             set
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 LocalCornerA = ToLocal(Bone, value);
             }
         }
@@ -85,12 +85,12 @@ namespace reromanlee.Wireframes
         {
             get
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 return ToWorld(Bone, LocalCornerB);
             }
             set
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 LocalCornerB = ToLocal(Bone, value);
             }
         }

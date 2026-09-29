@@ -15,55 +15,55 @@ namespace reromanlee.Wireframes
 
         public Vector3 GetLocalPosition(int index)
         {
-            ThrowIfDisposed();
-            return Point(index).LocalPosition;
+            EnsureUsable();
+            return LivePoint(index).LocalPosition;
         }
 
         public void SetLocalPosition(int index, Vector3 position)
         {
-            ThrowIfDisposed();
-            Point(index).LocalPosition = position;
+            EnsureUsable();
+            LivePoint(index).LocalPosition = position;
             MarkDirty(DirtyFlags.Positions);
         }
 
         public Vector3 GetWorldPosition(int index)
         {
-            ThrowIfDisposed();
-            ref ShapePoint point = ref Point(index);
+            EnsureUsable();
+            ref ShapePoint point = ref LivePoint(index);
             return ToWorld(point.Bone, point.LocalPosition);
         }
 
         public void SetWorldPosition(int index, Vector3 position)
         {
-            ThrowIfDisposed();
-            ref ShapePoint point = ref Point(index);
+            EnsureUsable();
+            ref ShapePoint point = ref LivePoint(index);
             point.LocalPosition = ToLocal(point.Bone, position);
             MarkDirty(DirtyFlags.Positions);
         }
 
         public Color GetColor(int index)
         {
-            ThrowIfDisposed();
+            EnsureUsable();
             return Point(index).Color;
         }
 
         public void SetColor(int index, Color color)
         {
-            ThrowIfDisposed();
+            EnsureUsable();
             Point(index).Color = color;
             MarkDirty(DirtyFlags.Colors);
         }
 
         public Transform GetBone(int index)
         {
-            ThrowIfDisposed();
-            return Point(index).Bone;
+            EnsureUsable();
+            return LivePoint(index).Bone;
         }
 
         public void SetBone(int index, Transform bone)
         {
-            ThrowIfDisposed();
-            ref ShapePoint point = ref Point(index);
+            EnsureUsable();
+            ref ShapePoint point = ref LivePoint(index);
             Vector3 worldPosition = ToWorld(point.Bone, point.LocalPosition);
             ReplaceBone(ref point.Bone, ref point.BoneSlot, bone);
             point.LocalPosition = ToLocal(point.Bone, worldPosition);
@@ -72,7 +72,7 @@ namespace reromanlee.Wireframes
 
         public override void SetColor(Color color)
         {
-            ThrowIfDisposed();
+            EnsureUsable();
             for (int i = 0; i < VertexCount; i++)
             {
                 Point(i).Color = color;
@@ -96,23 +96,11 @@ namespace reromanlee.Wireframes
             }
         }
 
-        internal override void WriteBones(Span<uint> bones)
+        internal override void WriteBoneIndices(Span<float> boneIndices)
         {
-            for (int i = 0; i < bones.Length; i++)
+            for (int i = 0; i < boneIndices.Length; i++)
             {
-                bones[i] = (uint)Point(i).BoneSlot;
-            }
-        }
-
-        internal override void OnBoneDestroyed(Transform bone)
-        {
-            for (int i = 0; i < VertexCount; i++)
-            {
-                // Reference comparison: a destroyed bone also compares equal to every unattached (null) point.
-                if (ReferenceEquals(Point(i).Bone, bone))
-                {
-                    SetBone(i, null);
-                }
+                boneIndices[i] = Point(i).BoneSlot;
             }
         }
 
@@ -133,5 +121,24 @@ namespace reromanlee.Wireframes
 
         /// <summary>Storage of point <paramref name="index"/>.</summary>
         protected abstract ref ShapePoint Point(int index);
+
+        /// <summary>
+        /// Storage of point <paramref name="index"/>, switched to world space first if its bone was destroyed. Only the
+        /// point asked for is checked, so members of long polylines don't scan every point.
+        /// </summary>
+        private ref ShapePoint LivePoint(int index)
+        {
+            ref ShapePoint point = ref Point(index);
+            if (IsDestroyed(point.Bone))
+            {
+                // The slot still holds the bone's last pose, so the point keeps its world position.
+                point.LocalPosition = Bones.MatrixOf(point.BoneSlot).MultiplyPoint3x4(point.LocalPosition);
+                Bones.Release(point.BoneSlot);
+                point.Bone = null;
+                point.BoneSlot = BoneRegistry.WorldSlot;
+                MarkDirty(DirtyFlags.Positions | DirtyFlags.Bones);
+            }
+            return ref point;
+        }
     }
 }

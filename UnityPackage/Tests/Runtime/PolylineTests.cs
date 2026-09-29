@@ -162,11 +162,14 @@ namespace reromanlee.Wireframes.Tests
         [UnityTest]
         public IEnumerator DestroyedBone_LeavesItsPointsInPlace()
         {
+            WireframeContainer container = CreateContainer();
             Transform bone = CreateBone(new Vector3(2f, 0f, 0f), Quaternion.Euler(0f, 90f, 0f));
-            IPolyline polyline = CreateContainer().CreatePolyline(Square);
+            IPolyline polyline = container.CreatePolyline(Square);
             polyline.SetBone(0, bone);
             polyline.SetBone(3, bone);
             bone.position = new Vector3(5f, 1f, 0f);
+            // A drawn frame, which reads the bone's pose; a destroyed bone leaves its last drawn pose behind.
+            container.Proxy.Flush();
             Vector3 expected0 = polyline.GetWorldPosition(0);
             Vector3 expected3 = polyline.GetWorldPosition(3);
 

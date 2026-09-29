@@ -28,12 +28,12 @@ namespace reromanlee.Wireframes
         {
             get
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 return _size;
             }
             set
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 _size = value;
                 MarkDirty(DirtyFlags.Positions);
             }
@@ -43,12 +43,12 @@ namespace reromanlee.Wireframes
         {
             get
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 return LocalPosition - LocalRotation * (_size * 0.5f);
             }
             set
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 SetCorners(value, LocalCornerB);
             }
         }
@@ -57,12 +57,12 @@ namespace reromanlee.Wireframes
         {
             get
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 return LocalPosition + LocalRotation * (_size * 0.5f);
             }
             set
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 SetCorners(LocalCornerA, value);
             }
         }
@@ -71,12 +71,12 @@ namespace reromanlee.Wireframes
         {
             get
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 return ToWorld(Bone, LocalCornerA);
             }
             set
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 LocalCornerA = ToLocal(Bone, value);
             }
         }
@@ -85,12 +85,12 @@ namespace reromanlee.Wireframes
         {
             get
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 return ToWorld(Bone, LocalCornerB);
             }
             set
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 LocalCornerB = ToLocal(Bone, value);
             }
         }

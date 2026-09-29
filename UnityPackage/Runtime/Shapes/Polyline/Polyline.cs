@@ -37,7 +37,7 @@ namespace reromanlee.Wireframes
         {
             get
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 return _points.Length;
             }
         }
@@ -46,7 +46,7 @@ namespace reromanlee.Wireframes
         {
             get
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 return _isClosed;
             }
         }

@@ -119,11 +119,12 @@ namespace reromanlee.Wireframes.Tests
         }
 
         [Test]
-        public void ManyBones_GrowTheBoneArrayWithMatchingBindposes()
+        public void ManyBones_GrowTheBoneTextureWithEveryMatrix()
         {
+            // More bones than one texture row holds, so the texture grows while the matrices stay in their slots.
             WireframeContainer container = CreateContainer();
             List<ILine> lines = new();
-            for (int i = 0; i < 100; i++)
+            for (int i = 0; i < BoneTexture.BonesPerRow + 44; i++)
             {
                 ILine line = container.CreateLine();
                 line.BoneA = CreateBone(new Vector3(i, 0f, 0f), Quaternion.identity);
@@ -133,13 +134,18 @@ namespace reromanlee.Wireframes.Tests
 
             Vector3[] baked = FlushAndBake(container);
 
-            MeshChunk chunk = ChunkOf(container);
-            Assert.That(chunk.Renderer.bones, Has.Length.EqualTo(chunk.Mesh.bindposes.Length));
-            Assert.That(chunk.Bones.Count, Is.EqualTo(100));
+            Texture2D texture = container.Proxy.BoneTexture.Texture;
+            Assert.That(ChunkOf(container).Bones.Count, Is.EqualTo(lines.Count));
+            Assert.That(texture.height, Is.GreaterThanOrEqualTo(2));
             for (int i = 0; i < lines.Count; i++)
             {
                 AssertApproximately(new Vector3(i, 0f, 0f), baked[((Line)lines[i]).VertexStart]);
             }
+            // The translation of the last bone, read back from where the shader finds it.
+            int slot = lines.Count;
+            int texel = slot / BoneTexture.BonesPerRow * BoneTexture.BonesPerRow * 3 + slot % BoneTexture.BonesPerRow * 3;
+            Unity.Collections.NativeArray<Vector4> texels = texture.GetPixelData<Vector4>(0);
+            AssertApproximately(lines.Count - 1f, texels[texel].w);
         }
     }
 }

@@ -26,12 +26,12 @@ namespace reromanlee.Wireframes
         {
             get
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 return _innerRadius;
             }
             set
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 _innerRadius = value;
                 MarkDirty(DirtyFlags.Positions);
             }
@@ -41,12 +41,12 @@ namespace reromanlee.Wireframes
         {
             get
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 return _outerRadius;
             }
             set
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 _outerRadius = value;
                 MarkDirty(DirtyFlags.Positions);
             }
@@ -56,7 +56,7 @@ namespace reromanlee.Wireframes
         {
             get
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 return VertexCount / 2;
             }
         }

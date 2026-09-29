@@ -35,12 +35,12 @@ namespace reromanlee.Wireframes
         {
             get
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 return _radius;
             }
             set
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 _radius = value;
                 MarkDirty(DirtyFlags.Positions);
             }
@@ -50,7 +50,7 @@ namespace reromanlee.Wireframes
         {
             get
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 return VertexCount - TipCount;
             }
         }

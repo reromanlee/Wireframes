@@ -32,12 +32,12 @@ namespace reromanlee.Wireframes
         {
             get
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 return _localPosition;
             }
             set
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 _localPosition = value;
                 MarkDirty(DirtyFlags.Positions);
             }
@@ -47,12 +47,12 @@ namespace reromanlee.Wireframes
         {
             get
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 return ToWorld(_bone, _localPosition);
             }
             set
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 _localPosition = ToLocal(_bone, value);
                 MarkDirty(DirtyFlags.Positions);
             }
@@ -62,12 +62,12 @@ namespace reromanlee.Wireframes
         {
             get
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 return _localRotation;
             }
             set
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 // Normalizing also turns a zero quaternion, such as default, into no rotation.
                 _localRotation = Quaternion.Normalize(value);
                 MarkDirty(DirtyFlags.Positions);
@@ -78,12 +78,12 @@ namespace reromanlee.Wireframes
         {
             get
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 return ToWorld(_bone, _localRotation);
             }
             set
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 _localRotation = ToLocal(_bone, Quaternion.Normalize(value));
                 MarkDirty(DirtyFlags.Positions);
             }
@@ -93,12 +93,12 @@ namespace reromanlee.Wireframes
         {
             get
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 return _color;
             }
             set
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 _color = value;
                 MarkDirty(DirtyFlags.Colors);
             }
@@ -108,12 +108,12 @@ namespace reromanlee.Wireframes
         {
             get
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 return _bone;
             }
             set
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 Vector3 worldPosition = ToWorld(_bone, _localPosition);
                 Quaternion worldRotation = ToWorld(_bone, _localRotation);
                 float oldScale = UniformScale(_bone);
@@ -149,23 +149,35 @@ namespace reromanlee.Wireframes
             colors.Fill(_color);
         }
 
-        internal sealed override void WriteBones(Span<uint> bones)
+        internal sealed override void WriteBoneIndices(Span<float> boneIndices)
         {
-            bones.Fill((uint)_boneSlot);
-        }
-
-        internal sealed override void OnBoneDestroyed(Transform bone)
-        {
-            // Reference comparison: a destroyed bone also compares equal to null, which means "no bone".
-            if (ReferenceEquals(_bone, bone))
-            {
-                Bone = null;
-            }
+            boneIndices.Fill(_boneSlot);
         }
 
         protected sealed override void ReleaseBones(BoneRegistry bones)
         {
             bones.Release(_boneSlot);
+        }
+
+        protected sealed override void DetachFromDestroyedBones()
+        {
+            if (!IsDestroyed(_bone))
+            {
+                return;
+            }
+            // The slot still holds the bone's last pose, so the shape keeps its world position, rotation and size.
+            Matrix4x4 pose = Bones.MatrixOf(_boneSlot);
+            _localPosition = pose.MultiplyPoint3x4(_localPosition);
+            _localRotation = Quaternion.Normalize(pose.rotation * _localRotation);
+            float scale = UniformScale(pose.lossyScale);
+            if (scale > 0f && scale != 1f)
+            {
+                ScaleSizes(scale);
+            }
+            Bones.Release(_boneSlot);
+            _bone = null;
+            _boneSlot = BoneRegistry.WorldSlot;
+            MarkDirty(DirtyFlags.Positions | DirtyFlags.Bones);
         }
 
         /// <summary>Writes the shape's points along its own axes, before its rotation and position are applied.</summary>
@@ -187,11 +199,11 @@ namespace reromanlee.Wireframes
         /// <summary>A bone's overall scale: the geometric mean of its lossy scale, so a uniform scale comes back as is.</summary>
         private static float UniformScale(Transform bone)
         {
-            if (bone == null)
-            {
-                return 1f;
-            }
-            Vector3 scale = bone.lossyScale;
+            return bone != null ? UniformScale(bone.lossyScale) : 1f;
+        }
+
+        private static float UniformScale(Vector3 scale)
+        {
             return (float)Math.Pow(Math.Abs((double)scale.x * scale.y * scale.z), 1.0 / 3.0);
         }
     }

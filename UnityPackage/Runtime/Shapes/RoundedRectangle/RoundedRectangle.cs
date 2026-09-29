@@ -34,12 +34,12 @@ namespace reromanlee.Wireframes
         {
             get
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 return _cornerRadius;
             }
             set
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 _cornerRadius = value;
                 MarkDirty(DirtyFlags.Positions);
             }
@@ -49,7 +49,7 @@ namespace reromanlee.Wireframes
         {
             get
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 return VertexCount - CornerCount;
             }
         }

@@ -27,12 +27,12 @@ namespace reromanlee.Wireframes
         {
             get
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 return _length;
             }
             set
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 _length = value;
                 MarkDirty(DirtyFlags.Positions);
             }
@@ -42,12 +42,12 @@ namespace reromanlee.Wireframes
         {
             get
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 return LocalPosition;
             }
             set
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 Vector3 endB = LocalEndB;
                 LocalPosition = value;
                 LocalEndB = endB;
@@ -58,12 +58,12 @@ namespace reromanlee.Wireframes
         {
             get
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 return LocalPosition + LocalRotation * new Vector3(0f, 0f, _length);
             }
             set
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 Vector3 axis = value - LocalPosition;
                 float length = axis.magnitude;
                 // An end on top of end A has no direction, so the rotation stays as it is.
@@ -82,12 +82,12 @@ namespace reromanlee.Wireframes
         {
             get
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 return ToWorld(Bone, LocalEndA);
             }
             set
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 LocalEndA = ToLocal(Bone, value);
             }
         }
@@ -96,12 +96,12 @@ namespace reromanlee.Wireframes
         {
             get
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 return ToWorld(Bone, LocalEndB);
             }
             set
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 LocalEndB = ToLocal(Bone, value);
             }
         }

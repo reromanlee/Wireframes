@@ -13,7 +13,7 @@ namespace reromanlee.Wireframes.Tests
 {
     public class WireframeContainerTests : WireframesTestBase
     {
-        private const string ShaderName = "reromanlee/Wireframes/VertexColors";
+        private const string ShaderName = "reromanlee/Wireframes/Unlit";
 
         [Test]
         public void Constructor_CreatesProxyInActiveSceneWithPackageShader()
@@ -229,10 +229,13 @@ namespace reromanlee.Wireframes.Tests
         [UnityTest]
         public IEnumerator Rendering_LogsNoErrorsWhileBuffersGrow()
         {
-            // The test framework fails a test on any logged error, e.g. a bone/bind pose mismatch while rendering.
-            // The shapes added here outgrow 16-bit indices, so the index format switches while a camera renders.
+            // The test framework fails a test on any logged error while rendering. The shapes added here outgrow
+            // 16-bit indices, so the index format switches while a camera renders. Batch mode draws no screen cameras,
+            // so this one renders into a texture, which is also what applies the edits.
+            RenderTexture target = Track(new RenderTexture(64, 64, 24));
             Camera camera = Track(new GameObject("Camera")).AddComponent<Camera>();
             camera.transform.position = new Vector3(0f, 0f, -20f);
+            camera.targetTexture = target;
             WireframeContainer container = CreateContainer();
             Transform bone = CreateBone(Vector3.zero, Quaternion.identity);
 
@@ -251,6 +254,7 @@ namespace reromanlee.Wireframes.Tests
                     }
                 }
                 bone.position += Vector3.right;
+                camera.Render();
                 yield return null;
             }
 

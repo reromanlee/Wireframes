@@ -31,12 +31,12 @@ namespace reromanlee.Wireframes
         {
             get
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 return _baseSize;
             }
             set
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 _baseSize = value;
                 MarkDirty(DirtyFlags.Positions);
             }

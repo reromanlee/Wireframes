@@ -41,6 +41,12 @@ namespace reromanlee.Wireframes
             get => _edgeSlots.Length;
         }
 
+        /// <summary>The registry of the bones this shape follows.</summary>
+        protected BoneRegistry Bones
+        {
+            get => _chunk.Bones;
+        }
+
         public void Dispose()
         {
             if (_chunk == null)
@@ -107,19 +113,29 @@ namespace reromanlee.Wireframes
 
         internal abstract void WriteColors(Span<Color32> colors);
 
-        internal abstract void WriteBones(Span<uint> bones);
-
-        /// <summary>Detaches whatever follows <paramref name="bone"/>, keeping it in place if the bone can still be read.</summary>
-        internal abstract void OnBoneDestroyed(Transform bone);
+        internal abstract void WriteBoneIndices(Span<float> boneIndices);
 
         protected abstract void ReleaseBones(BoneRegistry bones);
 
-        protected void ThrowIfDisposed()
+        /// <summary>
+        /// Throws once the shape is disposed, and otherwise lets it notice a bone that was destroyed, so every member
+        /// sees the shape in world space from then on.
+        /// </summary>
+        protected void EnsureUsable()
         {
             if (_chunk == null)
             {
                 throw new ObjectDisposedException(GetType().Name);
             }
+            DetachFromDestroyedBones();
+        }
+
+        /// <summary>
+        /// Switches whatever follows a destroyed bone to world space, where its bone slot's last matrix put it. Until
+        /// then that frozen matrix keeps drawing it in place.
+        /// </summary>
+        protected virtual void DetachFromDestroyedBones()
+        {
         }
 
         /// <summary>Points a bone field at <paramref name="value"/> and moves its registry slot along.</summary>
@@ -135,6 +151,12 @@ namespace reromanlee.Wireframes
             _chunk.Bones.Release(slot);
             bone = value;
             slot = newSlot;
+        }
+
+        /// <summary>True when <paramref name="bone"/> was a transform that has since been destroyed.</summary>
+        protected static bool IsDestroyed(Transform bone)
+        {
+            return !ReferenceEquals(bone, null) && bone == null;
         }
 
         protected static Vector3 ToWorld(Transform bone, Vector3 local)

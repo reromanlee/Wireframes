@@ -46,12 +46,12 @@ namespace reromanlee.Wireframes
         {
             get
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 return _baseRadius;
             }
             set
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 _baseRadius = value;
                 MarkDirty(DirtyFlags.Positions);
             }
@@ -61,12 +61,12 @@ namespace reromanlee.Wireframes
         {
             get
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 return _spikeLength;
             }
             set
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 _spikeLength = value;
                 MarkDirty(DirtyFlags.Positions);
             }
@@ -76,7 +76,7 @@ namespace reromanlee.Wireframes
         {
             get
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 return _solid.Faces.Length;
             }
         }

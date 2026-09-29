@@ -59,14 +59,22 @@ namespace reromanlee.Wireframes.Tests
             return container.Proxy.Chunks[0];
         }
 
-        /// <summary>Applies pending edits, then skins the mesh on the CPU and returns world-space vertices.</summary>
+        /// <summary>
+        /// Applies pending edits and reads the bones, then skins the uploaded vertices on the CPU with the matrices the
+        /// shader receives, and returns world-space vertices. ShaderTests checks that the GPU draws the same.
+        /// </summary>
         protected static Vector3[] FlushAndBake(WireframeContainer container)
         {
             container.Proxy.Flush();
-            Mesh baked = new();
-            ChunkOf(container).Renderer.BakeMesh(baked);
-            Vector3[] vertices = baked.vertices;
-            Object.Destroy(baked);
+            MeshChunk chunk = ChunkOf(container);
+            BoneRegistry bones = container.Proxy.Bones;
+            Vector3[] positions = chunk.Positions;
+            float[] boneIndices = chunk.BoneIndices;
+            Vector3[] vertices = new Vector3[positions.Length];
+            for (int i = 0; i < vertices.Length; i++)
+            {
+                vertices[i] = bones.MatrixOf((int)boneIndices[i]).MultiplyPoint3x4(positions[i]);
+            }
             return vertices;
         }
 

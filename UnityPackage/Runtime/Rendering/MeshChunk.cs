@@ -5,8 +5,9 @@ using UnityEngine.Rendering;
 namespace reromanlee.Wireframes
 {
     /// <summary>
-    /// One skinned mesh holding many shapes. Shapes keep their own state; on each flush the chunk writes the queued
-    /// shapes into CPU copies of the vertex and index buffers and uploads only the ranges that changed.
+    /// One mesh holding many shapes. Shapes keep their own state; on each flush the chunk writes the queued shapes into
+    /// CPU copies of the vertex and index buffers and uploads only the ranges that changed. Each vertex is a position
+    /// relative to its bone plus that bone's slot, which the shader turns into a world position.
     /// </summary>
     internal sealed class MeshChunk : IDisposable
     {
@@ -20,42 +21,37 @@ namespace reromanlee.Wireframes
 
         private const int PositionStream = 0;
         private const int ColorStream = 1;
-        private const int SkinStream = 2;
+        private const int BoneStream = 2;
 
-        // The layout Unity itself builds for one bone per vertex; skinned meshes must keep this stream arrangement.
         private static readonly VertexAttributeDescriptor[] VertexLayout =
         {
             new(VertexAttribute.Position, VertexAttributeFormat.Float32, 3, PositionStream),
             new(VertexAttribute.Color, VertexAttributeFormat.UNorm8, 4, ColorStream),
-            new(VertexAttribute.BlendIndices, VertexAttributeFormat.UInt32, 1, SkinStream)
+            new(VertexAttribute.TexCoord0, VertexAttributeFormat.Float32, 1, BoneStream)
         };
 
         // Shapes follow arbitrary transforms, so the bounds are fixed and large instead of recomputed every frame.
         private static readonly Bounds FixedBounds = new(Vector3.zero, Vector3.one * 2000000f);
 
-        private const MeshUpdateFlags UploadFlags =
-            MeshUpdateFlags.DontValidateIndices |
-            MeshUpdateFlags.DontRecalculateBounds |
-            MeshUpdateFlags.DontResetBoneBounds;
+        private const MeshUpdateFlags UploadFlags = MeshUpdateFlags.DontValidateIndices | MeshUpdateFlags.DontRecalculateBounds;
 
-        private readonly SkinnedMeshRenderer _renderer;
+        private readonly MeshRenderer _renderer;
         private readonly Mesh _mesh;
+        private readonly BoneRegistry _bones;
 
         private readonly VertexAllocator _allocator = new();
         private readonly EdgeList _edges = new();
-        private readonly BoneRegistry _bones;
 
         private readonly DirtyRanges _positionRanges = new();
         private readonly DirtyRanges _colorRanges = new();
-        private readonly DirtyRanges _skinRanges = new();
+        private readonly DirtyRanges _boneRanges = new();
         private readonly DirtyRanges _edgeRanges = new();
 
         // CPU copies of the three vertex streams, sized to the vertex capacity.
         private Vector3[] _positions = new Vector3[InitialVertexCapacity];
         private Color32[] _colors = new Color32[InitialVertexCapacity];
-        private uint[] _skin = new uint[InitialVertexCapacity];
+        private float[] _boneIndices = new float[InitialVertexCapacity];
         private ushort[] _shortIndices = Array.Empty<ushort>();
-        private Matrix4x4[] _bindposes = Array.Empty<Matrix4x4>();
 
         private Shape[] _shapes = new Shape[InitialShapeCapacity];
         private int _shapeCount;
@@ -68,29 +64,24 @@ namespace reromanlee.Wireframes
         private IndexFormat _meshIndexFormat;
         private int _meshEdgeCount = -1;
 
-        internal MeshChunk(Transform parent, Material material, WireframeContainerSettings settings)
+        internal MeshChunk(Transform parent, Material material, WireframeContainerSettings settings, BoneRegistry bones)
         {
             // Reserved before anything is created, so a device limit leaves nothing behind.
             EnsureVertexCapacity(settings.VertexCapacity);
             EnsureEdgeCapacity(settings.EdgeCapacity);
+            _bones = bones;
 
             GameObject chunkObject = new(ObjectName) { hideFlags = HideFlags.NotEditable, layer = settings.Layer };
-            Transform root = chunkObject.transform;
-            root.SetParent(parent, false);
-
-            _bones = new BoneRegistry(root, OnBoneDestroyed);
+            chunkObject.transform.SetParent(parent, false);
 
             _mesh = new Mesh { name = ObjectName };
             _mesh.MarkDynamic();
             _mesh.subMeshCount = 1;
             _mesh.bounds = FixedBounds;
+            chunkObject.AddComponent<MeshFilter>().sharedMesh = _mesh;
 
-            _renderer = chunkObject.AddComponent<SkinnedMeshRenderer>();
+            _renderer = chunkObject.AddComponent<MeshRenderer>();
             _renderer.sharedMaterial = material;
-            _renderer.rootBone = root;
-            _renderer.quality = SkinQuality.Bone1;
-            _renderer.updateWhenOffscreen = false;
-            _renderer.skinnedMotionVectors = false;
             _renderer.motionVectorGenerationMode = MotionVectorGenerationMode.ForceNoMotion;
             _renderer.shadowCastingMode = ShadowCastingMode.Off;
             _renderer.receiveShadows = false;
@@ -98,7 +89,7 @@ namespace reromanlee.Wireframes
             _renderer.reflectionProbeUsage = ReflectionProbeUsage.Off;
             _renderer.allowOcclusionWhenDynamic = false;
 
-            // Creates the buffers and hands the mesh to the renderer.
+            // Creates the buffers.
             Flush();
         }
 
@@ -112,7 +103,7 @@ namespace reromanlee.Wireframes
             get => _mesh;
         }
 
-        internal SkinnedMeshRenderer Renderer
+        internal MeshRenderer Renderer
         {
             get => _renderer;
         }
@@ -140,6 +131,18 @@ namespace reromanlee.Wireframes
         internal int EdgeCapacity
         {
             get => _edges.Capacity;
+        }
+
+        /// <summary>CPU copy of every vertex position, relative to its bone.</summary>
+        internal Vector3[] Positions
+        {
+            get => _positions;
+        }
+
+        /// <summary>CPU copy of every vertex's bone slot.</summary>
+        internal float[] BoneIndices
+        {
+            get => _boneIndices;
         }
 
         internal void Add(Shape shape)
@@ -194,24 +197,13 @@ namespace reromanlee.Wireframes
         /// <summary>Writes queued shapes into the buffers and uploads what changed.</summary>
         internal void Flush()
         {
-            _bones.PollSleepers();
             if (_allocator.FreeCount >= CompactionThreshold && _allocator.FreeCount * 2 > _allocator.End)
             {
                 Compact();
             }
             WritePendingShapes();
-
-            // Bones go first: Unity doesn't range-check bone indices, so skin data must never reference a missing bone.
-            UploadBones();
-            bool recreated = UploadVertices();
-            recreated |= UploadIndices();
-            if (recreated)
-            {
-                // Re-assigning the mesh makes the renderer drop skinning buffers sized for the old one.
-                _renderer.sharedMesh = null;
-                _renderer.sharedMesh = _mesh;
-                _renderer.localBounds = FixedBounds;
-            }
+            UploadVertices();
+            UploadIndices();
         }
 
         public void Dispose()
@@ -224,17 +216,8 @@ namespace reromanlee.Wireframes
             _shapeCount = 0;
             Array.Clear(_pending, 0, _pendingCount);
             _pendingCount = 0;
-            _bones.Dispose();
             // The chunk's GameObject is a child of the proxy and goes away with it; the mesh is an asset and doesn't.
             UnityObjects.Destroy(_mesh);
-        }
-
-        private void OnBoneDestroyed(Transform bone)
-        {
-            for (int i = 0; i < _shapeCount; i++)
-            {
-                _shapes[i].OnBoneDestroyed(bone);
-            }
         }
 
         /// <summary>Hands out vertex blocks again from vertex 0, packing live shapes together.</summary>
@@ -275,8 +258,8 @@ namespace reromanlee.Wireframes
                 }
                 if ((dirty & DirtyFlags.Bones) != 0)
                 {
-                    shape.WriteBones(new Span<uint>(_skin, start, count));
-                    _skinRanges.Add(start, count);
+                    shape.WriteBoneIndices(new Span<float>(_boneIndices, start, count));
+                    _boneRanges.Add(start, count);
                 }
                 if ((dirty & DirtyFlags.Edges) != 0)
                 {
@@ -286,49 +269,28 @@ namespace reromanlee.Wireframes
             _pendingCount = 0;
         }
 
-        private void UploadBones()
-        {
-            if (!_bones.IsDirty)
-            {
-                return;
-            }
-            Transform[] transforms = _bones.Transforms;
-            if (_bindposes.Length != transforms.Length)
-            {
-                // Endpoints are stored relative to their bone, so every bind pose is identity.
-                _bindposes = new Matrix4x4[transforms.Length];
-                Array.Fill(_bindposes, Matrix4x4.identity);
-                _mesh.bindposes = _bindposes;
-            }
-            _renderer.bones = transforms;
-            _bones.ClearDirty();
-        }
-
-        /// <returns>True when the vertex buffer was recreated.</returns>
-        private bool UploadVertices()
+        private void UploadVertices()
         {
             int capacity = _positions.Length;
             if (_meshVertexCapacity == capacity)
             {
                 UploadRanges(_positionRanges, _positions, PositionStream);
                 UploadRanges(_colorRanges, _colors, ColorStream);
-                UploadRanges(_skinRanges, _skin, SkinStream);
-                return false;
+                UploadRanges(_boneRanges, _boneIndices, BoneStream);
+                return;
             }
 
-            // A resized buffer starts with garbage, and garbage bone indices crash skinning, so every stream is
-            // rewritten in full.
+            // A resized buffer starts with garbage, so every stream is rewritten in full.
             _mesh.SetVertexBufferParams(capacity, VertexLayout);
             _mesh.SetVertexBufferData(_positions, 0, 0, capacity, PositionStream, UploadFlags);
             _mesh.SetVertexBufferData(_colors, 0, 0, capacity, ColorStream, UploadFlags);
-            _mesh.SetVertexBufferData(_skin, 0, 0, capacity, SkinStream, UploadFlags);
+            _mesh.SetVertexBufferData(_boneIndices, 0, 0, capacity, BoneStream, UploadFlags);
             _positionRanges.Clear();
             _colorRanges.Clear();
-            _skinRanges.Clear();
+            _boneRanges.Clear();
             _meshVertexCapacity = capacity;
             // The sub-mesh records the vertex range it uses, so it has to be set again.
             _meshEdgeCount = -1;
-            return true;
         }
 
         private void UploadRanges<T>(DirtyRanges ranges, T[] data, int stream) where T : struct
@@ -342,13 +304,11 @@ namespace reromanlee.Wireframes
             ranges.Clear();
         }
 
-        /// <returns>True when the index buffer was recreated.</returns>
-        private bool UploadIndices()
+        private void UploadIndices()
         {
             int edgeCount = _edges.Count;
             int indexCapacity = _edges.Capacity * 2;
             IndexFormat format = _meshVertexCapacity > MaxUInt16Vertices ? IndexFormat.UInt32 : IndexFormat.UInt16;
-            bool recreated = false;
 
             if (_meshIndexCapacity != indexCapacity || _meshIndexFormat != format)
             {
@@ -358,7 +318,6 @@ namespace reromanlee.Wireframes
                 _edgeRanges.Clear();
                 UploadIndexRange(0, edgeCount * 2);
                 _meshEdgeCount = -1;
-                recreated = true;
             }
             else
             {
@@ -384,7 +343,6 @@ namespace reromanlee.Wireframes
                 _mesh.SetSubMesh(0, subMesh, UploadFlags);
                 _meshEdgeCount = edgeCount;
             }
-            return recreated;
         }
 
         private void UploadIndexRange(int start, int count)
@@ -423,10 +381,10 @@ namespace reromanlee.Wireframes
             }
             // Positions are the widest stream.
             CheckBufferSize((long)capacity * 12);
-            // New elements default to zero, which is bone slot 0 (world space), a valid index for skinning.
+            // New elements default to zero, which is bone slot 0 (world space), a valid index for the shader.
             Array.Resize(ref _positions, capacity);
             Array.Resize(ref _colors, capacity);
-            Array.Resize(ref _skin, capacity);
+            Array.Resize(ref _boneIndices, capacity);
         }
 
         private void EnsureEdgeCapacity(int required)

@@ -23,12 +23,12 @@ namespace reromanlee.Wireframes
         {
             get
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 return _radii;
             }
             set
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 _radii = value;
                 MarkDirty(DirtyFlags.Positions);
             }
@@ -38,7 +38,7 @@ namespace reromanlee.Wireframes
         {
             get
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 return VertexCount;
             }
         }

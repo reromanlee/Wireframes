@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Text.RegularExpressions;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
@@ -139,19 +138,17 @@ namespace reromanlee.Wireframes.Tests
             Assert.That(bones.Count, Is.Zero);
         }
 
-        [UnityTest]
-        public IEnumerator ReleasingLastUse_RemovesHiddenWatcher()
+        [Test]
+        public void AttachingABone_AddsNothingToItsGameObject()
         {
             Transform bone = CreateBone(Vector3.zero, Quaternion.identity);
+            int componentCount = bone.GetComponents<Component>().Length;
             ILine line = CreateContainer().CreateLine();
 
             line.BoneA = bone;
-            Assert.That(bone.GetComponent<BoneWatcher>() != null, Is.True);
+            line.BoneB = bone;
 
-            line.BoneA = null;
-            yield return null;
-
-            Assert.That(bone.GetComponent<BoneWatcher>() == null, Is.True);
+            Assert.That(bone.GetComponents<Component>(), Has.Length.EqualTo(componentCount));
         }
 
         [UnityTest]
@@ -163,16 +160,38 @@ namespace reromanlee.Wireframes.Tests
             line.BoneA = bone;
             line.LocalPositionA = new Vector3(0f, 0f, 1f);
             bone.position = new Vector3(5f, 1f, 0f);
+            // A drawn frame, which reads the bone's pose; a destroyed bone leaves its last drawn pose behind.
+            container.Proxy.Flush();
             Vector3 expected = bone.TransformPoint(new Vector3(0f, 0f, 1f));
+            int start = ((Line)line).VertexStart;
 
             Object.Destroy(bone.gameObject);
             yield return null;
 
+            // Before the line notices, the bone's frozen pose still draws it in place.
+            AssertApproximately(expected, FlushAndBake(container)[start]);
             Assert.That(line.BoneA, Is.Null);
             AssertApproximately(expected, line.WorldPositionA);
             Assert.That(ChunkOf(container).Bones.Count, Is.Zero);
-            Vector3[] baked = FlushAndBake(container);
-            AssertApproximately(expected, baked[((Line)line).VertexStart]);
+            AssertApproximately(expected, FlushAndBake(container)[start]);
+        }
+
+        [UnityTest]
+        public IEnumerator DestroyedBone_StaysWhereItWasLastDrawn()
+        {
+            // Unity destroys objects before it renders, so a move in the frame of the destruction is never drawn.
+            WireframeContainer container = CreateContainer();
+            Transform bone = CreateBone(new Vector3(1f, 0f, 0f), Quaternion.identity);
+            ILine line = container.CreateLine(bone, null);
+            bone.position = new Vector3(2f, 0f, 0f);
+            container.Proxy.Flush();
+
+            bone.position = new Vector3(3f, 0f, 0f);
+            Object.Destroy(bone.gameObject);
+            yield return null;
+            container.Proxy.Flush();
+
+            AssertApproximately(new Vector3(2f, 0f, 0f), line.WorldPositionA);
         }
 
         [UnityTest]
@@ -193,9 +212,8 @@ namespace reromanlee.Wireframes.Tests
         }
 
         [UnityTest]
-        public IEnumerator ReattachingInTheSameFrame_KeepsWatchingTheBone()
+        public IEnumerator ReattachingInTheSameFrame_KeepsFollowingTheBone()
         {
-            // Releasing schedules the watcher's destruction for the end of the frame, so a fresh one has to take over.
             Transform bone = CreateBone(Vector3.zero, Quaternion.identity);
             ILine line = CreateContainer().CreateLine();
             line.BoneA = bone;
@@ -211,22 +229,22 @@ namespace reromanlee.Wireframes.Tests
         }
 
         [UnityTest]
-        public IEnumerator BoneDestroyedBeforeItWasActive_FallsBackToLocalOffset()
+        public IEnumerator BoneDestroyedBeforeItWasActive_StaysInPlace()
         {
+            // The pose is read when the bone is attached, so even a bone that never rendered leaves one behind.
             WireframeContainer container = CreateContainer();
             Transform bone = CreateBone(new Vector3(9f, 9f, 9f), Quaternion.identity);
             bone.gameObject.SetActive(false);
             ILine line = container.CreateLine();
             line.BoneA = bone;
             line.LocalPositionA = new Vector3(1f, 0f, 0f);
-            LogAssert.Expect(LogType.Warning, new Regex("was destroyed before its GameObject was ever active"));
 
             Object.Destroy(bone.gameObject);
             yield return null;
             container.Proxy.Flush();
 
             Assert.That(line.BoneA, Is.Null);
-            AssertApproximately(new Vector3(1f, 0f, 0f), line.WorldPositionA);
+            AssertApproximately(new Vector3(10f, 9f, 9f), line.WorldPositionA);
             Assert.That(ChunkOf(container).Bones.Count, Is.Zero);
         }
     }
