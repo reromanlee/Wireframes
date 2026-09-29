@@ -64,8 +64,9 @@ namespace reromanlee.Wireframes
         }
 
         /// <summary>
-        /// True keeps the container when other scenes load in Play mode, like <c>Object.DontDestroyOnLoad</c>. False, the
-        /// default, disposes it with the scene that was active when it was created.
+        /// True keeps the container when other scenes load, like <c>Object.DontDestroyOnLoad</c> in Play Mode and when
+        /// scenes are opened or closed in Edit Mode. False, the default, disposes it with the scene that was active when
+        /// it was created.
         /// </summary>
         public bool PersistAcrossScenes
         {

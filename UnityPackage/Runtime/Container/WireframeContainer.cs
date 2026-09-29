@@ -14,6 +14,12 @@ namespace reromanlee.Wireframes
     /// made to its shapes are uploaded right before a camera renders them. Without a graphics device, as in server
     /// builds, or without a usable shader, shapes keep working but nothing is drawn or uploaded. Bones must be scene
     /// objects: Create methods and bone setters throw <see cref="ArgumentException"/> for a prefab asset.
+    /// <para>
+    /// Containers work the same in Edit Mode, drawing in the Scene and Game views. There, a container is never saved
+    /// into its scene and never marks it as changed; it is disposed before scripts reload and when its scene closes,
+    /// unless it persists across scenes. Switching between Edit and Play Mode alone never disposes a container, though
+    /// the script reload that Play Mode starts with by default does.
+    /// </para>
     /// </remarks>
     public sealed class WireframeContainer : IDisposable
     {
@@ -36,7 +42,9 @@ namespace reromanlee.Wireframes
             settings ??= new WireframeContainerSettings();
             settings.Validate(nameof(settings));
 
-            GameObject proxyObject = new(settings.ResolvedName) { hideFlags = HideFlags.NotEditable, layer = settings.Layer };
+            // In Edit Mode it is kept out of the saved scene, which also keeps the scene from being marked as changed.
+            HideFlags hideFlags = HideFlags.NotEditable | (Application.isPlaying ? HideFlags.None : HideFlags.DontSave);
+            GameObject proxyObject = new(settings.ResolvedName) { hideFlags = hideFlags, layer = settings.Layer };
             try
             {
                 // Otherwise the proxy lives in the active scene, and unloading that scene disposes the container.

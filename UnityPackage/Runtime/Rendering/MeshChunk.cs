@@ -103,10 +103,12 @@ namespace reromanlee.Wireframes
             _edges = new EdgeList(edgeCapacity);
             _bones = bones;
 
-            GameObject chunkObject = new(ObjectName) { hideFlags = HideFlags.NotEditable, layer = layer };
+            // Same flags as the container's GameObject, so an Edit Mode chunk is never saved either.
+            GameObject chunkObject = new(ObjectName) { hideFlags = parent.gameObject.hideFlags, layer = layer };
             chunkObject.transform.SetParent(parent, false);
 
-            _mesh = new Mesh { name = ObjectName };
+            // Owned and destroyed by the chunk, so it is kept from saving and from unloading as an unused asset.
+            _mesh = new Mesh { name = ObjectName, hideFlags = HideFlags.DontSave };
             _mesh.MarkDynamic();
             _mesh.subMeshCount = 1;
             _mesh.bounds = FixedBounds;

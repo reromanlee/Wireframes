@@ -2,19 +2,22 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.SceneManagement;
 
 namespace reromanlee.Wireframes
 {
     /// <summary>
-    /// Component on the container's GameObject. Right before each render, it applies queued shape edits and reads the
-    /// bones' matrices, so everything that moved or changed earlier in the frame shows up in that frame. It releases every
-    /// resource when its GameObject is destroyed, including when the scene unloads. Where nothing can draw, it keeps the
-    /// shapes in a <see cref="HeadlessHost"/> and does no rendering work at all.
+    /// Component on the container's GameObject, in Play and Edit Mode alike. Right before each render, it applies queued
+    /// shape edits and reads the bones' matrices, so everything that moved or changed earlier in the frame shows up in
+    /// that frame. It releases every resource when its GameObject is destroyed, including when the scene unloads. Where
+    /// nothing can draw, it keeps the shapes in a <see cref="HeadlessHost"/> and does no rendering work at all.
     /// </summary>
     [AddComponentMenu("")]
     [DisallowMultipleComponent]
+    [ExecuteAlways]
     internal sealed class MeshProxy : MonoBehaviour
     {
+        private static readonly List<MeshProxy> Live = new();
         private static bool _hasWarnedAboutShader;
 
         private readonly BoneRegistry _bones = new();
@@ -29,6 +32,28 @@ namespace reromanlee.Wireframes
 
         /// <summary>Makes new containers act as they do without a graphics device, so tests can cover server builds.</summary>
         internal static bool SimulateNoGraphics { get; set; }
+
+        /// <summary>The proxy of every container that isn't disposed yet, for editor code that manages their lifetime.</summary>
+        internal static IReadOnlyList<MeshProxy> LiveProxies
+        {
+            get => Live;
+        }
+
+        internal WireframeContainer Container
+        {
+            get => _container;
+        }
+
+        /// <summary>True for a container created in Edit Mode, which the editor disposes itself.</summary>
+        internal bool IsEditMode { get; private set; }
+
+        internal bool PersistsAcrossScenes { get; private set; }
+
+        /// <summary>
+        /// The scene the container belongs to. It still identifies that scene after the proxy leaves it, as it does when
+        /// Play Mode reloads the scene and the proxy, never saved, stays outside any scene.
+        /// </summary>
+        internal Scene HomeScene { get; set; }
 
         /// <summary>True when the container draws nothing, because there is no graphics device or no usable shader.</summary>
         internal bool IsHeadless
@@ -70,6 +95,10 @@ namespace reromanlee.Wireframes
         internal void Initialize(WireframeContainer container, WireframeContainerSettings settings)
         {
             _container = container;
+            IsEditMode = !Application.isPlaying;
+            PersistsAcrossScenes = settings.PersistAcrossScenes;
+            HomeScene = gameObject.scene;
+            Live.Add(this);
             if (!TryCreateMaterials(settings))
             {
                 _headless = new HeadlessHost(_bones);
@@ -99,6 +128,18 @@ namespace reromanlee.Wireframes
             return _chunks.Attach(shape);
         }
 
+        /// <summary>
+        /// Releases the chunks that stayed empty long enough; see <see cref="ChunkAllocator.ReleaseIdleChunks"/> for where
+        /// this may run.
+        /// </summary>
+        internal void ReleaseIdleChunks(float time)
+        {
+            if (!_isShutDown)
+            {
+                _chunks?.ReleaseIdleChunks(time);
+            }
+        }
+
         /// <summary>Reads the bones, writes queued shapes and uploads what changed.</summary>
         internal void Flush()
         {
@@ -121,6 +162,7 @@ namespace reromanlee.Wireframes
                 return;
             }
             _isShutDown = true;
+            Live.Remove(this);
             // The container learns first, so it reads as disposed even if releasing something below throws.
             _container?.OnProxyShutdown();
             _chunks?.Dispose();
@@ -220,9 +262,10 @@ namespace reromanlee.Wireframes
             {
                 Flush();
                 // Play Mode only, where destroying waits for the end of the frame and is allowed in a render callback.
+                // In Edit Mode, the editor's update loop releases them instead.
                 if (Application.isPlaying)
                 {
-                    _chunks.ReleaseIdleChunks(Time.realtimeSinceStartup);
+                    ReleaseIdleChunks(Time.realtimeSinceStartup);
                 }
             }
             catch (Exception exception)
