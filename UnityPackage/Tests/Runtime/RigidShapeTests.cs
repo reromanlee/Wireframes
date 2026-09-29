@@ -145,7 +145,7 @@ namespace reromanlee.Wireframes.Tests
             Assert.Throws<ObjectDisposedException>(() => circle.WorldRotation = Quaternion.identity);
             Assert.Throws<ObjectDisposedException>(() => circle.Bone = null);
             Assert.Throws<ObjectDisposedException>(() => circle.Color = Color.red);
-            Assert.Throws<ObjectDisposedException>(() => _ = circle.Segments);
+            Assert.Throws<ObjectDisposedException>(() => _ = circle.SegmentCount);
             Assert.Throws<ObjectDisposedException>(() => circle.Radius = 1f);
             Assert.DoesNotThrow(() => circle.Dispose());
         }

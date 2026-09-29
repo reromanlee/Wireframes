@@ -13,8 +13,8 @@ namespace reromanlee.Wireframes
             Vector3 localCenter,
             Quaternion localRotation,
             float radius,
-            int segments)
-            : base(proxy, Ring.CheckSegments(segments), Ring.Patterns.Get(segments), bone, localCenter, localRotation)
+            int segmentCount)
+            : base(proxy, Ring.CheckSegmentCount(segmentCount), Ring.Patterns.Get(segmentCount), bone, localCenter, localRotation)
         {
             _radius = radius;
         }
@@ -34,7 +34,7 @@ namespace reromanlee.Wireframes
             }
         }
 
-        public int Segments
+        public int SegmentCount
         {
             get
             {

@@ -40,7 +40,7 @@ namespace reromanlee.Wireframes.Tests
             ICircle circle = CreateContainer().CreateCircle();
 
             Assert.That(circle.Radius, Is.EqualTo(0.5f));
-            Assert.That(circle.Segments, Is.EqualTo(32));
+            Assert.That(circle.SegmentCount, Is.EqualTo(32));
             Assert.That(circle.WorldPosition, Is.EqualTo(Vector3.zero));
             Assert.That(circle.WorldRotation, Is.EqualTo(Quaternion.identity));
             Assert.That(circle.Bone, Is.Null);
@@ -97,7 +97,7 @@ namespace reromanlee.Wireframes.Tests
 
             Assert.Throws<ArgumentOutOfRangeException>(() => container.CreateCircle(Vector3.zero, 1f, 2));
             Assert.Throws<ArgumentOutOfRangeException>(() => container.CreateCircle(Vector3.zero, 1f, -1));
-            Assert.That(container.CreateCircle(Vector3.zero, 1f, 3).Segments, Is.EqualTo(3));
+            Assert.That(container.CreateCircle(Vector3.zero, 1f, 3).SegmentCount, Is.EqualTo(3));
             Assert.That(ChunkOf(container).ShapeCount, Is.EqualTo(1), "A rejected circle must not stay in the mesh.");
         }
     }

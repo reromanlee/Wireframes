@@ -31,7 +31,7 @@ namespace reromanlee.Wireframes.Tests
                 AssertApproximately(vertices[line * 2], edges[8 + line].B);
             }
             AssertApproximately(2f, cone.Length);
-            AssertApproximately(baseCenter, cone.WorldEnd);
+            AssertApproximately(baseCenter, cone.WorldEndB);
         }
 
         [Test]
@@ -41,8 +41,8 @@ namespace reromanlee.Wireframes.Tests
 
             Assert.That(cone.Length, Is.EqualTo(1f));
             Assert.That(cone.Radius, Is.EqualTo(0.5f));
-            Assert.That(cone.Segments, Is.EqualTo(32));
-            Assert.That(cone.WorldEnd, Is.EqualTo(new Vector3(0f, 0f, 1f)));
+            Assert.That(cone.SegmentCount, Is.EqualTo(32));
+            Assert.That(cone.WorldEndB, Is.EqualTo(new Vector3(0f, 0f, 1f)));
         }
 
         [Test]
@@ -55,7 +55,7 @@ namespace reromanlee.Wireframes.Tests
 
             Assert.That(sight.Bone, Is.SameAs(head));
             AssertApproximately(head.position, BakeShape(container, sight)[4]);
-            AssertApproximately(head.TransformPoint(new Vector3(0f, 0f, 10f)), sight.WorldEnd);
+            AssertApproximately(head.TransformPoint(new Vector3(0f, 0f, 10f)), sight.WorldEndB);
         }
 
         [Test]
@@ -65,7 +65,7 @@ namespace reromanlee.Wireframes.Tests
 
             ICone cone = CreateContainer().CreateCone(Vector3.zero, rotation, 5f, 1f);
 
-            AssertApproximately(new Vector3(5f, 0f, 0f), cone.WorldEnd);
+            AssertApproximately(new Vector3(5f, 0f, 0f), cone.WorldEndB);
         }
 
         [Test]

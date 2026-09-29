@@ -9,6 +9,6 @@ namespace reromanlee.Wireframes
         Vector2 Radii { get; set; }
 
         /// <summary>Number of straight pieces the ellipse is drawn with, fixed at creation.</summary>
-        int Segments { get; }
+        int SegmentCount { get; }
     }
 }

@@ -7,7 +7,7 @@ namespace reromanlee.Wireframes
     /// <summary>Points and edges of the closed rings that round shapes are made of.</summary>
     internal static class Ring
     {
-        internal const int DefaultSegments = 32;
+        internal const int DefaultSegmentCount = 32;
 
         /// <summary>Edges of shapes that are one closed ring, by vertex count.</summary>
         internal static readonly PatternCache Patterns = new(BuildEdges);
@@ -15,28 +15,28 @@ namespace reromanlee.Wireframes
         // Cosine and sine around a unit circle for each segment count in use, shared by every ring with that count.
         private static readonly Dictionary<int, Vector2[]> UnitCircles = new();
 
-        /// <summary>Returns <paramref name="segments"/> once it is checked, so it can be used in a base constructor call.</summary>
-        internal static int CheckSegments(int segments)
+        /// <summary>Returns <paramref name="segmentCount"/> once it is checked, so it can be used in a base constructor call.</summary>
+        internal static int CheckSegmentCount(int segmentCount)
         {
-            if (segments < 3)
+            if (segmentCount < 3)
             {
-                throw new ArgumentOutOfRangeException(nameof(segments), segments, "A ring needs at least 3 segments.");
+                throw new ArgumentOutOfRangeException(nameof(segmentCount), segmentCount, "A ring needs at least 3 segments.");
             }
-            return segments;
+            return segmentCount;
         }
 
         /// <summary>
-        /// Returns <paramref name="segments"/> once it is checked to be a multiple of 4, which shapes need when their
+        /// Returns <paramref name="segmentCount"/> once it is checked to be a multiple of 4, which shapes need when their
         /// lines meet a ring at its quarter points.
         /// </summary>
-        internal static int CheckQuarterSegments(int segments)
+        internal static int CheckQuarterSegmentCount(int segmentCount)
         {
-            if (segments < 4 || segments % 4 != 0)
+            if (segmentCount < 4 || segmentCount % 4 != 0)
             {
                 throw new ArgumentOutOfRangeException(
-                    nameof(segments), segments, "This shape needs a positive multiple of 4 segments.");
+                    nameof(segmentCount), segmentCount, "This shape needs a positive multiple of 4 segments.");
             }
-            return segments;
+            return segmentCount;
         }
 
         /// <summary>

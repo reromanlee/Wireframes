@@ -77,7 +77,7 @@ namespace reromanlee.Wireframes.Tests
             IEllipse ellipse = CreateContainer().CreateEllipse();
 
             Assert.That(ellipse.Radii, Is.EqualTo(new Vector2(0.25f, 0.5f)));
-            Assert.That(ellipse.Segments, Is.EqualTo(32));
+            Assert.That(ellipse.SegmentCount, Is.EqualTo(32));
         }
 
         [Test]

@@ -58,7 +58,7 @@ namespace reromanlee.Wireframes.Tests
             IEllipsoid ellipsoid = CreateContainer().CreateEllipsoid();
 
             Assert.That(ellipsoid.Radii, Is.EqualTo(new Vector3(0.25f, 0.25f, 0.5f)));
-            Assert.That(ellipsoid.Segments, Is.EqualTo(32));
+            Assert.That(ellipsoid.SegmentCount, Is.EqualTo(32));
         }
 
         [Test]

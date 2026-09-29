@@ -17,11 +17,11 @@ namespace reromanlee.Wireframes
             Quaternion localRotation,
             Vector2 size,
             float cornerRadius,
-            int segments)
+            int segmentCount)
             : base(
                 proxy,
-                Ring.CheckQuarterSegments(segments) + CornerCount,
-                Patterns.Get(segments),
+                Ring.CheckQuarterSegmentCount(segmentCount) + CornerCount,
+                Patterns.Get(segmentCount),
                 bone,
                 localCenter,
                 localRotation,
@@ -45,7 +45,7 @@ namespace reromanlee.Wireframes
             }
         }
 
-        public int Segments
+        public int SegmentCount
         {
             get
             {
@@ -56,8 +56,8 @@ namespace reromanlee.Wireframes
 
         protected override void WriteShape(Span<Vector3> positions)
         {
-            int segments = positions.Length - CornerCount;
-            int quarter = segments / 4;
+            int segmentCount = positions.Length - CornerCount;
+            int quarter = segmentCount / 4;
             Vector2 size = Size;
             // Built for the absolute size, then mirrored by its signs.
             float halfX = Mathf.Abs(size.x) * 0.5f;
@@ -65,7 +65,7 @@ namespace reromanlee.Wireframes
             float mirrorX = size.x < 0f ? -1f : 1f;
             float mirrorZ = size.y < 0f ? -1f : 1f;
             float radius = Mathf.Clamp(_cornerRadius, 0f, Mathf.Min(halfX, halfZ));
-            Vector2[] circle = Ring.UnitCircle(segments);
+            Vector2[] circle = Ring.UnitCircle(segmentCount);
 
             // Going around from +Z toward +X, the corners are (+X, +Z), (+X, -Z), (-X, -Z) and (-X, +Z); each is a
             // quarter of a circle around a point inset by the radius.
@@ -76,7 +76,7 @@ namespace reromanlee.Wireframes
                 float centerZ = corner == 0 || corner == 3 ? halfZ - radius : radius - halfZ;
                 for (int step = 0; step <= quarter; step++)
                 {
-                    Vector2 direction = circle[(corner * quarter + step) % segments];
+                    Vector2 direction = circle[(corner * quarter + step) % segmentCount];
                     positions[vertex++] = new Vector3(
                         (centerX + direction.y * radius) * mirrorX,
                         0f,
@@ -91,11 +91,11 @@ namespace reromanlee.Wireframes
             _cornerRadius *= factor;
         }
 
-        private static int[] BuildEdges(int segments)
+        private static int[] BuildEdges(int segmentCount)
         {
-            int quarter = segments / 4;
+            int quarter = segmentCount / 4;
             int cornerVertices = quarter + 1;
-            int[] pattern = new int[(segments + CornerCount) * 2];
+            int[] pattern = new int[(segmentCount + CornerCount) * 2];
             int cursor = 0;
             for (int corner = 0; corner < CornerCount; corner++)
             {

@@ -39,7 +39,7 @@ namespace reromanlee.Wireframes.Tests
             ISphere sphere = CreateContainer().CreateSphere();
 
             Assert.That(sphere.Radius, Is.EqualTo(0.5f));
-            Assert.That(sphere.Segments, Is.EqualTo(32));
+            Assert.That(sphere.SegmentCount, Is.EqualTo(32));
             Assert.That(((Sphere)sphere).VertexCount, Is.EqualTo(96));
         }
 

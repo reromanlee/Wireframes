@@ -47,7 +47,7 @@ namespace reromanlee.Wireframes.Tests
             IPyramid pyramid = CreateContainer().CreatePyramid();
 
             Assert.That(pyramid.BaseSize, Is.EqualTo(Vector2.one));
-            Assert.That(pyramid.WorldEnd, Is.EqualTo(new Vector3(0f, 0f, 1f)));
+            Assert.That(pyramid.WorldEndB, Is.EqualTo(new Vector3(0f, 0f, 1f)));
         }
 
         [Test]
@@ -60,7 +60,7 @@ namespace reromanlee.Wireframes.Tests
 
             Assert.That(view.Bone, Is.SameAs(eye));
             AssertApproximately(eye.position, BakeShape(container, view)[0]);
-            AssertApproximately(eye.TransformPoint(new Vector3(0f, 0f, 5f)), view.WorldEnd);
+            AssertApproximately(eye.TransformPoint(new Vector3(0f, 0f, 5f)), view.WorldEndB);
         }
 
         [Test]

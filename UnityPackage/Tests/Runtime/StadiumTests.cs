@@ -105,7 +105,7 @@ namespace reromanlee.Wireframes.Tests
             Assert.That(stadium.Length, Is.EqualTo(1f));
             Assert.That(stadium.RadiusA, Is.EqualTo(0.5f));
             Assert.That(stadium.RadiusB, Is.EqualTo(0.5f));
-            Assert.That(stadium.Segments, Is.EqualTo(32));
+            Assert.That(stadium.SegmentCount, Is.EqualTo(32));
         }
 
         [Test]

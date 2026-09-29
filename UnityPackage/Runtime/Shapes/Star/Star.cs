@@ -15,8 +15,8 @@ namespace reromanlee.Wireframes
             Quaternion localRotation,
             float innerRadius,
             float outerRadius,
-            int points)
-            : base(proxy, CountVertices(points), Ring.Patterns.Get(points * 2), bone, localCenter, localRotation)
+            int pointCount)
+            : base(proxy, CountVertices(pointCount), Ring.Patterns.Get(pointCount * 2), bone, localCenter, localRotation)
         {
             _innerRadius = innerRadius;
             _outerRadius = outerRadius;
@@ -78,13 +78,13 @@ namespace reromanlee.Wireframes
             _outerRadius *= factor;
         }
 
-        private static int CountVertices(int points)
+        private static int CountVertices(int pointCount)
         {
-            if (points < 3)
+            if (pointCount < 3)
             {
-                throw new ArgumentOutOfRangeException(nameof(points), points, "A star needs at least 3 points.");
+                throw new ArgumentOutOfRangeException(nameof(pointCount), pointCount, "A star needs at least 3 points.");
             }
-            return points * 2;
+            return pointCount * 2;
         }
     }
 }

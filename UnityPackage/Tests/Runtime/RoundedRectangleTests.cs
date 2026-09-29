@@ -83,7 +83,7 @@ namespace reromanlee.Wireframes.Tests
 
             Assert.That(rectangle.Size, Is.EqualTo(Vector2.one));
             Assert.That(rectangle.CornerRadius, Is.EqualTo(0.25f));
-            Assert.That(rectangle.Segments, Is.EqualTo(32));
+            Assert.That(rectangle.SegmentCount, Is.EqualTo(32));
         }
 
         [Test]

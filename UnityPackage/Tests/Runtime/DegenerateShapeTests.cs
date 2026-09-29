@@ -58,7 +58,7 @@ namespace reromanlee.Wireframes.Tests
 
             foreach (IAxialShape shape in shapes)
             {
-                shape.WorldEnd = shape.WorldPosition;
+                shape.WorldEndB = shape.WorldPosition;
 
                 AssertApproximately(0f, shape.Length);
                 Assert.That(shape.WorldRotation, Is.EqualTo(Quaternion.identity));

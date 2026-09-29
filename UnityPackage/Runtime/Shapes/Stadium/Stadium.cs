@@ -18,12 +18,12 @@ namespace reromanlee.Wireframes
             float length,
             float radiusA,
             float radiusB,
-            int segments)
+            int segmentCount)
             : base(
                 proxy,
-                Ring.CheckQuarterSegments(segments) + ArcCount,
+                Ring.CheckQuarterSegmentCount(segmentCount) + ArcCount,
                 // One closed loop: arc A, the -X side, arc B and the +X side back to the start.
-                Ring.Patterns.Get(segments + ArcCount),
+                Ring.Patterns.Get(segmentCount + ArcCount),
                 bone,
                 localPosition,
                 localRotation,
@@ -63,7 +63,7 @@ namespace reromanlee.Wireframes
             }
         }
 
-        public int Segments
+        public int SegmentCount
         {
             get
             {

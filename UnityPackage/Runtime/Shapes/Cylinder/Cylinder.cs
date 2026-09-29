@@ -18,11 +18,11 @@ namespace reromanlee.Wireframes
             Quaternion localRotation,
             float length,
             float radius,
-            int segments)
+            int segmentCount)
             : base(
                 proxy,
-                Ring.CheckQuarterSegments(segments) * RingCount,
-                Patterns.Get(segments),
+                Ring.CheckQuarterSegmentCount(segmentCount) * RingCount,
+                Patterns.Get(segmentCount),
                 bone,
                 localPosition,
                 localRotation,
@@ -46,7 +46,7 @@ namespace reromanlee.Wireframes
             }
         }
 
-        public int Segments
+        public int SegmentCount
         {
             get
             {
@@ -57,12 +57,12 @@ namespace reromanlee.Wireframes
 
         protected override void WriteShape(Span<Vector3> positions, float length)
         {
-            int segments = positions.Length / RingCount;
+            int segmentCount = positions.Length / RingCount;
             // Each ring starts on +Y and passes +X a quarter turn later.
             Vector3 up = new(0f, _radius, 0f);
             Vector3 right = new(_radius, 0f, 0f);
-            Ring.Write(positions.Slice(0, segments), Vector3.zero, up, right);
-            Ring.Write(positions.Slice(segments, segments), new Vector3(0f, 0f, length), up, right);
+            Ring.Write(positions.Slice(0, segmentCount), Vector3.zero, up, right);
+            Ring.Write(positions.Slice(segmentCount, segmentCount), new Vector3(0f, 0f, length), up, right);
         }
 
         protected override void ScaleCrossSection(float factor)
@@ -70,18 +70,18 @@ namespace reromanlee.Wireframes
             _radius *= factor;
         }
 
-        private static int[] BuildEdges(int segments)
+        private static int[] BuildEdges(int segmentCount)
         {
-            int[] pattern = new int[(segments * RingCount + SideLineCount) * 2];
+            int[] pattern = new int[(segmentCount * RingCount + SideLineCount) * 2];
             int cursor = 0;
-            Ring.AddEdges(pattern, ref cursor, 0, segments);
-            Ring.AddEdges(pattern, ref cursor, segments, segments);
-            // The side lines join the rings at their quarter points, which is why segments must be a multiple of 4.
+            Ring.AddEdges(pattern, ref cursor, 0, segmentCount);
+            Ring.AddEdges(pattern, ref cursor, segmentCount, segmentCount);
+            // The side lines join the rings at their quarter points, which is why the segment count must be a multiple of 4.
             for (int line = 0; line < SideLineCount; line++)
             {
-                int vertex = line * segments / SideLineCount;
+                int vertex = line * segmentCount / SideLineCount;
                 pattern[cursor++] = vertex;
-                pattern[cursor++] = segments + vertex;
+                pattern[cursor++] = segmentCount + vertex;
             }
             return pattern;
         }

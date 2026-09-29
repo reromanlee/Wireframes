@@ -38,7 +38,23 @@ namespace reromanlee.Wireframes
             }
         }
 
-        public Vector3 LocalEnd
+        public Vector3 LocalEndA
+        {
+            get
+            {
+                ThrowIfDisposed();
+                return LocalPosition;
+            }
+            set
+            {
+                ThrowIfDisposed();
+                Vector3 endB = LocalEndB;
+                LocalPosition = value;
+                LocalEndB = endB;
+            }
+        }
+
+        public Vector3 LocalEndB
         {
             get
             {
@@ -62,17 +78,31 @@ namespace reromanlee.Wireframes
             }
         }
 
-        public Vector3 WorldEnd
+        public Vector3 WorldEndA
         {
             get
             {
                 ThrowIfDisposed();
-                return ToWorld(Bone, LocalEnd);
+                return ToWorld(Bone, LocalEndA);
             }
             set
             {
                 ThrowIfDisposed();
-                LocalEnd = ToLocal(Bone, value);
+                LocalEndA = ToLocal(Bone, value);
+            }
+        }
+
+        public Vector3 WorldEndB
+        {
+            get
+            {
+                ThrowIfDisposed();
+                return ToWorld(Bone, LocalEndB);
+            }
+            set
+            {
+                ThrowIfDisposed();
+                LocalEndB = ToLocal(Bone, value);
             }
         }
 

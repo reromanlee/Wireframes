@@ -10,6 +10,6 @@ namespace reromanlee.Wireframes
         float Radius { get; set; }
 
         /// <summary>Number of straight pieces each great circle is drawn with, fixed at creation.</summary>
-        int Segments { get; }
+        int SegmentCount { get; }
     }
 }
