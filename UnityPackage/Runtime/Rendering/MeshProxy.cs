@@ -150,6 +150,36 @@ namespace reromanlee.Wireframes
             }
         }
 
+        /// <summary>Counts what the container holds by walking its chunks, without allocating.</summary>
+        internal WireframeStatistics GetStatistics()
+        {
+            if (_headless != null)
+            {
+                return new WireframeStatistics(
+                    _headless.ShapeCount, _headless.HiddenShapeCount, _headless.VertexCount, 0, _bones.Count, 0,
+                    _bones.CpuMemory, 0);
+            }
+            int shapes = 0;
+            int hiddenShapes = 0;
+            int vertices = 0;
+            int edges = 0;
+            long cpuMemory = _bones.CpuMemory + _boneTexture.Memory;
+            long gpuMemory = _boneTexture.Memory;
+            IReadOnlyList<MeshChunk> chunks = _chunks.Chunks;
+            for (int i = 0; i < chunks.Count; i++)
+            {
+                MeshChunk chunk = chunks[i];
+                shapes += chunk.ShapeCount;
+                hiddenShapes += chunk.HiddenShapeCount;
+                vertices += chunk.UsedVertexCount;
+                edges += chunk.EdgeCount;
+                cpuMemory += chunk.CpuMemory;
+                gpuMemory += chunk.GpuMemory;
+            }
+            return new WireframeStatistics(
+                shapes, hiddenShapes, vertices, edges, _bones.Count, chunks.Count, cpuMemory, gpuMemory);
+        }
+
         /// <summary>Reads the bones, writes queued shapes and uploads what changed.</summary>
         internal void Flush()
         {
@@ -157,12 +187,15 @@ namespace reromanlee.Wireframes
             {
                 return;
             }
-            _bones.ReadMatrices();
-            if (_boneTexture.Upload(_bones))
+            using (WireframesMarkers.Flush.Auto())
             {
-                _chunks.SetBoneTexture(_boneTexture.Texture);
+                _bones.ReadMatrices();
+                if (_boneTexture.Upload(_bones))
+                {
+                    _chunks.SetBoneTexture(_boneTexture.Texture);
+                }
+                _chunks.Flush();
             }
-            _chunks.Flush();
         }
 
         internal void Shutdown()
@@ -264,12 +297,17 @@ namespace reromanlee.Wireframes
 
         private void FlushBeforeRendering()
         {
-            if (_isShutDown || _chunks == null)
+            if (_isShutDown)
             {
                 return;
             }
             try
             {
+                WireframesCounters.Update();
+                if (_chunks == null)
+                {
+                    return;
+                }
                 Flush();
                 // Play Mode only, where destroying waits for the end of the frame and is allowed in a render callback.
                 // In Edit Mode, the editor's update loop releases them instead.

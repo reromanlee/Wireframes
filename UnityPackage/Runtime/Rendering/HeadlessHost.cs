@@ -12,6 +12,8 @@ namespace reromanlee.Wireframes
 
         private Shape[] _shapes = new Shape[InitialCapacity];
         private int _shapeCount;
+        private int _hiddenShapeCount;
+        private int _vertexCount;
 
         internal HeadlessHost(BoneRegistry bones)
         {
@@ -25,6 +27,17 @@ namespace reromanlee.Wireframes
             get => _shapeCount;
         }
 
+        internal int HiddenShapeCount
+        {
+            get => _hiddenShapeCount;
+        }
+
+        /// <summary>Vertices the shapes would use if they were drawn.</summary>
+        internal int VertexCount
+        {
+            get => _vertexCount;
+        }
+
         internal void Add(Shape shape)
         {
             if (_shapeCount == _shapes.Length)
@@ -33,6 +46,11 @@ namespace reromanlee.Wireframes
             }
             shape.ShapeIndex = _shapeCount;
             _shapes[_shapeCount++] = shape;
+            _vertexCount += shape.VertexCount;
+            if (shape.IsHidden)
+            {
+                _hiddenShapeCount++;
+            }
         }
 
         public void Enqueue(Shape shape)
@@ -47,14 +65,21 @@ namespace reromanlee.Wireframes
             _shapes[shape.ShapeIndex] = moved;
             moved.ShapeIndex = shape.ShapeIndex;
             _shapes[last] = null;
+            _vertexCount -= shape.VertexCount;
+            if (shape.IsHidden)
+            {
+                _hiddenShapeCount--;
+            }
         }
 
         public void Show(Shape shape)
         {
+            _hiddenShapeCount--;
         }
 
         public void Hide(Shape shape)
         {
+            _hiddenShapeCount++;
         }
 
         public IShapeHost Reattach(Shape shape)
@@ -71,6 +96,8 @@ namespace reromanlee.Wireframes
                 _shapes[i] = null;
             }
             _shapeCount = 0;
+            _hiddenShapeCount = 0;
+            _vertexCount = 0;
         }
     }
 }

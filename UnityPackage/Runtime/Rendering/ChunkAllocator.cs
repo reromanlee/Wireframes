@@ -139,9 +139,12 @@ namespace reromanlee.Wireframes
                 }
                 if (time - chunk.EmptySince >= ReleaseDelay)
                 {
-                    _chunks.RemoveAt(i);
-                    chunk.Dispose();
-                    UnityObjects.Destroy(chunk.Renderer.gameObject);
+                    using (WireframesMarkers.ReleaseChunks.Auto())
+                    {
+                        _chunks.RemoveAt(i);
+                        chunk.Dispose();
+                        UnityObjects.Destroy(chunk.Renderer.gameObject);
+                    }
                 }
             }
         }
@@ -188,10 +191,13 @@ namespace reromanlee.Wireframes
 
         private MeshChunk CreateChunk(int vertexCapacity, int edgeCapacity)
         {
-            MeshChunk chunk = new(this, vertexCapacity, edgeCapacity);
-            chunk.Renderer.SetPropertyBlock(_propertyBlock);
-            _chunks.Add(chunk);
-            return chunk;
+            using (WireframesMarkers.CreateChunk.Auto())
+            {
+                MeshChunk chunk = new(this, vertexCapacity, edgeCapacity);
+                chunk.Renderer.SetPropertyBlock(_propertyBlock);
+                _chunks.Add(chunk);
+                return chunk;
+            }
         }
 
         private void CompactOneChunk()

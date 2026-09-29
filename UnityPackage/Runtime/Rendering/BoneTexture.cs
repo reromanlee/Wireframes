@@ -13,6 +13,8 @@ namespace reromanlee.Wireframes
     {
         internal const int BonesPerRow = 256;
         private const int TexelsPerBone = 3;
+        // Four 32-bit floats.
+        private const int TexelSize = 16;
 
         internal static readonly int PropertyId = Shader.PropertyToID("_WireframesBones");
 
@@ -21,6 +23,14 @@ namespace reromanlee.Wireframes
         internal Texture2D Texture
         {
             get => _texture;
+        }
+
+        /// <summary>
+        /// Bytes the texture takes, on the GPU and again on the CPU, where Unity keeps a copy that each upload writes into.
+        /// </summary>
+        internal long Memory
+        {
+            get => _texture != null ? (long)_texture.width * _texture.height * TexelSize : 0;
         }
 
         /// <summary>
@@ -34,18 +44,21 @@ namespace reromanlee.Wireframes
             {
                 return false;
             }
-            NativeArray<Vector4> texels = _texture.GetPixelData<Vector4>(0);
-            Matrix4x4[] matrices = bones.Matrices;
-            int end = bones.End;
-            for (int slot = 0; slot < end; slot++)
+            using (WireframesMarkers.UploadBones.Auto())
             {
-                Matrix4x4 matrix = matrices[slot];
-                int texel = slot / BonesPerRow * BonesPerRow * TexelsPerBone + slot % BonesPerRow * TexelsPerBone;
-                texels[texel] = new Vector4(matrix.m00, matrix.m01, matrix.m02, matrix.m03);
-                texels[texel + 1] = new Vector4(matrix.m10, matrix.m11, matrix.m12, matrix.m13);
-                texels[texel + 2] = new Vector4(matrix.m20, matrix.m21, matrix.m22, matrix.m23);
+                NativeArray<Vector4> texels = _texture.GetPixelData<Vector4>(0);
+                Matrix4x4[] matrices = bones.Matrices;
+                int end = bones.End;
+                for (int slot = 0; slot < end; slot++)
+                {
+                    Matrix4x4 matrix = matrices[slot];
+                    int texel = slot / BonesPerRow * BonesPerRow * TexelsPerBone + slot % BonesPerRow * TexelsPerBone;
+                    texels[texel] = new Vector4(matrix.m00, matrix.m01, matrix.m02, matrix.m03);
+                    texels[texel + 1] = new Vector4(matrix.m10, matrix.m11, matrix.m12, matrix.m13);
+                    texels[texel + 2] = new Vector4(matrix.m20, matrix.m21, matrix.m22, matrix.m23);
+                }
+                _texture.Apply(false, false);
             }
-            _texture.Apply(false, false);
             bones.ClearChanges();
             return created;
         }

@@ -47,6 +47,18 @@ namespace reromanlee.Wireframes
             get => _slots.Count;
         }
 
+        /// <summary>Bytes of CPU memory the registry takes, about.</summary>
+        internal long CpuMemory
+        {
+            get
+            {
+                // Per slot: its transform, matrix, reference count and two live-list positions; per bone, a map entry.
+                long slotSize = IntPtr.Size + 16 * sizeof(float) + 3 * sizeof(int);
+                long entrySize = IntPtr.Size + 3 * sizeof(int);
+                return _transforms.Length * slotSize + (long)_slots.Count * entrySize;
+            }
+        }
+
         /// <summary>Each slot's latest matrix, sized to the capacity.</summary>
         internal Matrix4x4[] Matrices
         {
@@ -113,21 +125,24 @@ namespace reromanlee.Wireframes
         /// </summary>
         internal void ReadMatrices()
         {
-            // Backwards, so a slot that stops being read swaps in one that was already read.
-            for (int i = _liveCount - 1; i >= 0; i--)
+            using (WireframesMarkers.ReadBones.Auto())
             {
-                int slot = _liveSlots[i];
-                Transform bone = _transforms[slot];
-                if (bone == null)
+                // Backwards, so a slot that stops being read swaps in one that was already read.
+                for (int i = _liveCount - 1; i >= 0; i--)
                 {
-                    StopReading(slot);
-                    continue;
-                }
-                Matrix4x4 matrix = bone.localToWorldMatrix;
-                if (!matrix.Equals(_matrices[slot]))
-                {
-                    _matrices[slot] = matrix;
-                    HasChanges = true;
+                    int slot = _liveSlots[i];
+                    Transform bone = _transforms[slot];
+                    if (bone == null)
+                    {
+                        StopReading(slot);
+                        continue;
+                    }
+                    Matrix4x4 matrix = bone.localToWorldMatrix;
+                    if (!matrix.Equals(_matrices[slot]))
+                    {
+                        _matrices[slot] = matrix;
+                        HasChanges = true;
+                    }
                 }
             }
         }

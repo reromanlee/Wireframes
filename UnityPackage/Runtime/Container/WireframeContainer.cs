@@ -68,6 +68,17 @@ namespace reromanlee.Wireframes
             get => _isDisposed;
         }
 
+        /// <summary>What the container holds and the memory it uses right now. Reading it allocates nothing.</summary>
+        /// <exception cref="ObjectDisposedException">The container is disposed.</exception>
+        public WireframeStatistics Statistics
+        {
+            get
+            {
+                MainThread.Check();
+                return Proxy.GetStatistics();
+            }
+        }
+
         /// <summary>
         /// False hides every shape of the container without disposing anything, and costs nothing while it lasts: edits
         /// made meanwhile are applied when it is shown again. Each shape's own <see cref="IShape.IsVisible"/> still

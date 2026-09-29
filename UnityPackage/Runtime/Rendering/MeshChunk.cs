@@ -30,6 +30,8 @@ namespace reromanlee.Wireframes
         // Freed vertex blocks are packed away once they fill half the buffer, but never in small meshes.
         private const int CompactionThreshold = 1024;
         private const int PositionSize = 12;
+        // Position, color and bone slot.
+        private const int VertexSize = PositionSize + 4 + 4;
 
         private const int PositionStream = 0;
         private const int ColorStream = 1;
@@ -73,6 +75,7 @@ namespace reromanlee.Wireframes
 
         private Shape[] _shapes = new Shape[InitialShapeCapacity];
         private int _shapeCount;
+        private int _hiddenShapeCount;
         private Shape[] _pending = new Shape[InitialShapeCapacity];
         private int _pendingCount;
 
@@ -162,6 +165,36 @@ namespace reromanlee.Wireframes
             get => _shapeCount;
         }
 
+        internal int HiddenShapeCount
+        {
+            get => _hiddenShapeCount;
+        }
+
+        /// <summary>Vertices that live shapes use, leaving out freed blocks that aren't reused yet.</summary>
+        internal int UsedVertexCount
+        {
+            get => _allocator.End - _allocator.FreeCount;
+        }
+
+        /// <summary>Bytes of CPU memory in the chunk's buffers and lists, about.</summary>
+        internal long CpuMemory
+        {
+            get
+            {
+                // An edge slot holds two indices, its owner and the owner's edge number, then its 16-bit copy.
+                long edgeSize = 3 * sizeof(int) + IntPtr.Size + 2 * sizeof(ushort);
+                return (long)_positions.Length * VertexSize
+                       + _edges.Capacity * edgeSize
+                       + (long)(_shapes.Length + _pending.Length) * IntPtr.Size;
+            }
+        }
+
+        /// <summary>Bytes of GPU memory in the chunk's vertex and index buffers.</summary>
+        internal long GpuMemory
+        {
+            get => (long)_meshVertexCapacity * VertexSize + (long)_meshIndexCapacity * IndexSize;
+        }
+
         /// <summary>Entries in the queue of shapes to write on the next flush, including those emptied by removals.</summary>
         internal int PendingCount
         {
@@ -239,7 +272,11 @@ namespace reromanlee.Wireframes
             }
 
             shape.VertexStart = _allocator.Allocate(shape.VertexCount);
-            if (!shape.IsHidden)
+            if (shape.IsHidden)
+            {
+                _hiddenShapeCount++;
+            }
+            else
             {
                 AddEdges(shape);
             }
@@ -254,7 +291,11 @@ namespace reromanlee.Wireframes
 
         public void Remove(Shape shape)
         {
-            if (!shape.IsHidden)
+            if (shape.IsHidden)
+            {
+                _hiddenShapeCount--;
+            }
+            else
             {
                 RemoveEdges(shape);
             }
@@ -278,12 +319,14 @@ namespace reromanlee.Wireframes
         {
             EnsureEdgeCapacity(_edges.Count + shape.EdgeCount);
             AddEdges(shape);
+            _hiddenShapeCount--;
             shape.MarkDirty(DirtyFlags.Edges);
         }
 
         public void Hide(Shape shape)
         {
             RemoveEdges(shape);
+            _hiddenShapeCount++;
         }
 
         public IShapeHost Reattach(Shape shape)
@@ -310,9 +353,15 @@ namespace reromanlee.Wireframes
         /// <summary>Writes queued shapes into the buffers and uploads what changed.</summary>
         internal void Flush()
         {
-            WritePendingShapes();
-            UploadVertices();
-            UploadIndices();
+            using (WireframesMarkers.WriteShapes.Auto())
+            {
+                WritePendingShapes();
+            }
+            using (WireframesMarkers.UploadMesh.Auto())
+            {
+                UploadVertices();
+                UploadIndices();
+            }
         }
 
         /// <summary>
@@ -321,20 +370,30 @@ namespace reromanlee.Wireframes
         /// </summary>
         internal void Compact()
         {
-            _allocator.Reset();
-            for (int i = 0; i < _shapeCount; i++)
+            using (WireframesMarkers.Compact.Auto())
             {
-                Shape shape = _shapes[i];
-                shape.VertexStart = _allocator.Allocate(shape.VertexCount);
-                shape.MarkDirty(DirtyFlags.All);
-            }
+                _allocator.Reset();
+                for (int i = 0; i < _shapeCount; i++)
+                {
+                    Shape shape = _shapes[i];
+                    shape.VertexStart = _allocator.Allocate(shape.VertexCount);
+                    shape.MarkDirty(DirtyFlags.All);
+                }
 
-            int vertexCapacity = ShrunkCapacity(_positions.Length, _allocator.End, _minimumVertexCapacity);
-            if (vertexCapacity < _positions.Length)
-            {
-                ResizeVertexStreams(vertexCapacity);
+                int vertexCapacity = ShrunkCapacity(_positions.Length, _allocator.End, _minimumVertexCapacity);
+                if (vertexCapacity < _positions.Length)
+                {
+                    ResizeVertexStreams(vertexCapacity);
+                }
+                int edgeCapacity = ShrunkCapacity(_edges.Capacity, _edges.Count, _minimumEdgeCapacity);
+                if (edgeCapacity < _edges.Capacity)
+                {
+                    using (WireframesMarkers.ResizeBuffers.Auto())
+                    {
+                        _edges.Shrink(edgeCapacity);
+                    }
+                }
             }
-            _edges.Shrink(ShrunkCapacity(_edges.Capacity, _edges.Count, _minimumEdgeCapacity));
         }
 
         public void Dispose()
@@ -345,6 +404,7 @@ namespace reromanlee.Wireframes
                 _shapes[i] = null;
             }
             _shapeCount = 0;
+            _hiddenShapeCount = 0;
             Array.Clear(_pending, 0, _pendingCount);
             _pendingCount = 0;
             // Play Mode destroys objects at the end of the frame, and a render before that must not draw the chunk.
@@ -488,10 +548,13 @@ namespace reromanlee.Wireframes
             }
 
             // A resized buffer starts with garbage, so every stream is rewritten in full.
-            _mesh.SetVertexBufferParams(capacity, VertexLayout);
-            _mesh.SetVertexBufferData(_positions, 0, 0, capacity, PositionStream, UploadFlags);
-            _mesh.SetVertexBufferData(_colors, 0, 0, capacity, ColorStream, UploadFlags);
-            _mesh.SetVertexBufferData(_boneIndices, 0, 0, capacity, BoneStream, UploadFlags);
+            using (WireframesMarkers.ResizeBuffers.Auto())
+            {
+                _mesh.SetVertexBufferParams(capacity, VertexLayout);
+                _mesh.SetVertexBufferData(_positions, 0, 0, capacity, PositionStream, UploadFlags);
+                _mesh.SetVertexBufferData(_colors, 0, 0, capacity, ColorStream, UploadFlags);
+                _mesh.SetVertexBufferData(_boneIndices, 0, 0, capacity, BoneStream, UploadFlags);
+            }
             _positionRanges.Clear();
             _colorRanges.Clear();
             _boneRanges.Clear();
@@ -519,12 +582,15 @@ namespace reromanlee.Wireframes
 
             if (_meshIndexCapacity != indexCapacity || _meshIndexFormat != format)
             {
-                _mesh.SetIndexBufferParams(indexCapacity, format);
-                _meshIndexCapacity = indexCapacity;
-                _meshIndexFormat = format;
-                _edgeRanges.Clear();
-                UploadIndexRange(0, edgeCount * 2);
-                _meshEdgeCount = -1;
+                using (WireframesMarkers.ResizeBuffers.Auto())
+                {
+                    _mesh.SetIndexBufferParams(indexCapacity, format);
+                    _meshIndexCapacity = indexCapacity;
+                    _meshIndexFormat = format;
+                    _edgeRanges.Clear();
+                    UploadIndexRange(0, edgeCount * 2);
+                    _meshEdgeCount = -1;
+                }
             }
             else
             {
@@ -597,10 +663,13 @@ namespace reromanlee.Wireframes
 
         private void ResizeVertexStreams(int capacity)
         {
-            // New elements default to zero, which is bone slot 0 (world space), a valid index for the shader.
-            Array.Resize(ref _positions, capacity);
-            Array.Resize(ref _colors, capacity);
-            Array.Resize(ref _boneIndices, capacity);
+            using (WireframesMarkers.ResizeBuffers.Auto())
+            {
+                // New elements default to zero, which is bone slot 0 (world space), a valid index for the shader.
+                Array.Resize(ref _positions, capacity);
+                Array.Resize(ref _colors, capacity);
+                Array.Resize(ref _boneIndices, capacity);
+            }
         }
 
         private void EnsureEdgeCapacity(int required)
@@ -616,7 +685,10 @@ namespace reromanlee.Wireframes
                 capacity *= 2;
             }
             CheckBufferSize((long)capacity * 2 * IndexSize);
-            _edges.EnsureCapacity(capacity);
+            using (WireframesMarkers.ResizeBuffers.Auto())
+            {
+                _edges.EnsureCapacity(capacity);
+            }
         }
 
         /// <summary>
