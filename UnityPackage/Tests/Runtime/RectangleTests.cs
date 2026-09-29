@@ -8,7 +8,7 @@ namespace reromanlee.Wireframes.Tests
         [Test]
         public void Rectangle_IsFourCornersFlatInXZ()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
             IRectangle rectangle = container.CreateRectangle(new Vector3(0f, 1f, 0f), new Vector3(2f, 1f, 3f));
 
             Vector3[] corners = BakeShape(container, rectangle);
@@ -57,7 +57,7 @@ namespace reromanlee.Wireframes.Tests
         [Test]
         public void CreateRectangleOnBone_LiesFlatInTheBonesXZ()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
             Transform bone = CreateBone(new Vector3(0f, 2f, 0f), Quaternion.Euler(90f, 0f, 0f));
 
             IRectangle rectangle = container.CreateRectangle(bone, new Vector3(-1f, 0f, -1f), new Vector3(1f, 0f, 1f));

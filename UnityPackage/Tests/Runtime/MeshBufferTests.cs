@@ -11,7 +11,7 @@ namespace reromanlee.Wireframes.Tests
         public void DisposingShapes_KeepsRemainingEdgesOnTheirOwnVertices()
         {
             // Mixing sizes makes removals move edges between different owners.
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
             List<IShape> shapes = new();
             for (int i = 0; i < 30; i++)
             {
@@ -53,7 +53,7 @@ namespace reromanlee.Wireframes.Tests
         [Test]
         public void FreedBlock_IsReusedByShapeOfSameSize()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
             ILine first = container.CreateLine();
             container.CreateLine();
             int start = ((Line)first).VertexStart;
@@ -69,7 +69,7 @@ namespace reromanlee.Wireframes.Tests
         [Test]
         public void FreedBlocks_AreCompactedOnceTheyFillHalfTheBuffer()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
             List<ILine> lines = new();
             for (int i = 0; i < 2000; i++)
             {
@@ -99,7 +99,7 @@ namespace reromanlee.Wireframes.Tests
         [Test]
         public void ManyVertices_SwitchTheIndexBufferTo32Bit()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
             container.Proxy.Flush();
             Assert.That(ChunkOf(container).Mesh.indexFormat, Is.EqualTo(IndexFormat.UInt16));
 
@@ -121,7 +121,7 @@ namespace reromanlee.Wireframes.Tests
         [Test]
         public void ManyBones_GrowTheBoneArrayWithMatchingBindposes()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
             List<ILine> lines = new();
             for (int i = 0; i < 100; i++)
             {

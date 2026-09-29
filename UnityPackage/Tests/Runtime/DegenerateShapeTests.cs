@@ -9,7 +9,7 @@ namespace reromanlee.Wireframes.Tests
         [Test]
         public void ZeroAndNegativeSizes_NeverProduceInvalidVertices()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
             List<IShape> shapes = new()
             {
                 container.CreateBox(Vector3.zero, Vector3.zero),
@@ -49,7 +49,7 @@ namespace reromanlee.Wireframes.Tests
         [Test]
         public void SettingEndOnTopOfEndA_KeepsEveryLongShapeValid()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
             IAxialShape[] shapes =
             {
                 container.CreateCylinder(), container.CreateCone(), container.CreateCapsule(),

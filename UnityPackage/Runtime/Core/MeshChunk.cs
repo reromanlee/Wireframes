@@ -68,9 +68,13 @@ namespace reromanlee.Wireframes
         private IndexFormat _meshIndexFormat;
         private int _meshEdgeCount = -1;
 
-        internal MeshChunk(Transform parent, Material material)
+        internal MeshChunk(Transform parent, Material material, WireframeContainerSettings settings)
         {
-            GameObject chunkObject = new(ObjectName) { hideFlags = HideFlags.NotEditable };
+            // Reserved before anything is created, so a device limit leaves nothing behind.
+            EnsureVertexCapacity(settings.VertexCapacity);
+            EnsureEdgeCapacity(settings.EdgeCapacity);
+
+            GameObject chunkObject = new(ObjectName) { hideFlags = HideFlags.NotEditable, layer = settings.Layer };
             Transform root = chunkObject.transform;
             root.SetParent(parent, false);
 
@@ -126,6 +130,16 @@ namespace reromanlee.Wireframes
         internal int EdgeCount
         {
             get => _edges.Count;
+        }
+
+        internal int VertexCapacity
+        {
+            get => _positions.Length;
+        }
+
+        internal int EdgeCapacity
+        {
+            get => _edges.Capacity;
         }
 
         internal void Add(Shape shape)

@@ -4,7 +4,8 @@ using UnityEngine;
 namespace reromanlee.Wireframes
 {
     /// <summary>
-    /// A shape drawn by an <see cref="ILineContainer"/>. Disposing it removes it from the container.
+    /// A shape drawn by a <see cref="WireframeContainer"/>. Disposing it removes it from the container. Shape
+    /// interfaces are implemented only by the package, so members may be added to them in minor versions.
     /// Every member except <see cref="IsDisposed"/> and <see cref="IDisposable.Dispose"/> throws
     /// <see cref="ObjectDisposedException"/> once the shape is disposed.
     /// </summary>

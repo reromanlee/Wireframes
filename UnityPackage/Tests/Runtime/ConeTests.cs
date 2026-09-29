@@ -9,7 +9,7 @@ namespace reromanlee.Wireframes.Tests
         [Test]
         public void Cone_IsABaseRingJoinedToTheTipByFourLines()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
             Vector3 tip = new(0f, 3f, 0f);
             Vector3 baseCenter = new(0f, 1f, 0f);
 
@@ -48,7 +48,7 @@ namespace reromanlee.Wireframes.Tests
         [Test]
         public void CreateConeOnBone_PutsTheTipOnTheBone()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
             Transform head = CreateBone(new Vector3(0f, 1.7f, 0f), Quaternion.Euler(0f, 90f, 0f));
 
             ICone sight = container.CreateCone(head, Vector3.zero, new Vector3(0f, 0f, 10f), 3f, 4);
@@ -71,7 +71,7 @@ namespace reromanlee.Wireframes.Tests
         [Test]
         public void SegmentsThatAreNotAMultipleOfFour_Throw()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
 
             Assert.Throws<ArgumentOutOfRangeException>(() => container.CreateCone(Vector3.zero, Vector3.forward, 1f, 10));
             Assert.That(ChunkOf(container).ShapeCount, Is.Zero);

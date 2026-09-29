@@ -9,7 +9,7 @@ namespace reromanlee.Wireframes.Tests
         [Test]
         public void Cylinder_IsTwoRingsJoinedByFourSideLines()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
             Vector3 endA = new(1f, 0f, 0f);
             Vector3 endB = new(1f, 0f, 6f);
             ICylinder cylinder = container.CreateCylinder(endA, endB, 2f, 8);
@@ -99,7 +99,7 @@ namespace reromanlee.Wireframes.Tests
         [Test]
         public void CreateCylinderOnBone_FollowsTheBone()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
             Transform bone = CreateBone(new Vector3(0f, 2f, 0f), Quaternion.Euler(0f, 90f, 0f), 2f);
             Vector3 localEndA = new(0f, 0f, 0.5f);
             Vector3 localEndB = new(0f, 1f, 0.5f);
@@ -140,7 +140,7 @@ namespace reromanlee.Wireframes.Tests
         [Test]
         public void SegmentsThatAreNotAMultipleOfFour_Throw()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
 
             Assert.Throws<ArgumentOutOfRangeException>(() => container.CreateCylinder(Vector3.zero, Vector3.up, 1f, 30));
             Assert.Throws<ArgumentOutOfRangeException>(() => container.CreateCylinder(Vector3.zero, Vector3.up, 1f, 0));

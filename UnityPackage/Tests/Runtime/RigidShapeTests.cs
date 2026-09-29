@@ -43,7 +43,7 @@ namespace reromanlee.Wireframes.Tests
         [Test]
         public void ChangingBone_KeepsWorldPositionRotationAndSize()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
             Quaternion rotation = Quaternion.Euler(10f, 20f, 30f);
             ICircle circle = container.CreateCircle(new Vector3(1f, 2f, 3f), rotation, 5f);
             Vector3[] before = BakeShape(container, circle);
@@ -78,7 +78,7 @@ namespace reromanlee.Wireframes.Tests
         [Test]
         public void Shape_MovesTurnsAndScalesWithItsBone()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
             Transform bone = CreateBone(Vector3.zero, Quaternion.identity);
             ICircle circle = container.CreateCircle(bone, new Vector3(0f, 1f, 0f), 2f, 8);
 
@@ -114,7 +114,7 @@ namespace reromanlee.Wireframes.Tests
         [Test]
         public void Color_IsUploadedToEveryVertex()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
             ICircle circle = container.CreateCircle(Vector3.zero, 1f, 6);
             int start = ((Circle)circle).VertexStart;
 

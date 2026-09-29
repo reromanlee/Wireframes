@@ -24,7 +24,7 @@ namespace reromanlee.Wireframes.Samples
         [Tooltip("Lines recolored every frame, to measure the cost of edits.")]
         [SerializeField, Min(0)] private int _recolorPerFrame;
 
-        private LineContainer _container;
+        private WireframeContainer _container;
         private Transform[] _bones;
         private Vector3[] _orbitAxes;
         private ILine[] _lines;
@@ -33,7 +33,7 @@ namespace reromanlee.Wireframes.Samples
 
         private void Start()
         {
-            _container = new LineContainer();
+            _container = new WireframeContainer();
 
             _bones = new Transform[_boneCount];
             _orbitAxes = new Vector3[_boneCount];

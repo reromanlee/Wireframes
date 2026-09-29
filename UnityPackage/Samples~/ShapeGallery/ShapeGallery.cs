@@ -18,12 +18,12 @@ namespace reromanlee.Wireframes.Samples
 
         private readonly List<Transform> _bones = new();
         private readonly List<string> _names = new();
-        private LineContainer _container;
+        private WireframeContainer _container;
         private GUIStyle _nameStyle;
 
         private void Start()
         {
-            _container = new LineContainer();
+            _container = new WireframeContainer();
             // Flat shapes lie in their bone's XZ plane, so their bones are tipped over to face the camera.
             Quaternion facing = Quaternion.Euler(-90f, 0f, 0f);
             Quaternion tilted = Quaternion.Euler(-20f, 0f, 0f);

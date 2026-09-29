@@ -24,7 +24,7 @@ namespace reromanlee.Wireframes.Tests
         [Test]
         public void CreateLineFromBones_PutsEndpointsOnTheBones()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
             Transform shoulder = CreateBone(new Vector3(0f, 1.5f, 0f), Quaternion.Euler(0f, 0f, 45f));
             Transform elbow = CreateBone(new Vector3(0.5f, 1.2f, 0f), Quaternion.identity);
 
@@ -72,7 +72,7 @@ namespace reromanlee.Wireframes.Tests
         [Test]
         public void Skinning_MovesEndpointsWithTheirBones()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
             Transform boneA = CreateBone(new Vector3(-3f, 0f, 0f), Quaternion.identity);
             Transform boneB = CreateBone(new Vector3(3f, 0f, 0f), Quaternion.identity);
             ILine line = container.CreateLine();
@@ -97,7 +97,7 @@ namespace reromanlee.Wireframes.Tests
         [Test]
         public void Colors_AreUploadedPerEndpoint()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
             ILine line = container.CreateLine();
             line.ColorA = Color.red;
             line.ColorB = new Color(0f, 0.5f, 1f, 1f);
@@ -119,7 +119,7 @@ namespace reromanlee.Wireframes.Tests
         [Test]
         public void SharedBone_IsRegisteredOnceAndReleasedWithLastUse()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
             BoneRegistry bones = ChunkOf(container).Bones;
             Transform bone = CreateBone(Vector3.zero, Quaternion.identity);
             ILine first = container.CreateLine();
@@ -157,7 +157,7 @@ namespace reromanlee.Wireframes.Tests
         [UnityTest]
         public IEnumerator DestroyedBone_LeavesEndpointInPlace()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
             Transform bone = CreateBone(new Vector3(2f, 0f, 0f), Quaternion.Euler(0f, 90f, 0f));
             ILine line = container.CreateLine();
             line.BoneA = bone;
@@ -213,7 +213,7 @@ namespace reromanlee.Wireframes.Tests
         [UnityTest]
         public IEnumerator BoneDestroyedBeforeItWasActive_FallsBackToLocalOffset()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
             Transform bone = CreateBone(new Vector3(9f, 9f, 9f), Quaternion.identity);
             bone.gameObject.SetActive(false);
             ILine line = container.CreateLine();

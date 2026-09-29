@@ -95,6 +95,12 @@ namespace reromanlee.Wireframes
             }
         }
 
+        /// <summary>Size of the XZ rectangle spanned by two corners; their difference in height is ignored.</summary>
+        internal static Vector2 FlatSpan(Vector3 cornerA, Vector3 cornerB)
+        {
+            return new Vector2(cornerB.x - cornerA.x, cornerB.z - cornerA.z);
+        }
+
         protected override void ScaleSizes(float factor)
         {
             _size *= factor;

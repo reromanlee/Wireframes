@@ -10,13 +10,13 @@ namespace reromanlee.Wireframes.Tests
     {
         private const float Tolerance = 1e-4f;
 
-        private readonly List<LineContainer> _containers = new();
+        private readonly List<WireframeContainer> _containers = new();
         private readonly List<Object> _objects = new();
 
         [TearDown]
         public void DestroyTestObjects()
         {
-            foreach (LineContainer container in _containers)
+            foreach (WireframeContainer container in _containers)
             {
                 container.Dispose();
             }
@@ -31,9 +31,9 @@ namespace reromanlee.Wireframes.Tests
             _objects.Clear();
         }
 
-        protected LineContainer CreateContainer(Material material = null)
+        protected WireframeContainer CreateContainer(WireframeContainerSettings settings = null)
         {
-            LineContainer container = material == null ? new LineContainer() : new LineContainer(material);
+            WireframeContainer container = new(settings);
             _containers.Add(container);
             return container;
         }
@@ -54,13 +54,13 @@ namespace reromanlee.Wireframes.Tests
             return target;
         }
 
-        private protected static MeshChunk ChunkOf(LineContainer container)
+        private protected static MeshChunk ChunkOf(WireframeContainer container)
         {
             return container.Proxy.Chunks[0];
         }
 
         /// <summary>Applies pending edits, then skins the mesh on the CPU and returns world-space vertices.</summary>
-        protected static Vector3[] FlushAndBake(LineContainer container)
+        protected static Vector3[] FlushAndBake(WireframeContainer container)
         {
             container.Proxy.Flush();
             Mesh baked = new();
@@ -71,7 +71,7 @@ namespace reromanlee.Wireframes.Tests
         }
 
         /// <summary>Applies pending edits, then skins the mesh on the CPU and returns the shape's world-space vertices.</summary>
-        protected static Vector3[] BakeShape(LineContainer container, IShape shape)
+        protected static Vector3[] BakeShape(WireframeContainer container, IShape shape)
         {
             Vector3[] baked = FlushAndBake(container);
             Shape target = (Shape)shape;
@@ -81,7 +81,7 @@ namespace reromanlee.Wireframes.Tests
         }
 
         /// <summary>Applies pending edits, then skins the mesh on the CPU and returns the world-space ends of the shape's edges.</summary>
-        protected static (Vector3 A, Vector3 B)[] BakeEdges(LineContainer container, IShape shape)
+        protected static (Vector3 A, Vector3 B)[] BakeEdges(WireframeContainer container, IShape shape)
         {
             Vector3[] baked = FlushAndBake(container);
             int[] indices = ChunkOf(container).Mesh.GetIndices(0);

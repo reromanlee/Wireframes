@@ -9,7 +9,7 @@ namespace reromanlee.Wireframes.Tests
         [Test]
         public void Frustum_IsTwoPolygonsJoinedAtEveryCorner()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
 
             IFrustum frustum = container.CreateFrustum(Vector3.zero, new Vector3(0f, 0f, 2f), 1f, 2f, 4);
 
@@ -35,7 +35,7 @@ namespace reromanlee.Wireframes.Tests
         [Test]
         public void ThreeSides_HaveALevelBottomSide()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
 
             IFrustum frustum = container.CreateFrustum(Vector3.zero, Quaternion.identity, 1f, 1f, 1f, 3);
 
@@ -47,7 +47,7 @@ namespace reromanlee.Wireframes.Tests
         [Test]
         public void RadiusAOfZero_MakesAPyramidWithARegularBase()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
 
             IFrustum pyramid = container.CreateFrustum(Vector3.zero, new Vector3(0f, 0f, 1f), 0f, 1f, 5);
 
@@ -84,7 +84,7 @@ namespace reromanlee.Wireframes.Tests
         [Test]
         public void FewerThanThreeSides_Throw()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
 
             Assert.Throws<ArgumentOutOfRangeException>(() => container.CreateFrustum(Vector3.zero, Vector3.up, 1f, 1f, 2));
             Assert.That(ChunkOf(container).ShapeCount, Is.Zero);

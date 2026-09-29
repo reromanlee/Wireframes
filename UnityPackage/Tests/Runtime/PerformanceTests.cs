@@ -21,7 +21,7 @@ namespace reromanlee.Wireframes.Tests
             Transform[] bones = CreateBones();
 
             // Warm-up so JIT compilation isn't counted.
-            LineContainer warmUp = CreateContainer();
+            WireframeContainer warmUp = CreateContainer();
             for (int i = 0; i < 100; i++)
             {
                 warmUp.CreateLine().BoneA = bones[i % BoneCount];
@@ -29,7 +29,7 @@ namespace reromanlee.Wireframes.Tests
             warmUp.Proxy.Flush();
             warmUp.Dispose();
 
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
             ILine[] lines = new ILine[LineCount];
             Stopwatch stopwatch = Stopwatch.StartNew();
             for (int i = 0; i < LineCount; i++)
@@ -74,7 +74,7 @@ namespace reromanlee.Wireframes.Tests
             Transform[] bones = CreateBones();
 
             // Warm-up so JIT compilation isn't counted.
-            LineContainer warmUp = CreateContainer();
+            WireframeContainer warmUp = CreateContainer();
             for (int i = 0; i < 100; i++)
             {
                 warmUp.CreateSphere(bones[i % BoneCount], Vector3.zero, 0.5f).Radius = 1f;
@@ -82,7 +82,7 @@ namespace reromanlee.Wireframes.Tests
             warmUp.Proxy.Flush();
             warmUp.Dispose();
 
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
             ISphere[] spheres = new ISphere[SphereCount];
             Stopwatch stopwatch = Stopwatch.StartNew();
             for (int i = 0; i < SphereCount; i++)
@@ -134,7 +134,7 @@ namespace reromanlee.Wireframes.Tests
         }
 
         /// <returns>Milliseconds per flush when nothing changed.</returns>
-        private static double TimeIdleFlushes(LineContainer container, Stopwatch stopwatch)
+        private static double TimeIdleFlushes(WireframeContainer container, Stopwatch stopwatch)
         {
             stopwatch.Restart();
             for (int i = 0; i < IdleFlushes; i++)
@@ -145,7 +145,7 @@ namespace reromanlee.Wireframes.Tests
         }
 
         /// <returns>Milliseconds for the flush after every bone moved.</returns>
-        private static double TimeFlushAfterMoving(Transform[] bones, LineContainer container, Stopwatch stopwatch)
+        private static double TimeFlushAfterMoving(Transform[] bones, WireframeContainer container, Stopwatch stopwatch)
         {
             foreach (Transform bone in bones)
             {

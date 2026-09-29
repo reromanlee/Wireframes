@@ -18,7 +18,7 @@ namespace reromanlee.Wireframes
         private const string ShaderName = "reromanlee/Wireframes/VertexColors";
 
         private readonly List<MeshChunk> _chunks = new();
-        private LineContainer _container;
+        private WireframeContainer _container;
         private Material _material;
         private bool _ownsMaterial;
         private bool _isShutDown;
@@ -28,12 +28,12 @@ namespace reromanlee.Wireframes
             get => _chunks;
         }
 
-        internal void Initialize(LineContainer container, Material material)
+        internal void Initialize(WireframeContainer container, WireframeContainerSettings settings)
         {
             _container = container;
-            if (material != null)
+            if (settings.Material != null)
             {
-                _material = material;
+                _material = settings.Material;
             }
             else
             {
@@ -46,7 +46,7 @@ namespace reromanlee.Wireframes
                 _material = new Material(shader) { name = ShaderName };
                 _ownsMaterial = true;
             }
-            _chunks.Add(new MeshChunk(transform, _material));
+            _chunks.Add(new MeshChunk(transform, _material, settings));
         }
 
         /// <summary>Adds <paramref name="shape"/> to a chunk and returns that chunk.</summary>

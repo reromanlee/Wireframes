@@ -1,0 +1,98 @@
+using System;
+using UnityEngine;
+using Object = UnityEngine.Object;
+
+namespace reromanlee.Wireframes
+{
+    /// <summary>
+    /// Creates shapes and draws all of them with one GPU-skinned mesh. Disposing the container, or unloading the
+    /// scene it was created in, disposes every shape it created.
+    /// </summary>
+    /// <remarks>
+    /// Main thread only. Each shape type adds its Create methods as extension methods, declared in a factory class next
+    /// to the shape, such as <see cref="CircleFactory"/>. The container creates a GameObject in the active scene; edits
+    /// made to its shapes are uploaded once per frame at the end of LateUpdate.
+    /// </remarks>
+    public sealed class WireframeContainer : IDisposable
+    {
+        private readonly MeshProxy _proxy;
+        private bool _isDisposed;
+
+        /// <summary>Creates a container with the default settings.</summary>
+        public WireframeContainer() : this(null)
+        {
+        }
+
+        /// <summary>
+        /// Creates a container from <paramref name="settings"/>, or from the default settings when it is null. The
+        /// settings are read once, so changing them later doesn't affect the container.
+        /// </summary>
+        /// <exception cref="ArgumentOutOfRangeException">A setting is outside its valid range.</exception>
+        public WireframeContainer(WireframeContainerSettings settings)
+        {
+            settings ??= new WireframeContainerSettings();
+            settings.Validate(nameof(settings));
+
+            GameObject proxyObject = new(settings.ResolvedName) { hideFlags = HideFlags.NotEditable, layer = settings.Layer };
+            try
+            {
+                // Otherwise the proxy lives in the active scene, and unloading that scene disposes the container.
+                if (settings.PersistAcrossScenes && Application.isPlaying)
+                {
+                    Object.DontDestroyOnLoad(proxyObject);
+                }
+                _proxy = proxyObject.AddComponent<MeshProxy>();
+                _proxy.Initialize(this, settings);
+            }
+            catch
+            {
+                UnityObjects.Destroy(proxyObject);
+                throw;
+            }
+        }
+
+        /// <summary>True once the container was disposed or its scene was unloaded.</summary>
+        public bool IsDisposed
+        {
+            get => _isDisposed;
+        }
+
+        internal MeshProxy Proxy
+        {
+            get
+            {
+                if (_isDisposed)
+                {
+                    throw new ObjectDisposedException(nameof(WireframeContainer));
+                }
+                return _proxy;
+            }
+        }
+
+        /// <summary>Removes the container and disposes every shape it created. Calling it again does nothing.</summary>
+        public void Dispose()
+        {
+            if (_isDisposed)
+            {
+                return;
+            }
+            _proxy.Shutdown();
+            UnityObjects.Destroy(_proxy.gameObject);
+        }
+
+        /// <summary>The proxy that a factory adds a new shape to, after checking <paramref name="container"/>.</summary>
+        internal static MeshProxy ProxyOf(WireframeContainer container)
+        {
+            if (container == null)
+            {
+                throw new ArgumentNullException(nameof(container));
+            }
+            return container.Proxy;
+        }
+
+        internal void OnProxyShutdown()
+        {
+            _isDisposed = true;
+        }
+    }
+}

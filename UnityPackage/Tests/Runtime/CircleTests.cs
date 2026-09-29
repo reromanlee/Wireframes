@@ -9,7 +9,7 @@ namespace reromanlee.Wireframes.Tests
         [Test]
         public void Circle_IsARingOfSegmentsFlatInXZ()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
             Vector3 center = new(1f, 2f, 3f);
             ICircle circle = container.CreateCircle(center, 2f, 16);
 
@@ -49,7 +49,7 @@ namespace reromanlee.Wireframes.Tests
         [Test]
         public void CreateCircleWithNormal_FacesTheNormal()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
             Vector3 normal = new Vector3(1f, 1f, 0f).normalized;
             ICircle circle = container.CreateCircle(Vector3.zero, normal * 3f, 1f, 12);
 
@@ -64,7 +64,7 @@ namespace reromanlee.Wireframes.Tests
         [Test]
         public void CreateCircleOnBone_LiesFlatInTheBonesXZ()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
             Transform bone = CreateBone(new Vector3(0f, 1f, 0f), Quaternion.Euler(0f, 0f, 90f));
 
             ICircle circle = container.CreateCircle(bone, new Vector3(0f, 0.5f, 0f), 2f, 8);
@@ -82,7 +82,7 @@ namespace reromanlee.Wireframes.Tests
         [Test]
         public void Radius_RewritesTheRing()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
             ICircle circle = container.CreateCircle(Vector3.zero, 1f, 4);
 
             circle.Radius = 3f;
@@ -93,7 +93,7 @@ namespace reromanlee.Wireframes.Tests
         [Test]
         public void FewerThanThreeSegments_Throw()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
 
             Assert.Throws<ArgumentOutOfRangeException>(() => container.CreateCircle(Vector3.zero, 1f, 2));
             Assert.Throws<ArgumentOutOfRangeException>(() => container.CreateCircle(Vector3.zero, 1f, -1));

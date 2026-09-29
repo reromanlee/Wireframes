@@ -9,7 +9,7 @@ namespace reromanlee.Wireframes.Tests
         [Test]
         public void Capsule_IsTwoRingsFourSideLinesAndTwoArcsOverEachCap()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
             Vector3 centerA = Vector3.zero;
             Vector3 centerB = new(0f, 0f, 4f);
 
@@ -40,7 +40,7 @@ namespace reromanlee.Wireframes.Tests
         [Test]
         public void TaperedCapsule_SideLinesTouchBothSpheres()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
             Vector3 centerB = new(0f, 0f, 4f);
 
             ICapsule capsule = container.CreateCapsule(Vector3.zero, centerB, 1f, 0.5f, 8);
@@ -60,7 +60,7 @@ namespace reromanlee.Wireframes.Tests
         [Test]
         public void SphereInsideTheOther_DrawsOnlyTheBiggerSphere()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
 
             ICapsule capsule = container.CreateCapsule(Vector3.zero, new Vector3(0f, 0f, 1f), 3f, 0.5f, 8);
 
@@ -73,7 +73,7 @@ namespace reromanlee.Wireframes.Tests
         [Test]
         public void NegativeLength_MirrorsTheCapsule()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
 
             ICapsule capsule = container.CreateCapsule(Vector3.zero, Quaternion.identity, -4f, 1f, 0.5f, 8);
 
@@ -97,7 +97,7 @@ namespace reromanlee.Wireframes.Tests
         [Test]
         public void CreateCapsuleOnBone_FollowsTheBone()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
             Transform upperArm = CreateBone(new Vector3(0f, 1.5f, 0f), Quaternion.identity);
             ICapsule arm = container.CreateCapsule(upperArm, Vector3.zero, new Vector3(0f, -0.3f, 0f), 0.1f, 0.08f, 4);
 
@@ -116,7 +116,7 @@ namespace reromanlee.Wireframes.Tests
         [Test]
         public void SegmentsThatAreNotAMultipleOfFour_Throw()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
 
             Assert.Throws<ArgumentOutOfRangeException>(() => container.CreateCapsule(Vector3.zero, Vector3.up, 1f, 6));
             Assert.That(ChunkOf(container).ShapeCount, Is.Zero);

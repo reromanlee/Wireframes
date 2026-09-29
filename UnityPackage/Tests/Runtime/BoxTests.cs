@@ -11,7 +11,7 @@ namespace reromanlee.Wireframes.Tests
         [Test]
         public void Box_IsEightCornersJoinedByTwelveEdges()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
             IBox box = container.CreateBox(new Vector3(-1f, -2f, -3f), new Vector3(1f, 2f, 3f));
             int start = ((Box)box).VertexStart;
 
@@ -72,7 +72,7 @@ namespace reromanlee.Wireframes.Tests
         [Test]
         public void PoseForm_TurnsTheBox()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
             Quaternion rotation = Quaternion.Euler(0f, 45f, 0f);
             IBox box = container.CreateBox(new Vector3(0f, 1f, 0f), rotation, new Vector3(2f, 4f, 6f));
 
@@ -87,7 +87,7 @@ namespace reromanlee.Wireframes.Tests
         [Test]
         public void SettingCorner_MovesOnlyThatCorner()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
             Quaternion rotation = Quaternion.Euler(20f, 30f, 40f);
             IBox box = container.CreateBox(Vector3.zero, rotation, Vector3.one);
             Vector3 cornerB = box.WorldCornerB;
@@ -121,7 +121,7 @@ namespace reromanlee.Wireframes.Tests
         [Test]
         public void CreateBoxOnBone_IsAlignedToTheBone()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
             Transform bone = CreateBone(new Vector3(0f, 2f, 0f), Quaternion.Euler(10f, 20f, 30f), 1.5f);
             Vector3 extents = new(0.5f, 1f, 1.5f);
 
@@ -137,7 +137,7 @@ namespace reromanlee.Wireframes.Tests
         [Test]
         public void Box_FollowsItsBone()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
             Transform bone = CreateBone(Vector3.zero, Quaternion.identity);
             IBox box = container.CreateBox();
             box.Bone = bone;
@@ -155,7 +155,7 @@ namespace reromanlee.Wireframes.Tests
         [Test]
         public void SetColor_ColorsEveryCorner()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
             IBox box = container.CreateBox();
             int start = ((Box)box).VertexStart;
 
