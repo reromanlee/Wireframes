@@ -5,19 +5,31 @@ using UnityEngine.Rendering;
 namespace reromanlee.Wireframes
 {
     /// <summary>
-    /// One mesh holding many shapes. Shapes keep their own state; on each flush the chunk writes the queued shapes into
-    /// CPU copies of the vertex and index buffers and uploads only the ranges that changed. Each vertex is a position
-    /// relative to its bone plus that bone's slot, which the shader turns into a world position.
+    /// One mesh holding many shapes, drawn with its own draw call. Shapes keep their own state; on each flush the chunk
+    /// writes the queued shapes into CPU copies of the vertex and index buffers and uploads only the ranges that
+    /// changed. Each vertex is a position relative to its bone plus that bone's slot, which the shader turns into a
+    /// world position.
     /// </summary>
+    /// <remarks>
+    /// A chunk grows up to <see cref="MaxVertexCount"/> vertices, so its indices stay 16-bit. A chunk created with more
+    /// is a large chunk: it keeps 32-bit indices for a shape bigger than that and never grows.
+    /// </remarks>
     internal sealed class MeshChunk : IDisposable
     {
+        /// <summary>
+        /// Most vertices a chunk with 16-bit indices holds. Index 0xFFFF stays unused because some graphics APIs reserve
+        /// it for primitive restart.
+        /// </summary>
+        internal const int MaxVertexCount = ushort.MaxValue;
+
+        internal const int InitialVertexCapacity = 256;
+        internal const int InitialEdgeCapacity = 128;
+
         private const string ObjectName = "Chunk";
-        private const int InitialVertexCapacity = 256;
         private const int InitialShapeCapacity = 64;
-        // Index 0xFFFF is left unused because some graphics APIs reserve it for primitive restart.
-        private const int MaxUInt16Vertices = ushort.MaxValue;
         // Freed vertex blocks are packed away once they fill half the buffer, but never in small meshes.
         private const int CompactionThreshold = 1024;
+        private const int PositionSize = 12;
 
         private const int PositionStream = 0;
         private const int ColorStream = 1;
@@ -40,17 +52,22 @@ namespace reromanlee.Wireframes
         private readonly BoneRegistry _bones;
 
         private readonly VertexAllocator _allocator = new();
-        private readonly EdgeList _edges = new();
+        private readonly EdgeList _edges;
 
         private readonly DirtyRanges _positionRanges = new();
         private readonly DirtyRanges _colorRanges = new();
         private readonly DirtyRanges _boneRanges = new();
         private readonly DirtyRanges _edgeRanges = new();
 
+        // Growth stops here; shrinking stops at the capacities the chunk was created with.
+        private readonly int _vertexLimit;
+        private readonly int _minimumVertexCapacity;
+        private readonly int _minimumEdgeCapacity;
+
         // CPU copies of the three vertex streams, sized to the vertex capacity.
-        private Vector3[] _positions = new Vector3[InitialVertexCapacity];
-        private Color32[] _colors = new Color32[InitialVertexCapacity];
-        private float[] _boneIndices = new float[InitialVertexCapacity];
+        private Vector3[] _positions;
+        private Color32[] _colors;
+        private float[] _boneIndices;
         private ushort[] _shortIndices = Array.Empty<ushort>();
 
         private Shape[] _shapes = new Shape[InitialShapeCapacity];
@@ -67,14 +84,26 @@ namespace reromanlee.Wireframes
         /// <param name="materials">
         /// Materials the mesh is drawn with, each drawing all of it; the chunk leaves them to their owner.
         /// </param>
-        internal MeshChunk(Transform parent, Material[] materials, WireframeContainerSettings settings, BoneRegistry bones)
+        /// <param name="vertexCapacity">
+        /// Vertices the chunk starts with. Past <see cref="MaxVertexCount"/>, it is a large chunk.
+        /// </param>
+        /// <param name="edgeCapacity">Edges the chunk starts with.</param>
+        internal MeshChunk(
+            Transform parent, Material[] materials, int layer, BoneRegistry bones, int vertexCapacity, int edgeCapacity)
         {
-            // Reserved before anything is created, so a device limit leaves nothing behind.
-            EnsureVertexCapacity(settings.VertexCapacity);
-            EnsureEdgeCapacity(settings.EdgeCapacity);
+            _vertexLimit = Math.Max(vertexCapacity, MaxVertexCount);
+            // Checked before anything is created, so a device limit leaves nothing behind.
+            CheckBufferSize((long)vertexCapacity * PositionSize);
+            CheckBufferSize((long)edgeCapacity * 2 * IndexSize);
+            _minimumVertexCapacity = vertexCapacity;
+            _minimumEdgeCapacity = edgeCapacity;
+            _positions = new Vector3[vertexCapacity];
+            _colors = new Color32[vertexCapacity];
+            _boneIndices = new float[vertexCapacity];
+            _edges = new EdgeList(edgeCapacity);
             _bones = bones;
 
-            GameObject chunkObject = new(ObjectName) { hideFlags = HideFlags.NotEditable, layer = settings.Layer };
+            GameObject chunkObject = new(ObjectName) { hideFlags = HideFlags.NotEditable, layer = layer };
             chunkObject.transform.SetParent(parent, false);
 
             _mesh = new Mesh { name = ObjectName };
@@ -117,6 +146,12 @@ namespace reromanlee.Wireframes
             get => _allocator;
         }
 
+        /// <summary>True for a chunk made for a shape bigger than <see cref="MaxVertexCount"/>.</summary>
+        internal bool IsLarge
+        {
+            get => _vertexLimit > MaxVertexCount;
+        }
+
         internal int ShapeCount
         {
             get => _shapeCount;
@@ -137,6 +172,17 @@ namespace reromanlee.Wireframes
             get => _edges.Capacity;
         }
 
+        /// <summary>True once freed vertex blocks take up enough of the chunk to be worth packing away.</summary>
+        internal bool NeedsCompaction
+        {
+            get => _allocator.FreeCount >= CompactionThreshold && _allocator.FreeCount * 2 > _allocator.End;
+        }
+
+        /// <summary>
+        /// Time the chunk was first seen empty, kept by its <see cref="ChunkAllocator"/>; NaN while it holds shapes.
+        /// </summary>
+        internal float EmptySince { get; set; } = float.NaN;
+
         /// <summary>CPU copy of every vertex position, relative to its bone.</summary>
         internal Vector3[] Positions
         {
@@ -147,6 +193,23 @@ namespace reromanlee.Wireframes
         internal float[] BoneIndices
         {
             get => _boneIndices;
+        }
+
+        private int IndexSize
+        {
+            get => IsLarge ? sizeof(uint) : sizeof(ushort);
+        }
+
+        /// <summary>True when <paramref name="vertexCount"/> vertices fit in the buffers as they are.</summary>
+        internal bool HasRoomFor(int vertexCount)
+        {
+            return _allocator.EndAfterAllocate(vertexCount) <= _positions.Length;
+        }
+
+        /// <summary>True when <paramref name="vertexCount"/> vertices fit once the buffers grow to their limit.</summary>
+        internal bool CanGrowToFit(int vertexCount)
+        {
+            return _allocator.EndAfterAllocate(vertexCount) <= _vertexLimit;
         }
 
         internal void Add(Shape shape)
@@ -166,6 +229,7 @@ namespace reromanlee.Wireframes
             }
             shape.ShapeIndex = _shapeCount;
             _shapes[_shapeCount++] = shape;
+            EmptySince = float.NaN;
         }
 
         internal void Remove(Shape shape)
@@ -201,13 +265,31 @@ namespace reromanlee.Wireframes
         /// <summary>Writes queued shapes into the buffers and uploads what changed.</summary>
         internal void Flush()
         {
-            if (_allocator.FreeCount >= CompactionThreshold && _allocator.FreeCount * 2 > _allocator.End)
-            {
-                Compact();
-            }
             WritePendingShapes();
             UploadVertices();
             UploadIndices();
+        }
+
+        /// <summary>
+        /// Hands out vertex blocks again from vertex 0, packing live shapes together, and gives back memory that the
+        /// packed shapes leave unused. Every shape is written and uploaded again on the next flush.
+        /// </summary>
+        internal void Compact()
+        {
+            _allocator.Reset();
+            for (int i = 0; i < _shapeCount; i++)
+            {
+                Shape shape = _shapes[i];
+                shape.VertexStart = _allocator.Allocate(shape.VertexCount);
+                shape.MarkDirty(DirtyFlags.All);
+            }
+
+            int vertexCapacity = ShrunkCapacity(_positions.Length, _allocator.End, _minimumVertexCapacity);
+            if (vertexCapacity < _positions.Length)
+            {
+                ResizeVertexStreams(vertexCapacity);
+            }
+            _edges.Shrink(ShrunkCapacity(_edges.Capacity, _edges.Count, _minimumEdgeCapacity));
         }
 
         public void Dispose()
@@ -225,20 +307,8 @@ namespace reromanlee.Wireframes
             {
                 _renderer.enabled = false;
             }
-            // The chunk's GameObject is a child of the proxy and goes away with it; the mesh is an asset and doesn't.
+            // The chunk's GameObject belongs to its owner, which destroys it; the mesh is an asset and goes here.
             UnityObjects.Destroy(_mesh);
-        }
-
-        /// <summary>Hands out vertex blocks again from vertex 0, packing live shapes together.</summary>
-        private void Compact()
-        {
-            _allocator.Reset();
-            for (int i = 0; i < _shapeCount; i++)
-            {
-                Shape shape = _shapes[i];
-                shape.VertexStart = _allocator.Allocate(shape.VertexCount);
-                shape.MarkDirty(DirtyFlags.All);
-            }
         }
 
         private void WritePendingShapes()
@@ -317,7 +387,7 @@ namespace reromanlee.Wireframes
         {
             int edgeCount = _edges.Count;
             int indexCapacity = _edges.Capacity * 2;
-            IndexFormat format = _meshVertexCapacity > MaxUInt16Vertices ? IndexFormat.UInt32 : IndexFormat.UInt16;
+            IndexFormat format = IsLarge ? IndexFormat.UInt32 : IndexFormat.UInt16;
 
             if (_meshIndexCapacity != indexCapacity || _meshIndexFormat != format)
             {
@@ -384,12 +454,21 @@ namespace reromanlee.Wireframes
             {
                 return;
             }
+            if (required > _vertexLimit)
+            {
+                throw new InvalidOperationException(
+                    $"A chunk holds at most {_vertexLimit} vertices, but {required} were requested.");
+            }
+            capacity = Math.Max(capacity, 1);
             while (capacity < required)
             {
                 capacity *= 2;
             }
-            // Positions are the widest stream.
-            CheckBufferSize((long)capacity * 12);
+            ResizeVertexStreams(Math.Min(capacity, _vertexLimit));
+        }
+
+        private void ResizeVertexStreams(int capacity)
+        {
             // New elements default to zero, which is bone slot 0 (world space), a valid index for the shader.
             Array.Resize(ref _positions, capacity);
             Array.Resize(ref _colors, capacity);
@@ -403,13 +482,22 @@ namespace reromanlee.Wireframes
             {
                 return;
             }
+            capacity = Math.Max(capacity, 1);
             while (capacity < required)
             {
                 capacity *= 2;
             }
-            // Two 32-bit indices per edge at worst.
-            CheckBufferSize((long)capacity * 8);
+            CheckBufferSize((long)capacity * 2 * IndexSize);
             _edges.EnsureCapacity(capacity);
+        }
+
+        /// <summary>
+        /// The capacity to shrink to: twice what is used once that is at most a quarter, so it takes doubling the load
+        /// to grow again, and never below <paramref name="minimum"/>.
+        /// </summary>
+        private static int ShrunkCapacity(int capacity, int used, int minimum)
+        {
+            return used <= capacity / 4 ? Math.Min(capacity, Math.Max(minimum, used * 2)) : capacity;
         }
 
         private static void CheckBufferSize(long bytes)

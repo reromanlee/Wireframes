@@ -98,7 +98,7 @@ namespace reromanlee.Wireframes.Tests
             Assert.Throws<ArgumentOutOfRangeException>(() => container.CreateCircle(Vector3.zero, 1f, 2));
             Assert.Throws<ArgumentOutOfRangeException>(() => container.CreateCircle(Vector3.zero, 1f, -1));
             Assert.That(container.CreateCircle(Vector3.zero, 1f, 3).SegmentCount, Is.EqualTo(3));
-            Assert.That(ChunkOf(container).ShapeCount, Is.EqualTo(1), "A rejected circle must not stay in the mesh.");
+            Assert.That(ShapeCountOf(container), Is.EqualTo(1), "A rejected circle must not stay in the mesh.");
         }
     }
 }

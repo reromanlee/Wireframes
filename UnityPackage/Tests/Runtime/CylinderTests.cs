@@ -187,7 +187,7 @@ namespace reromanlee.Wireframes.Tests
             Assert.Throws<ArgumentOutOfRangeException>(() => container.CreateCylinder(Vector3.zero, Vector3.up, 1f, 0));
             Assert.Throws<ArgumentOutOfRangeException>(() => container.CreateCylinder(Vector3.zero, Vector3.up, 1f, -4));
             Assert.That(container.CreateCylinder(Vector3.zero, Vector3.up, 1f, 4).SegmentCount, Is.EqualTo(4));
-            Assert.That(ChunkOf(container).ShapeCount, Is.EqualTo(1));
+            Assert.That(ShapeCountOf(container), Is.EqualTo(1));
         }
     }
 }

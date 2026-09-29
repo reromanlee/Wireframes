@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEngine;
-using UnityEngine.Rendering;
 
 namespace reromanlee.Wireframes.Tests
 {
@@ -80,7 +79,8 @@ namespace reromanlee.Wireframes.Tests
             {
                 lines[i].Dispose();
             }
-            VertexAllocator allocator = ChunkOf(container).Allocator;
+            MeshChunk chunk = ChunkOf(container);
+            VertexAllocator allocator = chunk.Allocator;
             Assert.That(allocator.FreeCount, Is.EqualTo(3000));
 
             Vector3[] baked = FlushAndBake(container);
@@ -93,29 +93,42 @@ namespace reromanlee.Wireframes.Tests
                 AssertApproximately(new Vector3(i, 0f, 0f), baked[start]);
                 AssertApproximately(new Vector3(i, 1f, 0f), baked[start + 1]);
             }
-            Assert.That(ChunkOf(container).Mesh.GetIndices(0), Has.Length.EqualTo(1000));
+            Assert.That(chunk.Mesh.GetIndices(0), Has.Length.EqualTo(1000));
         }
 
         [Test]
-        public void ManyVertices_SwitchTheIndexBufferTo32Bit()
+        public void Compaction_ShrinksBuffersToTwiceWhatLiveShapesUse()
         {
             WireframeContainer container = CreateContainer();
-            container.Proxy.Flush();
-            Assert.That(ChunkOf(container).Mesh.indexFormat, Is.EqualTo(IndexFormat.UInt16));
-
-            ILine last = null;
-            for (int i = 0; i < 40000; i++)
+            List<ILine> lines = new();
+            for (int i = 0; i < 20000; i++)
             {
-                last = container.CreateLine(new Vector3(i, 0f, 0f), new Vector3(i, 1f, 0f));
+                lines.Add(container.CreateLine(new Vector3(i, 0f, 0f), new Vector3(i, 1f, 0f)));
+            }
+            container.Proxy.Flush();
+            MeshChunk chunk = ChunkOf(container);
+            Assert.That(chunk.VertexCapacity, Is.EqualTo(65535));
+
+            // A fifth of the lines stay, scattered through the buffer: 8000 vertices and 4000 edges.
+            for (int i = 0; i < lines.Count; i++)
+            {
+                if (i % 5 != 0)
+                {
+                    lines[i].Dispose();
+                }
             }
             Vector3[] baked = FlushAndBake(container);
 
-            Mesh mesh = ChunkOf(container).Mesh;
-            Assert.That(mesh.indexFormat, Is.EqualTo(IndexFormat.UInt32));
-            Assert.That(mesh.GetIndexCount(0), Is.EqualTo(80000u));
-            int start = ((Line)last).VertexStart;
-            AssertApproximately(new Vector3(39999f, 0f, 0f), baked[start]);
-            AssertApproximately(new Vector3(39999f, 1f, 0f), baked[start + 1]);
+            Assert.That(chunk.VertexCapacity, Is.EqualTo(16000));
+            Assert.That(chunk.EdgeCapacity, Is.EqualTo(8000));
+            Assert.That(chunk.Mesh.vertexCount, Is.EqualTo(16000));
+            Assert.That(chunk.Mesh.GetIndices(0), Has.Length.EqualTo(8000));
+            for (int i = 0; i < lines.Count; i += 5)
+            {
+                int start = ((Line)lines[i]).VertexStart;
+                AssertApproximately(new Vector3(i, 0f, 0f), baked[start]);
+                AssertApproximately(new Vector3(i, 1f, 0f), baked[start + 1]);
+            }
         }
 
         [Test]
@@ -135,7 +148,7 @@ namespace reromanlee.Wireframes.Tests
             Vector3[] baked = FlushAndBake(container);
 
             Texture2D texture = container.Proxy.BoneTexture.Texture;
-            Assert.That(ChunkOf(container).Bones.Count, Is.EqualTo(lines.Count));
+            Assert.That(container.Proxy.Bones.Count, Is.EqualTo(lines.Count));
             Assert.That(texture.height, Is.GreaterThanOrEqualTo(2));
             for (int i = 0; i < lines.Count; i++)
             {

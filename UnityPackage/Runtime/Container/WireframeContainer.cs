@@ -5,8 +5,8 @@ using Object = UnityEngine.Object;
 namespace reromanlee.Wireframes
 {
     /// <summary>
-    /// Creates shapes and draws all of them with one GPU-skinned mesh. Disposing the container, or unloading the
-    /// scene it was created in, disposes every shape it created.
+    /// Creates shapes and draws them with GPU-skinned meshes of up to 65,535 vertices each, plus one of its own for any
+    /// bigger shape. Disposing the container, or unloading the scene it was created in, disposes every shape it created.
     /// </summary>
     /// <remarks>
     /// Main thread only. Each shape type adds its Create methods as extension methods, declared in a factory class next

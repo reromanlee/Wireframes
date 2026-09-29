@@ -29,6 +29,12 @@ namespace reromanlee.Wireframes
             get => _chunk == null;
         }
 
+        /// <summary>The chunk holding the shape, or null once it is disposed.</summary>
+        internal MeshChunk Chunk
+        {
+            get => _chunk;
+        }
+
         internal int VertexCount { get; }
 
         internal int VertexStart { get; set; }

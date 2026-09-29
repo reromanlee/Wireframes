@@ -101,6 +101,37 @@ namespace reromanlee.Wireframes.Tests
         }
 
         [Test]
+        public void ShapesInALaterChunk_FollowTheirBonesWhileTheBoneTextureGrows()
+        {
+            WireframeContainer container = CreateContainer();
+            // Fills the first chunk with lines outside the camera's view.
+            for (int i = 0; i < MeshChunk.MaxVertexCount / 2; i++)
+            {
+                container.CreateLine(new Vector3(50f, 0f, 0f), new Vector3(51f, 0f, 0f));
+            }
+            Transform bone = CreateBone(new Vector3(0f, 2f, 0f), Quaternion.identity);
+            ILine line = container.CreateLine(bone, bone);
+            line.LocalPositionA = new Vector3(-1f, 0f, 0f);
+            line.LocalPositionB = new Vector3(1f, 0f, 0f);
+            line.SetColor(Color.red);
+            Assert.That(ChunkOf(line), Is.SameAs(container.Proxy.Chunks[1]));
+            Render();
+            Assert.That(IsLit(new Vector3(0f, 2f, 0f)), Is.True);
+
+            // A row of bones more than the texture holds, so it is recreated and every chunk has to get the new one.
+            for (int i = 0; i < BoneTexture.BonesPerRow; i++)
+            {
+                Transform offscreen = CreateBone(new Vector3(50f, i, 0f), Quaternion.identity);
+                container.CreateLine(offscreen, offscreen);
+            }
+            bone.position = new Vector3(0f, -2f, 0f);
+            Render();
+
+            Assert.That(IsLit(new Vector3(0f, -2f, 0f)), Is.True);
+            Assert.That(IsLit(new Vector3(0f, 2f, 0f)), Is.False);
+        }
+
+        [Test]
         public void Dispose_StopsDrawingRightAway()
         {
             WireframeContainer container = CreateContainer();

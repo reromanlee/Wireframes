@@ -68,7 +68,7 @@ namespace reromanlee.Wireframes.Tests
 
             Assert.Throws<ArgumentOutOfRangeException>(
                 () => container.CreateEllipsoid(Vector3.zero, Vector3.up, 1f, 1));
-            Assert.That(ChunkOf(container).ShapeCount, Is.Zero);
+            Assert.That(ShapeCountOf(container), Is.Zero);
         }
     }
 }

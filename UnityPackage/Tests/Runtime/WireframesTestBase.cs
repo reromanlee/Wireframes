@@ -56,19 +56,36 @@ namespace reromanlee.Wireframes.Tests
             return target;
         }
 
+        /// <summary>The container's first chunk, which holds every shape of a test that creates only a few.</summary>
         private protected static MeshChunk ChunkOf(WireframeContainer container)
         {
             return container.Proxy.Chunks[0];
         }
 
+        private protected static MeshChunk ChunkOf(IShape shape)
+        {
+            return ((Shape)shape).Chunk;
+        }
+
+        protected static int ShapeCountOf(WireframeContainer container)
+        {
+            int count = 0;
+            foreach (MeshChunk chunk in container.Proxy.Chunks)
+            {
+                count += chunk.ShapeCount;
+            }
+            return count;
+        }
+
         /// <summary>
-        /// Applies pending edits and reads the bones, then skins the uploaded vertices on the CPU with the matrices the
-        /// shader receives, and returns world-space vertices. ShaderTests checks that the GPU draws the same.
+        /// Applies pending edits and reads the bones, then skins the vertices uploaded to <paramref name="chunk"/>, or
+        /// to the first chunk, on the CPU with the matrices the shader receives, and returns world-space vertices.
+        /// ShaderTests checks that the GPU draws the same.
         /// </summary>
-        protected static Vector3[] FlushAndBake(WireframeContainer container)
+        private protected static Vector3[] FlushAndBake(WireframeContainer container, MeshChunk chunk = null)
         {
             container.Proxy.Flush();
-            MeshChunk chunk = ChunkOf(container);
+            chunk ??= ChunkOf(container);
             BoneRegistry bones = container.Proxy.Bones;
             Vector3[] positions = chunk.Positions;
             float[] boneIndices = chunk.BoneIndices;
@@ -83,7 +100,7 @@ namespace reromanlee.Wireframes.Tests
         /// <summary>Applies pending edits, then skins the mesh on the CPU and returns the shape's world-space vertices.</summary>
         protected static Vector3[] BakeShape(WireframeContainer container, IShape shape)
         {
-            Vector3[] baked = FlushAndBake(container);
+            Vector3[] baked = FlushAndBake(container, ChunkOf(shape));
             Shape target = (Shape)shape;
             Vector3[] vertices = new Vector3[target.VertexCount];
             Array.Copy(baked, target.VertexStart, vertices, 0, vertices.Length);
@@ -93,8 +110,8 @@ namespace reromanlee.Wireframes.Tests
         /// <summary>Applies pending edits, then skins the mesh on the CPU and returns the world-space ends of the shape's edges.</summary>
         protected static (Vector3 A, Vector3 B)[] BakeEdges(WireframeContainer container, IShape shape)
         {
-            Vector3[] baked = FlushAndBake(container);
-            int[] indices = ChunkOf(container).Mesh.GetIndices(0);
+            Vector3[] baked = FlushAndBake(container, ChunkOf(shape));
+            int[] indices = ChunkOf(shape).Mesh.GetIndices(0);
             Shape target = (Shape)shape;
             (Vector3 A, Vector3 B)[] edges = new (Vector3, Vector3)[target.EdgeCount];
             for (int edge = 0; edge < edges.Length; edge++)

@@ -17,7 +17,7 @@ namespace reromanlee.Wireframes.Tests
         [Test]
         public void RemoveAt_MovesLastEdgeIntoFreedSlot()
         {
-            EdgeList edges = new();
+            EdgeList edges = new(4);
             Owner first = new();
             Owner second = new();
             first.Slots[0] = edges.Add(first, 0);
@@ -38,7 +38,7 @@ namespace reromanlee.Wireframes.Tests
         [Test]
         public void RemoveAt_LastSlotMovesNothing()
         {
-            EdgeList edges = new();
+            EdgeList edges = new(4);
             Owner owner = new();
             edges.Add(owner, 0);
             int last = edges.Add(owner, 1);
@@ -51,7 +51,7 @@ namespace reromanlee.Wireframes.Tests
         public void RemovingEveryEdgeOfOneOwner_LeavesOtherOwnersIntact()
         {
             // Mirrors MeshChunk.Remove: an owner's later edge can be moved into one of its own earlier slots.
-            EdgeList edges = new();
+            EdgeList edges = new(4);
             Owner removed = new();
             Owner kept = new();
             for (int edge = 0; edge < 3; edge++)
@@ -75,7 +75,7 @@ namespace reromanlee.Wireframes.Tests
         [Test]
         public void EnsureCapacity_DoublesAndKeepsEdges()
         {
-            EdgeList edges = new();
+            EdgeList edges = new(4);
             Owner owner = new();
             int slot = edges.Add(owner, 0);
             edges.Set(slot, 3, 4);
@@ -87,6 +87,26 @@ namespace reromanlee.Wireframes.Tests
             Assert.That(edges.Indices.Length, Is.EqualTo(capacity * 4));
             Assert.That(edges.Indices[0], Is.EqualTo(3));
             Assert.That(edges.Indices[1], Is.EqualTo(4));
+        }
+
+        [Test]
+        public void Shrink_KeepsEdgesAndNeverDropsBelowTheirCount()
+        {
+            EdgeList edges = new(64);
+            Owner owner = new();
+            for (int edge = 0; edge < 3; edge++)
+            {
+                edges.Set(edges.Add(owner, edge), edge, edge + 1);
+            }
+
+            edges.Shrink(8);
+            Assert.That(edges.Capacity, Is.EqualTo(8));
+            Assert.That(edges.Indices.Length, Is.EqualTo(16));
+            Assert.That(edges.Indices[4], Is.EqualTo(2));
+            Assert.That(edges.Indices[5], Is.EqualTo(3));
+
+            edges.Shrink(1);
+            Assert.That(edges.Capacity, Is.EqualTo(3));
         }
     }
 }

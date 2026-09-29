@@ -104,7 +104,7 @@ namespace reromanlee.Wireframes.Tests
 
             Assert.Throws<ArgumentOutOfRangeException>(
                 () => container.CreateRoundedRectangle(Vector3.zero, Vector3.one, 0.1f, 6));
-            Assert.That(ChunkOf(container).ShapeCount, Is.Zero);
+            Assert.That(ShapeCountOf(container), Is.Zero);
         }
     }
 }

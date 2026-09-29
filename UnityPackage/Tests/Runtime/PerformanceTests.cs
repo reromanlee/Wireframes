@@ -65,7 +65,7 @@ namespace reromanlee.Wireframes.Tests
                 $"idle flush {idleFlush * 1000.0:F1} us, flush after moving every bone {flushAfterBonesMoved * 1000.0:F1} us, " +
                 $"{EditCount} scattered color edits {edits:F2} ms + flush {editFlush:F2} ms, " +
                 $"dispose {LineCount / 2} lines {dispose:F2} ms + flush {disposeFlush:F2} ms");
-            Assert.That(container.Proxy.Chunks[0].ShapeCount, Is.EqualTo(LineCount / 2));
+            Assert.That(ShapeCountOf(container), Is.EqualTo(LineCount / 2));
         }
 
         [Test]
@@ -120,7 +120,7 @@ namespace reromanlee.Wireframes.Tests
                 $"flush after moving every bone {flushAfterBonesMoved * 1000.0:F1} us, " +
                 $"{ResizeCount} scattered radius edits {resizes:F2} ms + flush {resizeFlush:F2} ms, " +
                 $"dispose {SphereCount / 2} spheres {dispose:F2} ms + flush {disposeFlush:F2} ms");
-            Assert.That(container.Proxy.Chunks[0].ShapeCount, Is.EqualTo(SphereCount / 2));
+            Assert.That(ShapeCountOf(container), Is.EqualTo(SphereCount / 2));
         }
 
         private Transform[] CreateBones()

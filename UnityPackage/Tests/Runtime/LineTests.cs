@@ -119,7 +119,7 @@ namespace reromanlee.Wireframes.Tests
         public void SharedBone_IsRegisteredOnceAndReleasedWithLastUse()
         {
             WireframeContainer container = CreateContainer();
-            BoneRegistry bones = ChunkOf(container).Bones;
+            BoneRegistry bones = container.Proxy.Bones;
             Transform bone = CreateBone(Vector3.zero, Quaternion.identity);
             ILine first = container.CreateLine();
             ILine second = container.CreateLine();
@@ -172,7 +172,7 @@ namespace reromanlee.Wireframes.Tests
             AssertApproximately(expected, FlushAndBake(container)[start]);
             Assert.That(line.BoneA, Is.Null);
             AssertApproximately(expected, line.WorldPositionA);
-            Assert.That(ChunkOf(container).Bones.Count, Is.Zero);
+            Assert.That(container.Proxy.Bones.Count, Is.Zero);
             AssertApproximately(expected, FlushAndBake(container)[start]);
         }
 
@@ -245,7 +245,7 @@ namespace reromanlee.Wireframes.Tests
 
             Assert.That(line.BoneA, Is.Null);
             AssertApproximately(new Vector3(10f, 9f, 9f), line.WorldPositionA);
-            Assert.That(ChunkOf(container).Bones.Count, Is.Zero);
+            Assert.That(container.Proxy.Bones.Count, Is.Zero);
         }
     }
 }

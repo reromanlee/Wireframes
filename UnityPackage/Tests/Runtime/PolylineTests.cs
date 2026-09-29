@@ -80,7 +80,7 @@ namespace reromanlee.Wireframes.Tests
             Assert.Throws<ArgumentException>(() => container.CreatePolygon(Vector3.zero, Vector3.one));
             Assert.Throws<ArgumentNullException>(() => container.CreatePolyline((Vector3[])null));
             Assert.Throws<ArgumentNullException>(() => container.CreatePolygon((Transform[])null));
-            Assert.That(ChunkOf(container).ShapeCount, Is.Zero);
+            Assert.That(ShapeCountOf(container), Is.Zero);
         }
 
         [Test]
@@ -151,11 +151,11 @@ namespace reromanlee.Wireframes.Tests
             WireframeContainer container = CreateContainer();
             Transform bone = CreateBone(Vector3.zero, Quaternion.identity);
             IPolyline polyline = container.CreatePolygon(bone, bone, CreateBone(Vector3.one, Quaternion.identity));
-            Assert.That(ChunkOf(container).Bones.Count, Is.EqualTo(2));
+            Assert.That(container.Proxy.Bones.Count, Is.EqualTo(2));
 
             polyline.Dispose();
 
-            Assert.That(ChunkOf(container).Bones.Count, Is.Zero);
+            Assert.That(container.Proxy.Bones.Count, Is.Zero);
             Assert.Throws<ObjectDisposedException>(() => _ = polyline.PointCount);
         }
 

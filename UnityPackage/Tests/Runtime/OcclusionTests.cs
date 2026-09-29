@@ -72,7 +72,7 @@ namespace reromanlee.Wireframes.Tests
 
         private Material[] MaterialsOf(WireframeContainerSettings settings)
         {
-            return ChunkOf(CreateContainer(settings)).Renderer.sharedMaterials;
+            return CreateContainer(settings).Proxy.Materials;
         }
 
         private static void AssertState(

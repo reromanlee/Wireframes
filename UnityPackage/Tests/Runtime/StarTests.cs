@@ -68,7 +68,7 @@ namespace reromanlee.Wireframes.Tests
 
             Assert.Throws<ArgumentOutOfRangeException>(() => container.CreateStar(Vector3.zero, 0.5f, 1f, 2));
             Assert.Throws<ArgumentOutOfRangeException>(() => container.CreateStar(Vector3.zero, 0.5f, 1f, -1));
-            Assert.That(ChunkOf(container).ShapeCount, Is.Zero);
+            Assert.That(ShapeCountOf(container), Is.Zero);
         }
     }
 }

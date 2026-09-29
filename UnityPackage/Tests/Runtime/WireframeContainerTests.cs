@@ -22,7 +22,19 @@ namespace reromanlee.Wireframes.Tests
 
             Assert.That(container.IsDisposed, Is.False);
             Assert.That(container.Proxy.gameObject.scene, Is.EqualTo(SceneManager.GetActiveScene()));
-            Assert.That(ChunkOf(container).Renderer.sharedMaterial.shader.name, Is.EqualTo(ShaderName));
+            Assert.That(container.Proxy.Materials[0].shader.name, Is.EqualTo(ShaderName));
+        }
+
+        [Test]
+        public void Constructor_CreatesNoChunkUntilTheFirstShape()
+        {
+            WireframeContainer container = CreateContainer();
+            Assert.That(container.Proxy.Chunks, Is.Empty);
+
+            ILine line = container.CreateLine();
+
+            Assert.That(container.Proxy.Chunks, Has.Count.EqualTo(1));
+            Assert.That(ChunkOf(line).Renderer.sharedMaterials, Is.EqualTo(container.Proxy.Materials));
         }
 
         [Test]
@@ -96,7 +108,7 @@ namespace reromanlee.Wireframes.Tests
             Material material = Track(new Material(Shader.Find(ShaderName)));
             WireframeContainer container = CreateContainer(new WireframeContainerSettings { Material = material });
 
-            Assert.That(ChunkOf(container).Renderer.sharedMaterial, Is.SameAs(material));
+            Assert.That(ChunkOf(container.CreateLine()).Renderer.sharedMaterial, Is.SameAs(material));
             container.Dispose();
             yield return null;
 
@@ -110,7 +122,7 @@ namespace reromanlee.Wireframes.Tests
 
             Assert.That(container.Proxy.gameObject.name, Is.EqualTo("Debug Lines"));
             Assert.That(container.Proxy.gameObject.layer, Is.EqualTo(5));
-            Assert.That(ChunkOf(container).Renderer.gameObject.layer, Is.EqualTo(5));
+            Assert.That(ChunkOf(container.CreateLine()).Renderer.gameObject.layer, Is.EqualTo(5));
         }
 
         [Test]
@@ -229,9 +241,9 @@ namespace reromanlee.Wireframes.Tests
         [UnityTest]
         public IEnumerator Rendering_LogsNoErrorsWhileBuffersGrow()
         {
-            // The test framework fails a test on any logged error while rendering. The shapes added here outgrow
-            // 16-bit indices, so the index format switches while a camera renders. Batch mode draws no screen cameras,
-            // so this one renders into a texture, which is also what applies the edits.
+            // The test framework fails a test on any logged error while rendering. The shapes added here grow the first
+            // chunk to its limit and start a second one between renders. Batch mode draws no screen cameras, so this
+            // one renders into a texture, which is also what applies the edits.
             RenderTexture target = Track(new RenderTexture(64, 64, 24));
             Camera camera = Track(new GameObject("Camera")).AddComponent<Camera>();
             camera.transform.position = new Vector3(0f, 0f, -20f);
@@ -258,8 +270,12 @@ namespace reromanlee.Wireframes.Tests
                 yield return null;
             }
 
-            Assert.That(ChunkOf(container).ShapeCount, Is.GreaterThan(21000));
-            Assert.That(ChunkOf(container).Mesh.indexFormat, Is.EqualTo(UnityEngine.Rendering.IndexFormat.UInt32));
+            Assert.That(ShapeCountOf(container), Is.GreaterThan(21000));
+            Assert.That(container.Proxy.Chunks, Has.Count.GreaterThanOrEqualTo(2));
+            foreach (MeshChunk chunk in container.Proxy.Chunks)
+            {
+                Assert.That(chunk.Mesh.indexFormat, Is.EqualTo(UnityEngine.Rendering.IndexFormat.UInt16));
+            }
         }
     }
 }

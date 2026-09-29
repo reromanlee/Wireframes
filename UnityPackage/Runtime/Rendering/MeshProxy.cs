@@ -14,10 +14,9 @@ namespace reromanlee.Wireframes
     [DisallowMultipleComponent]
     internal sealed class MeshProxy : MonoBehaviour
     {
-        private readonly List<MeshChunk> _chunks = new();
         private readonly BoneRegistry _bones = new();
         private readonly BoneTexture _boneTexture = new();
-        private MaterialPropertyBlock _propertyBlock;
+        private ChunkAllocator _chunks;
         private WireframeContainer _container;
         private Material[] _materials;
         private bool _ownsMaterials;
@@ -25,7 +24,18 @@ namespace reromanlee.Wireframes
 
         internal IReadOnlyList<MeshChunk> Chunks
         {
+            get => _chunks.Chunks;
+        }
+
+        internal ChunkAllocator ChunkAllocator
+        {
             get => _chunks;
+        }
+
+        /// <summary>The materials every chunk draws with.</summary>
+        internal Material[] Materials
+        {
+            get => _materials;
         }
 
         internal BoneRegistry Bones
@@ -56,37 +66,27 @@ namespace reromanlee.Wireframes
                 _materials = WireframeMaterials.Create(shader, settings.Occlusion, settings.UseAlpha);
                 _ownsMaterials = true;
             }
-            _propertyBlock = new MaterialPropertyBlock();
-            _chunks.Add(new MeshChunk(transform, _materials, settings, _bones));
-            // Uploads the bone texture and hands it to the renderers.
+            _chunks = new ChunkAllocator(transform, _materials, settings.Layer, _bones);
+            _chunks.Reserve(settings.VertexCapacity, settings.EdgeCapacity);
+            // Uploads the bone texture and hands it to the chunks.
             Flush();
         }
 
         /// <summary>Adds <paramref name="shape"/> to a chunk and returns that chunk.</summary>
         internal MeshChunk Attach(Shape shape)
         {
-            // One chunk covers every size a device can hold; choosing a chunk with room would go here.
-            MeshChunk chunk = _chunks[0];
-            chunk.Add(shape);
-            return chunk;
+            return _chunks.Attach(shape);
         }
 
         /// <summary>Reads the bones, writes queued shapes and uploads what changed.</summary>
         internal void Flush()
         {
             _bones.ReadMatrices();
-            for (int i = 0; i < _chunks.Count; i++)
-            {
-                _chunks[i].Flush();
-            }
             if (_boneTexture.Upload(_bones))
             {
-                _propertyBlock.SetTexture(BoneTexture.PropertyId, _boneTexture.Texture);
-                for (int i = 0; i < _chunks.Count; i++)
-                {
-                    _chunks[i].Renderer.SetPropertyBlock(_propertyBlock);
-                }
+                _chunks.SetBoneTexture(_boneTexture.Texture);
             }
+            _chunks.Flush();
         }
 
         internal void Shutdown()
@@ -96,11 +96,7 @@ namespace reromanlee.Wireframes
                 return;
             }
             _isShutDown = true;
-            for (int i = 0; i < _chunks.Count; i++)
-            {
-                _chunks[i].Dispose();
-            }
-            _chunks.Clear();
+            _chunks?.Dispose();
             _boneTexture.Dispose();
             if (_ownsMaterials)
             {
@@ -153,6 +149,11 @@ namespace reromanlee.Wireframes
             try
             {
                 Flush();
+                // Play Mode only, where destroying waits for the end of the frame and is allowed in a render callback.
+                if (Application.isPlaying)
+                {
+                    _chunks.ReleaseIdleChunks(Time.realtimeSinceStartup);
+                }
             }
             catch (Exception exception)
             {

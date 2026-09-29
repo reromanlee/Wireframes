@@ -73,14 +73,20 @@ namespace reromanlee.Wireframes
             set => _persistAcrossScenes = value;
         }
 
-        /// <summary>Vertices reserved up front, 0 or more, so a load known in advance never grows the buffers later.</summary>
+        /// <summary>
+        /// Vertices reserved up front, 0 or more, so a load known in advance never grows the buffers later. Reserved
+        /// memory stays until the container is disposed; memory past it is given back as shapes are disposed.
+        /// </summary>
         public int VertexCapacity
         {
             get => _vertexCapacity;
             set => _vertexCapacity = value;
         }
 
-        /// <summary>Edges reserved up front, 0 or more, so a load known in advance never grows the buffers later.</summary>
+        /// <summary>
+        /// Edges reserved up front, 0 or more, so a load known in advance never grows the buffers later. Reserved memory
+        /// stays until the container is disposed; memory past it is given back as shapes are disposed.
+        /// </summary>
         public int EdgeCapacity
         {
             get => _edgeCapacity;
