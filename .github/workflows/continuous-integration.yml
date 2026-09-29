@@ -143,6 +143,13 @@ jobs:
           mkdir -p UnityProject/ProjectSettings
           printf 'm_EditorVersion: %s\n' "$UNITY_VERSION" > UnityProject/ProjectSettings/ProjectVersion.txt
 
+      # Leaves only built-in modules and the local package, so a build never waits on Unity's package registry.
+      - name: Remove the test-only packages
+        run: |
+          manifest=UnityProject/Packages/manifest.json
+          jq 'del(.dependencies["com.unity.test-framework.performance"]) | del(.testables)' "$manifest" > manifest.tmp
+          mv manifest.tmp "$manifest"
+
       - name: Add the package samples to the project
         run: cp -r UnityPackage/Samples~ UnityProject/Assets/Samples
 
