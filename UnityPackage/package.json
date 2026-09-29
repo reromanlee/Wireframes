@@ -1,9 +1,9 @@
 {
   "name": "com.reromanlee.wireframes",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "displayName": "Wireframes",
-  "description": "Wireframe shapes that follow Transforms through GPU skinning: lines, polylines, boxes, circles, spheres, capsules, cones and more. Shapes are created once and cost no per-frame CPU work to animate, and every shape in a container is drawn with a single mesh.",
-  "unity": "6000.0",
+  "description": "Wireframe shapes that follow Transforms through GPU skinning: lines, polylines, boxes, circles, spheres, capsules, cones and more. Create a shape once and it moves with its bones on the GPU, with no per-frame work from your code, in Play and Edit Mode, under the Built-in Render Pipeline, URP and HDRP.",
+  "unity": "2022.3",
   "license": "MIT",
   "documentationUrl": "https://github.com/reromanlee/Wireframes#readme",
   "changelogUrl": "https://github.com/reromanlee/Wireframes/blob/main/CHANGELOG.md",

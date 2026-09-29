@@ -55,8 +55,9 @@ namespace reromanlee.Wireframes
 
         public override string ToString()
         {
-            return $"{ShapeCount} shapes ({HiddenShapeCount} hidden), {VertexCount} vertices, {EdgeCount} edges, " +
-                   $"{BoneCount} bones, {ChunkCount} chunks, {CpuMemory / 1024} KB CPU, {GpuMemory / 1024} KB GPU";
+            return $"Shapes: {ShapeCount} ({HiddenShapeCount} hidden), vertices: {VertexCount}, edges: {EdgeCount}, " +
+                   $"bones: {BoneCount}, chunks: {ChunkCount}, CPU memory: {CpuMemory / 1024} KB, " +
+                   $"GPU memory: {GpuMemory / 1024} KB";
         }
     }
 }
