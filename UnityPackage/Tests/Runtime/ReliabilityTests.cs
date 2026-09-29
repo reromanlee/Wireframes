@@ -4,6 +4,8 @@ using System.Threading.Tasks;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
+using UnityEngine.TestTools.Constraints;
+using Is = UnityEngine.TestTools.Constraints.Is;
 
 namespace reromanlee.Wireframes.Tests
 {
@@ -27,6 +29,10 @@ namespace reromanlee.Wireframes.Tests
 
             ICircle circle = container.CreateCircle(bone, Vector3.zero, 1f);
             circle.Radius = 2f;
+            circle.IsVisible = false;
+            circle.IsVisible = true;
+            container.IsVisible = false;
+            container.IsVisible = true;
             container.CreateLine(Vector3.zero, Vector3.one).Dispose();
             container.Proxy.Flush();
 
@@ -39,6 +45,43 @@ namespace reromanlee.Wireframes.Tests
 
             container.Dispose();
             Assert.That(circle.IsDisposed, Is.True);
+        }
+
+        [Test]
+        public void SteadyFrames_AllocateNothing()
+        {
+            WireframeContainer container = CreateContainer();
+            Transform[] bones = new Transform[20];
+            for (int i = 0; i < bones.Length; i++)
+            {
+                bones[i] = CreateBone(new Vector3(i, 0f, 0f), Quaternion.identity);
+            }
+            ILine[] lines = new ILine[200];
+            for (int i = 0; i < lines.Length; i++)
+            {
+                lines[i] = container.CreateLine(bones[i % bones.Length], bones[(i + 1) % bones.Length]);
+            }
+            ISphere sphere = container.CreateSphere(bones[0], Vector3.zero, 1f);
+            // Warms up every path, so buffers and queues already have their size.
+            Frame();
+            Frame();
+
+            Assert.That(Frame, Is.Not.AllocatingGCMemory());
+
+            // What a typical frame does: bones move, a few shapes change, and the container flushes before rendering.
+            void Frame()
+            {
+                for (int i = 0; i < bones.Length; i++)
+                {
+                    bones[i].position += Vector3.up * 0.01f;
+                }
+                for (int i = 0; i < lines.Length; i += 7)
+                {
+                    lines[i].ColorA = Color.red;
+                }
+                sphere.Radius += 0.01f;
+                container.Proxy.Flush();
+            }
         }
 
         [Test]

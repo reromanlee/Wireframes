@@ -47,6 +47,7 @@ namespace reromanlee.Wireframes
 
         private const MeshUpdateFlags UploadFlags = MeshUpdateFlags.DontValidateIndices | MeshUpdateFlags.DontRecalculateBounds;
 
+        private readonly ChunkAllocator _owner;
         private readonly MeshRenderer _renderer;
         private readonly Mesh _mesh;
         private readonly BoneRegistry _bones;
@@ -81,16 +82,17 @@ namespace reromanlee.Wireframes
         private IndexFormat _meshIndexFormat;
         private int _meshEdgeCount = -1;
 
-        /// <param name="materials">
-        /// Materials the mesh is drawn with, each drawing all of it; the chunk leaves them to their owner.
+        /// <param name="owner">
+        /// The allocator the chunk belongs to, which gives it its parent, layer, bones and materials. Every material draws
+        /// all of the mesh; the chunk leaves them to their owner.
         /// </param>
         /// <param name="vertexCapacity">
         /// Vertices the chunk starts with. Past <see cref="MaxVertexCount"/>, it is a large chunk.
         /// </param>
         /// <param name="edgeCapacity">Edges the chunk starts with.</param>
-        internal MeshChunk(
-            Transform parent, Material[] materials, int layer, BoneRegistry bones, int vertexCapacity, int edgeCapacity)
+        internal MeshChunk(ChunkAllocator owner, int vertexCapacity, int edgeCapacity)
         {
+            _owner = owner;
             _vertexLimit = Math.Max(vertexCapacity, MaxVertexCount);
             // Checked before anything is created, so a device limit leaves nothing behind.
             CheckBufferSize((long)vertexCapacity * PositionSize);
@@ -101,10 +103,11 @@ namespace reromanlee.Wireframes
             _colors = new Color32[vertexCapacity];
             _boneIndices = new float[vertexCapacity];
             _edges = new EdgeList(edgeCapacity);
-            _bones = bones;
+            _bones = owner.Bones;
 
             // Same flags as the container's GameObject, so an Edit Mode chunk is never saved either.
-            GameObject chunkObject = new(ObjectName) { hideFlags = parent.gameObject.hideFlags, layer = layer };
+            Transform parent = owner.Parent;
+            GameObject chunkObject = new(ObjectName) { hideFlags = parent.gameObject.hideFlags, layer = owner.Layer };
             chunkObject.transform.SetParent(parent, false);
 
             // Owned and destroyed by the chunk, so it is kept from saving and from unloading as an unused asset.
@@ -116,7 +119,7 @@ namespace reromanlee.Wireframes
 
             _renderer = chunkObject.AddComponent<MeshRenderer>();
             // A renderer with more materials than sub-meshes draws its last sub-mesh once per extra material.
-            _renderer.sharedMaterials = materials;
+            _renderer.sharedMaterials = owner.Materials;
             _renderer.motionVectorGenerationMode = MotionVectorGenerationMode.ForceNoMotion;
             _renderer.shadowCastingMode = ShadowCastingMode.Off;
             _renderer.receiveShadows = false;
@@ -159,10 +162,16 @@ namespace reromanlee.Wireframes
             get => _shapeCount;
         }
 
-        /// <summary>Shapes queued for the next flush.</summary>
+        /// <summary>Entries in the queue of shapes to write on the next flush, including those emptied by removals.</summary>
         internal int PendingCount
         {
             get => _pendingCount;
+        }
+
+        /// <summary>Entries the queue has room for before it grows.</summary>
+        internal int PendingCapacity
+        {
+            get => _pending.Length;
         }
 
         internal int EdgeCount
@@ -224,12 +233,15 @@ namespace reromanlee.Wireframes
         {
             // Capacity is checked before anything changes, so a device limit leaves the chunk untouched.
             EnsureVertexCapacity(_allocator.EndAfterAllocate(shape.VertexCount));
-            EnsureEdgeCapacity(_edges.Count + shape.EdgeCount);
+            if (!shape.IsHidden)
+            {
+                EnsureEdgeCapacity(_edges.Count + shape.EdgeCount);
+            }
 
             shape.VertexStart = _allocator.Allocate(shape.VertexCount);
-            for (int edge = 0; edge < shape.EdgeCount; edge++)
+            if (!shape.IsHidden)
             {
-                shape.SetEdgeSlot(edge, _edges.Add(shape, edge));
+                AddEdges(shape);
             }
             if (_shapeCount == _shapes.Length)
             {
@@ -242,17 +254,18 @@ namespace reromanlee.Wireframes
 
         public void Remove(Shape shape)
         {
-            // The last edge moves into each freed slot; later edges of this same shape may be among them, and
-            // their owner callback keeps the shape's slots current while the loop runs.
-            for (int edge = 0; edge < shape.EdgeCount; edge++)
+            if (!shape.IsHidden)
             {
-                int slot = shape.GetEdgeSlot(edge);
-                if (_edges.RemoveAt(slot))
-                {
-                    _edgeRanges.Add(slot, 1);
-                }
+                RemoveEdges(shape);
             }
             _allocator.Free(shape.VertexStart, shape.VertexCount);
+            // Its queue entry is emptied, so a shape that comes back is never queued twice.
+            int pending = shape.PendingIndex;
+            if (pending >= 0 && pending < _pendingCount && _pending[pending] == shape)
+            {
+                _pending[pending] = null;
+            }
+            shape.PendingIndex = -1;
 
             int last = --_shapeCount;
             Shape moved = _shapes[last];
@@ -261,18 +274,36 @@ namespace reromanlee.Wireframes
             _shapes[last] = null;
         }
 
+        public void Show(Shape shape)
+        {
+            EnsureEdgeCapacity(_edges.Count + shape.EdgeCount);
+            AddEdges(shape);
+            shape.MarkDirty(DirtyFlags.Edges);
+        }
+
+        public void Hide(Shape shape)
+        {
+            RemoveEdges(shape);
+        }
+
+        public IShapeHost Reattach(Shape shape)
+        {
+            return _owner.Attach(shape);
+        }
+
         public void Enqueue(Shape shape)
         {
             if (_pendingCount == _pending.Length)
             {
-                // Without renders to flush the queue, disposed shapes would pile up in it; each live shape is queued
-                // at most once, so dropping them keeps the queue within the number of live shapes.
-                RemoveDisposedPending();
+                // Without renders to flush the queue, the entries of removed shapes would pile up in it; each shape of
+                // the chunk is queued at most once, so dropping them keeps the queue within the chunk's shape count.
+                CompactPending();
                 if (_pendingCount == _pending.Length)
                 {
                     Array.Resize(ref _pending, _pendingCount * 2);
                 }
             }
+            shape.PendingIndex = _pendingCount;
             _pending[_pendingCount++] = shape;
         }
 
@@ -330,11 +361,13 @@ namespace reromanlee.Wireframes
             for (int i = 0; i < _pendingCount; i++)
             {
                 Shape shape = _pending[i];
-                _pending[i] = null;
-                if (shape.IsDisposed)
+                // Removed shapes leave an empty entry behind.
+                if (shape == null)
                 {
                     continue;
                 }
+                _pending[i] = null;
+                shape.PendingIndex = -1;
                 try
                 {
                     WriteShape(shape, shape.TakeDirty());
@@ -373,9 +406,32 @@ namespace reromanlee.Wireframes
                 shape.WriteBoneIndices(new Span<float>(_boneIndices, start, count));
                 _boneRanges.Add(start, count);
             }
-            if ((dirty & DirtyFlags.Edges) != 0)
+            // A hidden shape has no edge slots; showing it marks its edges again.
+            if ((dirty & DirtyFlags.Edges) != 0 && !shape.IsHidden)
             {
                 shape.WriteEdges(_edges, _edgeRanges);
+            }
+        }
+
+        private void AddEdges(Shape shape)
+        {
+            for (int edge = 0; edge < shape.EdgeCount; edge++)
+            {
+                shape.SetEdgeSlot(edge, _edges.Add(shape, edge));
+            }
+        }
+
+        private void RemoveEdges(Shape shape)
+        {
+            // The last edge moves into each freed slot; later edges of this same shape may be among them, and
+            // their owner callback keeps the shape's slots current while the loop runs.
+            for (int edge = 0; edge < shape.EdgeCount; edge++)
+            {
+                int slot = shape.GetEdgeSlot(edge);
+                if (_edges.RemoveAt(slot))
+                {
+                    _edgeRanges.Add(slot, 1);
+                }
             }
         }
 
@@ -403,14 +459,16 @@ namespace reromanlee.Wireframes
             }
         }
 
-        private void RemoveDisposedPending()
+        /// <summary>Drops the empty entries that removed shapes left in the queue.</summary>
+        private void CompactPending()
         {
             int kept = 0;
             for (int i = 0; i < _pendingCount; i++)
             {
                 Shape shape = _pending[i];
-                if (!shape.IsDisposed)
+                if (shape != null)
                 {
+                    shape.PendingIndex = kept;
                     _pending[kept++] = shape;
                 }
             }

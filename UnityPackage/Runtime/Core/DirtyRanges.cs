@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace reromanlee.Wireframes
@@ -16,8 +15,6 @@ namespace reromanlee.Wireframes
         // Past this many collected ranges, they are merged as they come, so the list stays small when no flush clears
         // it, such as while nothing renders.
         private const int MaxCollectedRanges = 256;
-
-        private static readonly Comparer<RangeInt> ByStart = Comparer<RangeInt>.Create((a, b) => a.start.CompareTo(b.start));
 
         private RangeInt[] _ranges = new RangeInt[16];
         private int _count;
@@ -79,7 +76,7 @@ namespace reromanlee.Wireframes
             {
                 return _count;
             }
-            Array.Sort(_ranges, 0, _count, ByStart);
+            SortByStart();
             int merged = 0;
             RangeInt current = _ranges[0];
             for (int i = 1; i < _count; i++)
@@ -103,6 +100,25 @@ namespace reromanlee.Wireframes
             }
             _count = merged;
             return merged;
+        }
+
+        /// <summary>
+        /// Insertion sort by start: there are at most a few hundred ranges, often already in order, and unlike
+        /// Array.Sort with a comparer, it allocates nothing.
+        /// </summary>
+        private void SortByStart()
+        {
+            for (int i = 1; i < _count; i++)
+            {
+                RangeInt range = _ranges[i];
+                int j = i - 1;
+                while (j >= 0 && _ranges[j].start > range.start)
+                {
+                    _ranges[j + 1] = _ranges[j];
+                    j--;
+                }
+                _ranges[j + 1] = range;
+            }
         }
     }
 }

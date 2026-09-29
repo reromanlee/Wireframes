@@ -49,6 +49,20 @@ namespace reromanlee.Wireframes
             _shapes[last] = null;
         }
 
+        public void Show(Shape shape)
+        {
+        }
+
+        public void Hide(Shape shape)
+        {
+        }
+
+        public IShapeHost Reattach(Shape shape)
+        {
+            Add(shape);
+            return this;
+        }
+
         public void Dispose()
         {
             for (int i = 0; i < _shapeCount; i++)

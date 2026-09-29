@@ -68,6 +68,26 @@ namespace reromanlee.Wireframes
             get => _isDisposed;
         }
 
+        /// <summary>
+        /// False hides every shape of the container without disposing anything, and costs nothing while it lasts: edits
+        /// made meanwhile are applied when it is shown again. Each shape's own <see cref="IShape.IsVisible"/> still
+        /// counts. True by default.
+        /// </summary>
+        /// <exception cref="ObjectDisposedException">The container is disposed.</exception>
+        public bool IsVisible
+        {
+            get
+            {
+                MainThread.Check();
+                return Proxy.IsVisible;
+            }
+            set
+            {
+                MainThread.Check();
+                Proxy.IsVisible = value;
+            }
+        }
+
         internal MeshProxy Proxy
         {
             get

@@ -10,5 +10,17 @@ namespace reromanlee.Wireframes
         void Enqueue(Shape shape);
 
         void Remove(Shape shape);
+
+        /// <summary>Draws the edges of <paramref name="shape"/> again after <see cref="Hide"/>.</summary>
+        void Show(Shape shape);
+
+        /// <summary>Stops drawing the edges of <paramref name="shape"/>, keeping everything else it has.</summary>
+        void Hide(Shape shape);
+
+        /// <summary>
+        /// Holds <paramref name="shape"/> again after it was removed from this host to change its size, and returns the
+        /// host that holds it now: this one when it has room, another one otherwise.
+        /// </summary>
+        IShapeHost Reattach(Shape shape);
     }
 }

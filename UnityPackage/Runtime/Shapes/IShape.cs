@@ -14,6 +14,12 @@ namespace reromanlee.Wireframes
         /// <summary>True once the shape or its container was disposed.</summary>
         bool IsDisposed { get; }
 
+        /// <summary>
+        /// False hides the shape without disposing it: it keeps its place, bones and every setting, and draws again as it
+        /// is then when shown. Hiding and showing allocate nothing. True by default.
+        /// </summary>
+        bool IsVisible { get; set; }
+
         /// <summary>Sets the color of every vertex of the shape.</summary>
         void SetColor(Color color);
     }

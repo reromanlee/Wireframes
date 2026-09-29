@@ -132,6 +132,47 @@ namespace reromanlee.Wireframes.Tests
         }
 
         [Test]
+        public void HiddenShape_IsNotDrawnUntilShown()
+        {
+            WireframeContainer container = CreateContainer();
+            ILine line = container.CreateLine(new Vector3(-2f, 0f, 0f), new Vector3(2f, 0f, 0f));
+            line.SetColor(Color.red);
+
+            line.IsVisible = false;
+            Render();
+            Assert.That(IsLit(Vector3.zero), Is.False);
+
+            line.IsVisible = true;
+            Render();
+            Assert.That(IsLit(Vector3.zero), Is.True);
+        }
+
+        [Test]
+        public void HiddenContainer_DrawsNothingAndAppliesItsEditsWhenShown()
+        {
+            WireframeContainer container = CreateContainer();
+            ILine line = container.CreateLine(new Vector3(-2f, 2f, 0f), new Vector3(2f, 2f, 0f));
+            line.SetColor(Color.red);
+            Render();
+            Assert.That(IsLit(new Vector3(0f, 2f, 0f)), Is.True);
+
+            container.IsVisible = false;
+            line.WorldPositionA = new Vector3(-2f, -2f, 0f);
+            line.WorldPositionB = new Vector3(2f, -2f, 0f);
+            Render();
+
+            Assert.That(IsLit(new Vector3(0f, 2f, 0f)), Is.False);
+            Assert.That(IsLit(new Vector3(0f, -2f, 0f)), Is.False);
+            Assert.That(ChunkOf(line).PendingCount, Is.EqualTo(1), "A hidden container flushed before a render.");
+
+            container.IsVisible = true;
+            Render();
+
+            Assert.That(container.IsVisible, Is.True);
+            Assert.That(IsLit(new Vector3(0f, -2f, 0f)), Is.True);
+        }
+
+        [Test]
         public void Dispose_StopsDrawingRightAway()
         {
             WireframeContainer container = CreateContainer();

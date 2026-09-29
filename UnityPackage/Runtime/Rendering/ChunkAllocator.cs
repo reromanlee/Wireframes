@@ -40,6 +40,28 @@ namespace reromanlee.Wireframes
             get => _chunks;
         }
 
+        /// <summary>Transform the chunks' GameObjects are created under.</summary>
+        internal Transform Parent
+        {
+            get => _parent;
+        }
+
+        /// <summary>Materials every chunk draws with.</summary>
+        internal Material[] Materials
+        {
+            get => _materials;
+        }
+
+        internal int Layer
+        {
+            get => _layer;
+        }
+
+        internal BoneRegistry Bones
+        {
+            get => _bones;
+        }
+
         /// <summary>
         /// Creates chunks with room for <paramref name="vertexCount"/> vertices and <paramref name="edgeCount"/> edges,
         /// split evenly between as few chunks as that takes. They are never released.
@@ -166,7 +188,7 @@ namespace reromanlee.Wireframes
 
         private MeshChunk CreateChunk(int vertexCapacity, int edgeCapacity)
         {
-            MeshChunk chunk = new(_parent, _materials, _layer, _bones, vertexCapacity, edgeCapacity);
+            MeshChunk chunk = new(this, vertexCapacity, edgeCapacity);
             chunk.Renderer.SetPropertyBlock(_propertyBlock);
             _chunks.Add(chunk);
             return chunk;

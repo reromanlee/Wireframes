@@ -10,11 +10,12 @@ namespace reromanlee.Wireframes
     /// </summary>
     internal abstract class Shape : IShape, IEdgeOwner
     {
-        private readonly EdgeSource _edgeSource;
+        private EdgeSource _edgeSource;
         private int[] _edgePattern;
         private int[] _edgeSlots;
         private IShapeHost _host;
         private DirtyFlags _dirty;
+        private bool _isHidden;
 
         protected Shape(int vertexCount, EdgeSource edgeSource)
         {
@@ -27,18 +28,56 @@ namespace reromanlee.Wireframes
             get => _host == null;
         }
 
+        public bool IsVisible
+        {
+            get
+            {
+                EnsureUsable();
+                return !_isHidden;
+            }
+            set
+            {
+                EnsureUsable();
+                bool isVisible = !_isHidden;
+                if (value == isVisible)
+                {
+                    return;
+                }
+                // Shown only once the host managed to add the edges, so a failure leaves the shape hidden.
+                if (value)
+                {
+                    _host.Show(this);
+                    _isHidden = false;
+                }
+                else
+                {
+                    _isHidden = true;
+                    _host.Hide(this);
+                }
+            }
+        }
+
         /// <summary>The chunk that draws the shape, or null when it is disposed or nothing can draw it.</summary>
         internal MeshChunk Chunk
         {
             get => _host as MeshChunk;
         }
 
-        internal int VertexCount { get; }
+        /// <summary>True while the shape is hidden, when its edges aren't in its chunk's drawn edges.</summary>
+        internal bool IsHidden
+        {
+            get => _isHidden;
+        }
+
+        internal int VertexCount { get; private set; }
 
         internal int VertexStart { get; set; }
 
         /// <summary>Position in its host's shape list.</summary>
         internal int ShapeIndex { get; set; }
+
+        /// <summary>Position in its chunk's queue of shapes to write, or -1 while not queued there.</summary>
+        internal int PendingIndex { get; set; } = -1;
 
         internal int EdgeCount
         {
@@ -88,6 +127,40 @@ namespace reromanlee.Wireframes
             {
                 ReleaseBones(bones);
                 _edgeSource.Release();
+                throw;
+            }
+            MarkDirty(DirtyFlags.All);
+        }
+
+        /// <summary>
+        /// Changes the shape's vertex count and edge pattern while it stays the same object, for shapes whose number of
+        /// points changes. Derived shapes update their own points and bones first. Its host moves it where the new size
+        /// fits, and everything is written again on the next flush. If no room can be found, the shape ends up disposed
+        /// and the exception is rethrown.
+        /// </summary>
+        internal void Resize(int vertexCount, EdgeSource edgeSource)
+        {
+            IShapeHost host = _host;
+            host.Remove(this);
+            _edgeSource.Release();
+            VertexCount = vertexCount;
+            _edgeSource = edgeSource;
+            _edgePattern = edgeSource.Acquire();
+            if (_edgeSlots.Length != _edgePattern.Length / 2)
+            {
+                _edgeSlots = new int[_edgePattern.Length / 2];
+            }
+            // Removing it dropped its queue entry, so it has to be queued again wherever it lands.
+            _dirty = DirtyFlags.None;
+            try
+            {
+                _host = host.Reattach(this);
+            }
+            catch
+            {
+                ReleaseBones(host.Bones);
+                _edgeSource.Release();
+                _host = null;
                 throw;
             }
             MarkDirty(DirtyFlags.All);

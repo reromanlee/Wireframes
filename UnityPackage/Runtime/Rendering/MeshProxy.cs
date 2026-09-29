@@ -61,6 +61,16 @@ namespace reromanlee.Wireframes
             get => _headless != null;
         }
 
+        /// <summary>
+        /// False deactivates the container's GameObject: its chunks aren't drawn and, with the render callbacks it drops,
+        /// nothing is flushed until it is shown again, when every edit made meanwhile is applied.
+        /// </summary>
+        internal bool IsVisible
+        {
+            get => gameObject.activeSelf;
+            set => gameObject.SetActive(value);
+        }
+
         internal IReadOnlyList<MeshChunk> Chunks
         {
             get => _chunks != null ? _chunks.Chunks : Array.Empty<MeshChunk>();
