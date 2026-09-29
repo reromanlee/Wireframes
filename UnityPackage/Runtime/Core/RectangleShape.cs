@@ -11,13 +11,12 @@ namespace reromanlee.Wireframes
         private Vector2 _size;
 
         protected RectangleShape(
-            MeshProxy proxy,
             int vertexCount,
-            int[] edgePattern,
+            EdgeSource edgeSource,
             Transform bone,
             Vector3 localCenter,
             Quaternion localRotation,
-            Vector2 size) : base(proxy, vertexCount, edgePattern, bone, localCenter, localRotation)
+            Vector2 size) : base(vertexCount, edgeSource, bone, localCenter, localRotation)
         {
             _size = size;
         }

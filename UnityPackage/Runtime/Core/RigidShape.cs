@@ -16,14 +16,13 @@ namespace reromanlee.Wireframes
         private int _boneSlot;
 
         protected RigidShape(
-            MeshProxy proxy,
             int vertexCount,
-            int[] edgePattern,
+            EdgeSource edgeSource,
             Transform bone,
             Vector3 localPosition,
-            Quaternion localRotation) : base(proxy, vertexCount, edgePattern)
+            Quaternion localRotation) : base(vertexCount, edgeSource)
         {
-            ReplaceBone(ref _bone, ref _boneSlot, bone);
+            _bone = CheckBone(bone, nameof(bone));
             _localPosition = localPosition;
             _localRotation = Quaternion.Normalize(localRotation);
         }
@@ -114,6 +113,11 @@ namespace reromanlee.Wireframes
             set
             {
                 EnsureUsable();
+                value = CheckBone(value, nameof(value));
+                if (ReferenceEquals(value, _bone))
+                {
+                    return;
+                }
                 Vector3 worldPosition = ToWorld(_bone, _localPosition);
                 Quaternion worldRotation = ToWorld(_bone, _localRotation);
                 float oldScale = UniformScale(_bone);
@@ -152,6 +156,11 @@ namespace reromanlee.Wireframes
         internal sealed override void WriteBoneIndices(Span<float> boneIndices)
         {
             boneIndices.Fill(_boneSlot);
+        }
+
+        protected sealed override void AcquireBones(BoneRegistry bones)
+        {
+            _boneSlot = bones.Acquire(_bone);
         }
 
         protected sealed override void ReleaseBones(BoneRegistry bones)

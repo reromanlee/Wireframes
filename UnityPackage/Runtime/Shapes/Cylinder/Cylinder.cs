@@ -12,7 +12,6 @@ namespace reromanlee.Wireframes
         private float _radius;
 
         internal Cylinder(
-            MeshProxy proxy,
             Transform bone,
             Vector3 localPosition,
             Quaternion localRotation,
@@ -20,7 +19,6 @@ namespace reromanlee.Wireframes
             float radius,
             int segmentCount)
             : base(
-                proxy,
                 Ring.CheckQuarterSegmentCount(segmentCount) * RingCount,
                 Patterns.Get(segmentCount),
                 bone,

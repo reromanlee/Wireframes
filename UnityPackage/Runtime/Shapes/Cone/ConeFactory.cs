@@ -9,21 +9,20 @@ namespace reromanlee.Wireframes
         public static ICone CreateCone(this WireframeContainer container)
         {
             MeshProxy proxy = WireframeContainer.ProxyOf(container);
-            return new Cone(
-                proxy,
+            return proxy.Add(new Cone(
                 null,
                 Vector3.zero,
                 Quaternion.identity,
                 ShapeDefaults.Size,
                 ShapeDefaults.Radius,
-                Ring.DefaultSegmentCount);
+                Ring.DefaultSegmentCount));
         }
 
         /// <summary>
         /// Creates a white cone from a tip to the center of its base, both world positions. Its spin around the axis
         /// keeps the cone's +Y as close to world up as it can.
         /// </summary>
-        /// <param name="segmentCount">Number of straight pieces the base ring is drawn with, a positive multiple of 4.</param>
+        /// <param name="segmentCount">Number of straight pieces the base ring is drawn with, a multiple of 4 from 4 to 1024.</param>
         public static ICone CreateCone(
             this WireframeContainer container,
             Vector3 tip,
@@ -33,14 +32,14 @@ namespace reromanlee.Wireframes
         {
             MeshProxy proxy = WireframeContainer.ProxyOf(container);
             Quaternion rotation = ShapeRotations.FromAxis(baseCenter - tip, Vector3.up);
-            return new Cone(proxy, null, tip, rotation, Vector3.Distance(tip, baseCenter), radius, segmentCount);
+            return proxy.Add(new Cone(null, tip, rotation, Vector3.Distance(tip, baseCenter), radius, segmentCount));
         }
 
         /// <summary>
         /// Creates a white cone that follows <paramref name="bone"/>, from a tip to the center of its base, both in the
         /// bone's local space. Its spin around the axis keeps the cone's +Y as close to the bone's up as it can.
         /// </summary>
-        /// <param name="segmentCount">Number of straight pieces the base ring is drawn with, a positive multiple of 4.</param>
+        /// <param name="segmentCount">Number of straight pieces the base ring is drawn with, a multiple of 4 from 4 to 1024.</param>
         public static ICone CreateCone(
             this WireframeContainer container,
             Transform bone,
@@ -52,14 +51,14 @@ namespace reromanlee.Wireframes
             MeshProxy proxy = WireframeContainer.ProxyOf(container);
             Quaternion rotation = ShapeRotations.FromAxis(localBaseCenter - localTip, Vector3.up);
             float length = Vector3.Distance(localTip, localBaseCenter);
-            return new Cone(proxy, bone, localTip, rotation, length, radius, segmentCount);
+            return proxy.Add(new Cone(bone, localTip, rotation, length, radius, segmentCount));
         }
 
         /// <summary>
         /// Creates a white cone in world space with its tip at <paramref name="position"/> and its base
         /// <paramref name="length"/> along the +Z axis of <paramref name="rotation"/>.
         /// </summary>
-        /// <param name="segmentCount">Number of straight pieces the base ring is drawn with, a positive multiple of 4.</param>
+        /// <param name="segmentCount">Number of straight pieces the base ring is drawn with, a multiple of 4 from 4 to 1024.</param>
         public static ICone CreateCone(
             this WireframeContainer container,
             Vector3 position,
@@ -69,7 +68,7 @@ namespace reromanlee.Wireframes
             int segmentCount = Ring.DefaultSegmentCount)
         {
             MeshProxy proxy = WireframeContainer.ProxyOf(container);
-            return new Cone(proxy, null, position, rotation, length, radius, segmentCount);
+            return proxy.Add(new Cone(null, position, rotation, length, radius, segmentCount));
         }
     }
 }

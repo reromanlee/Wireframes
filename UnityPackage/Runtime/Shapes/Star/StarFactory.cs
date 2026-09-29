@@ -15,27 +15,27 @@ namespace reromanlee.Wireframes
         public static IStar CreateStar(this WireframeContainer container)
         {
             MeshProxy proxy = WireframeContainer.ProxyOf(container);
-            return new Star(
-                proxy, null, Vector3.zero, Quaternion.identity, DefaultInnerRadius, ShapeDefaults.Radius, DefaultPointCount);
+            return proxy.Add(new Star(
+                null, Vector3.zero, Quaternion.identity, DefaultInnerRadius, ShapeDefaults.Radius, DefaultPointCount));
         }
 
         /// <summary>
         /// Creates a white star around a world position, lying flat in the world's XZ plane with its first point along
         /// +Z.
         /// </summary>
-        /// <param name="pointCount">Number of points, at least 3.</param>
+        /// <param name="pointCount">Number of points, from 3 to 512.</param>
         public static IStar CreateStar(
             this WireframeContainer container, Vector3 center, float innerRadius, float outerRadius, int pointCount)
         {
             MeshProxy proxy = WireframeContainer.ProxyOf(container);
-            return new Star(proxy, null, center, Quaternion.identity, innerRadius, outerRadius, pointCount);
+            return proxy.Add(new Star(null, center, Quaternion.identity, innerRadius, outerRadius, pointCount));
         }
 
         /// <summary>
         /// Creates a white star that follows <paramref name="bone"/>, around a position in the bone's local space and
         /// lying flat in the bone's XZ plane with its first point along the bone's +Z.
         /// </summary>
-        /// <param name="pointCount">Number of points, at least 3.</param>
+        /// <param name="pointCount">Number of points, from 3 to 512.</param>
         public static IStar CreateStar(
             this WireframeContainer container,
             Transform bone,
@@ -45,14 +45,14 @@ namespace reromanlee.Wireframes
             int pointCount)
         {
             MeshProxy proxy = WireframeContainer.ProxyOf(container);
-            return new Star(proxy, bone, localCenter, Quaternion.identity, innerRadius, outerRadius, pointCount);
+            return proxy.Add(new Star(bone, localCenter, Quaternion.identity, innerRadius, outerRadius, pointCount));
         }
 
         /// <summary>
         /// Creates a white star in world space, lying in the XZ plane of <paramref name="rotation"/> with its first point
         /// along the rotation's +Z.
         /// </summary>
-        /// <param name="pointCount">Number of points, at least 3.</param>
+        /// <param name="pointCount">Number of points, from 3 to 512.</param>
         public static IStar CreateStar(
             this WireframeContainer container,
             Vector3 center,
@@ -62,7 +62,7 @@ namespace reromanlee.Wireframes
             int pointCount)
         {
             MeshProxy proxy = WireframeContainer.ProxyOf(container);
-            return new Star(proxy, null, center, rotation, innerRadius, outerRadius, pointCount);
+            return proxy.Add(new Star(null, center, rotation, innerRadius, outerRadius, pointCount));
         }
     }
 }

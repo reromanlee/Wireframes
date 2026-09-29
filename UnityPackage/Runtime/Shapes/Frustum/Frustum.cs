@@ -12,7 +12,6 @@ namespace reromanlee.Wireframes
         private float _radiusB;
 
         internal Frustum(
-            MeshProxy proxy,
             Transform bone,
             Vector3 localPosition,
             Quaternion localRotation,
@@ -20,7 +19,7 @@ namespace reromanlee.Wireframes
             float radiusA,
             float radiusB,
             int sideCount)
-            : base(proxy, CountVertices(sideCount), Patterns.Get(sideCount), bone, localPosition, localRotation, length)
+            : base(CountVertices(sideCount), Patterns.Get(sideCount), bone, localPosition, localRotation, length)
         {
             _radiusA = radiusA;
             _radiusB = radiusB;
@@ -87,9 +86,10 @@ namespace reromanlee.Wireframes
 
         private static int CountVertices(int sideCount)
         {
-            if (sideCount < 3)
+            if (sideCount < 3 || sideCount > Ring.MaxSegmentCount)
             {
-                throw new ArgumentOutOfRangeException(nameof(sideCount), sideCount, "A frustum needs at least 3 sides.");
+                throw new ArgumentOutOfRangeException(
+                    nameof(sideCount), sideCount, $"A frustum needs 3 to {Ring.MaxSegmentCount} sides.");
             }
             return sideCount * PolygonCount;
         }

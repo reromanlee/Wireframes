@@ -14,7 +14,7 @@ namespace reromanlee.Wireframes
     /// A chunk grows up to <see cref="MaxVertexCount"/> vertices, so its indices stay 16-bit. A chunk created with more
     /// is a large chunk: it keeps 32-bit indices for a shape bigger than that and never grows.
     /// </remarks>
-    internal sealed class MeshChunk : IDisposable
+    internal sealed class MeshChunk : IShapeHost, IDisposable
     {
         /// <summary>
         /// Most vertices a chunk with 16-bit indices holds. Index 0xFFFF stays unused because some graphics APIs reserve
@@ -126,7 +126,7 @@ namespace reromanlee.Wireframes
             Flush();
         }
 
-        internal BoneRegistry Bones
+        public BoneRegistry Bones
         {
             get => _bones;
         }
@@ -155,6 +155,12 @@ namespace reromanlee.Wireframes
         internal int ShapeCount
         {
             get => _shapeCount;
+        }
+
+        /// <summary>Shapes queued for the next flush.</summary>
+        internal int PendingCount
+        {
+            get => _pendingCount;
         }
 
         internal int EdgeCount
@@ -232,7 +238,7 @@ namespace reromanlee.Wireframes
             EmptySince = float.NaN;
         }
 
-        internal void Remove(Shape shape)
+        public void Remove(Shape shape)
         {
             // The last edge moves into each freed slot; later edges of this same shape may be among them, and
             // their owner callback keeps the shape's slots current while the loop runs.
@@ -253,11 +259,17 @@ namespace reromanlee.Wireframes
             _shapes[last] = null;
         }
 
-        internal void Enqueue(Shape shape)
+        public void Enqueue(Shape shape)
         {
             if (_pendingCount == _pending.Length)
             {
-                Array.Resize(ref _pending, _pendingCount * 2);
+                // Without renders to flush the queue, disposed shapes would pile up in it; each live shape is queued
+                // at most once, so dropping them keeps the queue within the number of live shapes.
+                RemoveDisposedPending();
+                if (_pendingCount == _pending.Length)
+                {
+                    Array.Resize(ref _pending, _pendingCount * 2);
+                }
             }
             _pending[_pendingCount++] = shape;
         }
@@ -321,31 +333,87 @@ namespace reromanlee.Wireframes
                 {
                     continue;
                 }
-
-                DirtyFlags dirty = shape.TakeDirty();
-                int start = shape.VertexStart;
-                int count = shape.VertexCount;
-                if ((dirty & DirtyFlags.Positions) != 0)
+                try
                 {
-                    shape.WritePositions(new Span<Vector3>(_positions, start, count));
-                    _positionRanges.Add(start, count);
+                    WriteShape(shape, shape.TakeDirty());
                 }
-                if ((dirty & DirtyFlags.Colors) != 0)
+                catch (Exception exception)
                 {
-                    shape.WriteColors(new Span<Color32>(_colors, start, count));
-                    _colorRanges.Add(start, count);
-                }
-                if ((dirty & DirtyFlags.Bones) != 0)
-                {
-                    shape.WriteBoneIndices(new Span<float>(_boneIndices, start, count));
-                    _boneRanges.Add(start, count);
-                }
-                if ((dirty & DirtyFlags.Edges) != 0)
-                {
-                    shape.WriteEdges(_edges, _edgeRanges);
+                    // One broken shape must not stop the others from drawing; it keeps what it last wrote.
+                    if (!shape.HasReportedProblem)
+                    {
+                        shape.HasReportedProblem = true;
+                        WireframesLog.Error(
+                            $"A {shape.GetType().Name} failed to update and was skipped.", exception, _renderer);
+                    }
                 }
             }
             _pendingCount = 0;
+        }
+
+        private void WriteShape(Shape shape, DirtyFlags dirty)
+        {
+            int start = shape.VertexStart;
+            int count = shape.VertexCount;
+            if ((dirty & DirtyFlags.Positions) != 0)
+            {
+                shape.WritePositions(new Span<Vector3>(_positions, start, count));
+                _positionRanges.Add(start, count);
+                CheckPositions(shape);
+            }
+            if ((dirty & DirtyFlags.Colors) != 0)
+            {
+                shape.WriteColors(new Span<Color32>(_colors, start, count));
+                _colorRanges.Add(start, count);
+            }
+            if ((dirty & DirtyFlags.Bones) != 0)
+            {
+                shape.WriteBoneIndices(new Span<float>(_boneIndices, start, count));
+                _boneRanges.Add(start, count);
+            }
+            if ((dirty & DirtyFlags.Edges) != 0)
+            {
+                shape.WriteEdges(_edges, _edgeRanges);
+            }
+        }
+
+        /// <summary>Warns once per shape about positions that aren't finite, in the Editor and development builds.</summary>
+        [System.Diagnostics.Conditional("UNITY_EDITOR"), System.Diagnostics.Conditional("DEVELOPMENT_BUILD")]
+        private void CheckPositions(Shape shape)
+        {
+            if (shape.HasReportedProblem)
+            {
+                return;
+            }
+            int end = shape.VertexStart + shape.VertexCount;
+            for (int i = shape.VertexStart; i < end; i++)
+            {
+                Vector3 position = _positions[i];
+                if (!float.IsFinite(position.x) || !float.IsFinite(position.y) || !float.IsFinite(position.z))
+                {
+                    shape.HasReportedProblem = true;
+                    WireframesLog.Warning(
+                        $"A {shape.GetType().Name} has a position that isn't a finite number, so it can't be drawn "
+                        + "correctly. Check the positions, sizes and rotations set on it.",
+                        _renderer);
+                    return;
+                }
+            }
+        }
+
+        private void RemoveDisposedPending()
+        {
+            int kept = 0;
+            for (int i = 0; i < _pendingCount; i++)
+            {
+                Shape shape = _pending[i];
+                if (!shape.IsDisposed)
+                {
+                    _pending[kept++] = shape;
+                }
+            }
+            Array.Clear(_pending, kept, _pendingCount - kept);
+            _pendingCount = kept;
         }
 
         private void UploadVertices()

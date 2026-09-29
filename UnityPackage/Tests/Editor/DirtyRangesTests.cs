@@ -35,6 +35,37 @@ namespace reromanlee.Wireframes.Tests
         }
 
         [Test]
+        public void Add_WithoutFlushes_KeepsTheListSmallAndCoversEveryRange()
+        {
+            DirtyRanges ranges = new();
+            for (int i = 0; i < 100000; i++)
+            {
+                ranges.Add(i * 1000, 2);
+            }
+
+            Assert.That(ranges.Count, Is.LessThanOrEqualTo(256));
+            Assert.That(ranges.Merge(), Is.EqualTo(1));
+            Assert.That(ranges[0].start, Is.Zero);
+            Assert.That(ranges[0].end, Is.EqualTo(99999 * 1000 + 2));
+        }
+
+        [Test]
+        public void Clear_EndsTheCoveringRange()
+        {
+            DirtyRanges ranges = new();
+            for (int i = 0; i < 1000; i++)
+            {
+                ranges.Add(i * 1000, 2);
+            }
+
+            ranges.Clear();
+            ranges.Add(0, 2);
+            ranges.Add(50000, 2);
+
+            Assert.That(ranges.Merge(), Is.EqualTo(2));
+        }
+
+        [Test]
         public void Add_IgnoresEmptyRanges()
         {
             DirtyRanges ranges = new();

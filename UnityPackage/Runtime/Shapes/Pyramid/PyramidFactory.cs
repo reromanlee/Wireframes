@@ -10,7 +10,7 @@ namespace reromanlee.Wireframes
         {
             MeshProxy proxy = WireframeContainer.ProxyOf(container);
             Vector2 baseSize = Vector2.one * ShapeDefaults.Size;
-            return new Pyramid(proxy, null, Vector3.zero, Quaternion.identity, ShapeDefaults.Size, baseSize);
+            return proxy.Add(new Pyramid(null, Vector3.zero, Quaternion.identity, ShapeDefaults.Size, baseSize));
         }
 
         /// <summary>
@@ -24,7 +24,7 @@ namespace reromanlee.Wireframes
         {
             MeshProxy proxy = WireframeContainer.ProxyOf(container);
             Quaternion rotation = ShapeRotations.FromAxis(baseCenter - tip, Vector3.up);
-            return new Pyramid(proxy, null, tip, rotation, Vector3.Distance(tip, baseCenter), baseSize);
+            return proxy.Add(new Pyramid(null, tip, rotation, Vector3.Distance(tip, baseCenter), baseSize));
         }
 
         /// <summary>
@@ -42,7 +42,7 @@ namespace reromanlee.Wireframes
             MeshProxy proxy = WireframeContainer.ProxyOf(container);
             Quaternion rotation = ShapeRotations.FromAxis(localBaseCenter - localTip, Vector3.up);
             float length = Vector3.Distance(localTip, localBaseCenter);
-            return new Pyramid(proxy, bone, localTip, rotation, length, baseSize);
+            return proxy.Add(new Pyramid(bone, localTip, rotation, length, baseSize));
         }
 
         /// <summary>
@@ -57,7 +57,8 @@ namespace reromanlee.Wireframes
             float length,
             Vector2 baseSize)
         {
-            return new Pyramid(WireframeContainer.ProxyOf(container), null, position, rotation, length, baseSize);
+            MeshProxy proxy = WireframeContainer.ProxyOf(container);
+            return proxy.Add(new Pyramid(null, position, rotation, length, baseSize));
         }
     }
 }

@@ -17,12 +17,11 @@ namespace reromanlee.Wireframes
         private Vector2 _baseSize;
 
         internal Pyramid(
-            MeshProxy proxy,
             Transform bone,
             Vector3 localPosition,
             Quaternion localRotation,
             float length,
-            Vector2 baseSize) : base(proxy, PyramidVertexCount, EdgePattern, bone, localPosition, localRotation, length)
+            Vector2 baseSize) : base(PyramidVertexCount, EdgePattern, bone, localPosition, localRotation, length)
         {
             _baseSize = baseSize;
         }

@@ -29,12 +29,14 @@ namespace reromanlee.Wireframes
         /// Transform that endpoint A follows, or null for world space. Changing it keeps the endpoint's world position,
         /// like reparenting a Transform. If the bone is destroyed, the endpoint stays where it was and becomes world space.
         /// </summary>
+        /// <exception cref="System.ArgumentException">The Transform isn't in a scene, such as a prefab asset.</exception>
         Transform BoneA { get; set; }
 
         /// <summary>
         /// Transform that endpoint B follows, or null for world space. Changing it keeps the endpoint's world position,
         /// like reparenting a Transform. If the bone is destroyed, the endpoint stays where it was and becomes world space.
         /// </summary>
+        /// <exception cref="System.ArgumentException">The Transform isn't in a scene, such as a prefab asset.</exception>
         Transform BoneB { get; set; }
     }
 }

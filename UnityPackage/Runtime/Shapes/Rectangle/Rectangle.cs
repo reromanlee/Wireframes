@@ -10,8 +10,8 @@ namespace reromanlee.Wireframes
         // Corner 0 is A and corner 2 is B.
         private static readonly int[] EdgePattern = { 0, 1, 1, 2, 2, 3, 3, 0 };
 
-        internal Rectangle(MeshProxy proxy, Transform bone, Vector3 localCenter, Quaternion localRotation, Vector2 size)
-            : base(proxy, CornerCount, EdgePattern, bone, localCenter, localRotation, size)
+        internal Rectangle(Transform bone, Vector3 localCenter, Quaternion localRotation, Vector2 size)
+            : base(CornerCount, EdgePattern, bone, localCenter, localRotation, size)
         {
         }
 

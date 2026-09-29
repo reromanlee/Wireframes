@@ -11,7 +11,9 @@ namespace reromanlee.Wireframes
     /// <remarks>
     /// Main thread only. Each shape type adds its Create methods as extension methods, declared in a factory class next
     /// to the shape, such as <see cref="CircleFactory"/>. The container creates a GameObject in the active scene; edits
-    /// made to its shapes are uploaded right before a camera renders them.
+    /// made to its shapes are uploaded right before a camera renders them. Without a graphics device, as in server
+    /// builds, or without a usable shader, shapes keep working but nothing is drawn or uploaded. Bones must be scene
+    /// objects: Create methods and bone setters throw <see cref="ArgumentException"/> for a prefab asset.
     /// </remarks>
     public sealed class WireframeContainer : IDisposable
     {
@@ -30,6 +32,7 @@ namespace reromanlee.Wireframes
         /// <exception cref="ArgumentOutOfRangeException">A setting is outside its valid range.</exception>
         public WireframeContainer(WireframeContainerSettings settings)
         {
+            MainThread.Check();
             settings ??= new WireframeContainerSettings();
             settings.Validate(nameof(settings));
 
@@ -72,17 +75,25 @@ namespace reromanlee.Wireframes
         /// <summary>Removes the container and disposes every shape it created. Calling it again does nothing.</summary>
         public void Dispose()
         {
+            MainThread.Check();
             if (_isDisposed)
             {
                 return;
             }
-            _proxy.Shutdown();
-            UnityObjects.Destroy(_proxy.gameObject);
+            try
+            {
+                _proxy.Shutdown();
+            }
+            finally
+            {
+                UnityObjects.Destroy(_proxy.gameObject);
+            }
         }
 
         /// <summary>The proxy that a factory adds a new shape to, after checking <paramref name="container"/>.</summary>
         internal static MeshProxy ProxyOf(WireframeContainer container)
         {
+            MainThread.Check();
             if (container == null)
             {
                 throw new ArgumentNullException(nameof(container));

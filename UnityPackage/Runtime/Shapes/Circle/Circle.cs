@@ -8,13 +8,12 @@ namespace reromanlee.Wireframes
         private float _radius;
 
         internal Circle(
-            MeshProxy proxy,
             Transform bone,
             Vector3 localCenter,
             Quaternion localRotation,
             float radius,
             int segmentCount)
-            : base(proxy, Ring.CheckSegmentCount(segmentCount), Ring.Patterns.Get(segmentCount), bone, localCenter, localRotation)
+            : base(Ring.CheckSegmentCount(segmentCount), Ring.Patterns.Get(segmentCount), bone, localCenter, localRotation)
         {
             _radius = radius;
         }

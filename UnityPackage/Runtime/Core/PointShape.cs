@@ -9,7 +9,7 @@ namespace reromanlee.Wireframes
     /// </summary>
     internal abstract class PointShape : Shape
     {
-        protected PointShape(MeshProxy proxy, int pointCount, int[] edgePattern) : base(proxy, pointCount, edgePattern)
+        protected PointShape(int pointCount, EdgeSource edgeSource) : base(pointCount, edgeSource)
         {
         }
 
@@ -63,7 +63,12 @@ namespace reromanlee.Wireframes
         public void SetBone(int index, Transform bone)
         {
             EnsureUsable();
+            bone = CheckBone(bone, nameof(bone));
             ref ShapePoint point = ref LivePoint(index);
+            if (ReferenceEquals(bone, point.Bone))
+            {
+                return;
+            }
             Vector3 worldPosition = ToWorld(point.Bone, point.LocalPosition);
             ReplaceBone(ref point.Bone, ref point.BoneSlot, bone);
             point.LocalPosition = ToLocal(point.Bone, worldPosition);
@@ -104,6 +109,15 @@ namespace reromanlee.Wireframes
             }
         }
 
+        protected override void AcquireBones(BoneRegistry bones)
+        {
+            for (int i = 0; i < VertexCount; i++)
+            {
+                ref ShapePoint point = ref Point(i);
+                point.BoneSlot = bones.Acquire(point.Bone);
+            }
+        }
+
         protected override void ReleaseBones(BoneRegistry bones)
         {
             for (int i = 0; i < VertexCount; i++)
@@ -112,11 +126,12 @@ namespace reromanlee.Wireframes
             }
         }
 
-        /// <summary>Attaches point <paramref name="index"/> to <paramref name="bone"/>, keeping its local position.</summary>
-        protected void AttachPoint(int index, Transform bone)
+        /// <summary>
+        /// Sets the bone of point <paramref name="index"/> while the shape is being built, keeping its local position.
+        /// </summary>
+        protected void InitializeBone(int index, Transform bone, string parameterName)
         {
-            ref ShapePoint point = ref Point(index);
-            ReplaceBone(ref point.Bone, ref point.BoneSlot, bone);
+            Point(index).Bone = CheckBone(bone, parameterName);
         }
 
         /// <summary>Storage of point <paramref name="index"/>.</summary>

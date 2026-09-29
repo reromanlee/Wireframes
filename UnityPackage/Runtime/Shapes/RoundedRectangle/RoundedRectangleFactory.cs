@@ -15,8 +15,8 @@ namespace reromanlee.Wireframes
         {
             MeshProxy proxy = WireframeContainer.ProxyOf(container);
             Vector2 size = Vector2.one * ShapeDefaults.Size;
-            return new RoundedRectangle(
-                proxy, null, Vector3.zero, Quaternion.identity, size, DefaultCornerRadius, Ring.DefaultSegmentCount);
+            return proxy.Add(new RoundedRectangle(
+                null, Vector3.zero, Quaternion.identity, size, DefaultCornerRadius, Ring.DefaultSegmentCount));
         }
 
         /// <summary>
@@ -24,7 +24,7 @@ namespace reromanlee.Wireframes
         /// world-space corners. If the corners differ in height, the rectangle lies halfway between them.
         /// </summary>
         /// <param name="segmentCount">
-        /// Number of straight pieces a full circle of the corners is drawn with, a positive multiple of 4.
+        /// Number of straight pieces a full circle of the corners is drawn with, a multiple of 4 from 4 to 1024.
         /// </param>
         public static IRoundedRectangle CreateRoundedRectangle(
             this WireframeContainer container,
@@ -36,7 +36,7 @@ namespace reromanlee.Wireframes
             MeshProxy proxy = WireframeContainer.ProxyOf(container);
             Vector3 center = (cornerA + cornerB) * 0.5f;
             Vector2 size = RectangleShape.FlatSpan(cornerA, cornerB);
-            return new RoundedRectangle(proxy, null, center, Quaternion.identity, size, cornerRadius, segmentCount);
+            return proxy.Add(new RoundedRectangle(null, center, Quaternion.identity, size, cornerRadius, segmentCount));
         }
 
         /// <summary>
@@ -44,7 +44,7 @@ namespace reromanlee.Wireframes
         /// and spanned by two opposite corners in the bone's local space.
         /// </summary>
         /// <param name="segmentCount">
-        /// Number of straight pieces a full circle of the corners is drawn with, a positive multiple of 4.
+        /// Number of straight pieces a full circle of the corners is drawn with, a multiple of 4 from 4 to 1024.
         /// </param>
         public static IRoundedRectangle CreateRoundedRectangle(
             this WireframeContainer container,
@@ -57,14 +57,14 @@ namespace reromanlee.Wireframes
             MeshProxy proxy = WireframeContainer.ProxyOf(container);
             Vector3 center = (localCornerA + localCornerB) * 0.5f;
             Vector2 size = RectangleShape.FlatSpan(localCornerA, localCornerB);
-            return new RoundedRectangle(proxy, bone, center, Quaternion.identity, size, cornerRadius, segmentCount);
+            return proxy.Add(new RoundedRectangle(bone, center, Quaternion.identity, size, cornerRadius, segmentCount));
         }
 
         /// <summary>
         /// Creates a white rounded rectangle in world space, lying in the XZ plane of <paramref name="rotation"/>.
         /// </summary>
         /// <param name="segmentCount">
-        /// Number of straight pieces a full circle of the corners is drawn with, a positive multiple of 4.
+        /// Number of straight pieces a full circle of the corners is drawn with, a multiple of 4 from 4 to 1024.
         /// </param>
         public static IRoundedRectangle CreateRoundedRectangle(
             this WireframeContainer container,
@@ -75,7 +75,7 @@ namespace reromanlee.Wireframes
             int segmentCount = Ring.DefaultSegmentCount)
         {
             MeshProxy proxy = WireframeContainer.ProxyOf(container);
-            return new RoundedRectangle(proxy, null, center, rotation, size, cornerRadius, segmentCount);
+            return proxy.Add(new RoundedRectangle(null, center, rotation, size, cornerRadius, segmentCount));
         }
     }
 }

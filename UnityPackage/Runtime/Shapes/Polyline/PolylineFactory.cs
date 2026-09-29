@@ -9,13 +9,15 @@ namespace reromanlee.Wireframes
         /// <summary>Creates a white, open polyline through at least 2 world positions.</summary>
         public static IPolyline CreatePolyline(this WireframeContainer container, params Vector3[] points)
         {
-            return new Polyline(WireframeContainer.ProxyOf(container), points, false);
+            MeshProxy proxy = WireframeContainer.ProxyOf(container);
+            return proxy.Add(new Polyline(points, false));
         }
 
         /// <summary>Creates a white, open polyline through at least 2 world positions.</summary>
         public static IPolyline CreatePolyline(this WireframeContainer container, IReadOnlyList<Vector3> points)
         {
-            return new Polyline(WireframeContainer.ProxyOf(container), points, false);
+            MeshProxy proxy = WireframeContainer.ProxyOf(container);
+            return proxy.Add(new Polyline(points, false));
         }
 
         /// <summary>
@@ -24,19 +26,22 @@ namespace reromanlee.Wireframes
         /// </summary>
         public static IPolyline CreatePolyline(this WireframeContainer container, params Transform[] bones)
         {
-            return new Polyline(WireframeContainer.ProxyOf(container), bones, false);
+            MeshProxy proxy = WireframeContainer.ProxyOf(container);
+            return proxy.Add(new Polyline(bones, false));
         }
 
         /// <summary>Creates a white, closed polyline through at least 3 world positions.</summary>
         public static IPolyline CreatePolygon(this WireframeContainer container, params Vector3[] points)
         {
-            return new Polyline(WireframeContainer.ProxyOf(container), points, true);
+            MeshProxy proxy = WireframeContainer.ProxyOf(container);
+            return proxy.Add(new Polyline(points, true));
         }
 
         /// <summary>Creates a white, closed polyline through at least 3 world positions.</summary>
         public static IPolyline CreatePolygon(this WireframeContainer container, IReadOnlyList<Vector3> points)
         {
-            return new Polyline(WireframeContainer.ProxyOf(container), points, true);
+            MeshProxy proxy = WireframeContainer.ProxyOf(container);
+            return proxy.Add(new Polyline(points, true));
         }
 
         /// <summary>
@@ -45,14 +50,16 @@ namespace reromanlee.Wireframes
         /// </summary>
         public static IPolyline CreatePolygon(this WireframeContainer container, params Transform[] bones)
         {
-            return new Polyline(WireframeContainer.ProxyOf(container), bones, true);
+            MeshProxy proxy = WireframeContainer.ProxyOf(container);
+            return proxy.Add(new Polyline(bones, true));
         }
 
         /// <summary>Creates a white triangle, a closed polyline through 3 world positions.</summary>
         public static IPolyline CreateTriangle(
             this WireframeContainer container, Vector3 pointA, Vector3 pointB, Vector3 pointC)
         {
-            return new Polyline(WireframeContainer.ProxyOf(container), new[] { pointA, pointB, pointC }, true);
+            MeshProxy proxy = WireframeContainer.ProxyOf(container);
+            return proxy.Add(new Polyline(new[] { pointA, pointB, pointC }, true));
         }
 
         /// <summary>
@@ -62,7 +69,8 @@ namespace reromanlee.Wireframes
         public static IPolyline CreateTriangle(
             this WireframeContainer container, Transform boneA, Transform boneB, Transform boneC)
         {
-            return new Polyline(WireframeContainer.ProxyOf(container), new[] { boneA, boneB, boneC }, true);
+            MeshProxy proxy = WireframeContainer.ProxyOf(container);
+            return proxy.Add(new Polyline(new[] { boneA, boneB, boneC }, true));
         }
     }
 }

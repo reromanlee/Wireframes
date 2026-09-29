@@ -9,22 +9,24 @@ namespace reromanlee.Wireframes
         public static ICircle CreateCircle(this WireframeContainer container)
         {
             MeshProxy proxy = WireframeContainer.ProxyOf(container);
-            return new Circle(proxy, null, Vector3.zero, Quaternion.identity, ShapeDefaults.Radius, Ring.DefaultSegmentCount);
+            return proxy.Add(new Circle(
+                null, Vector3.zero, Quaternion.identity, ShapeDefaults.Radius, Ring.DefaultSegmentCount));
         }
 
         /// <summary>Creates a white circle around a world position, lying flat in the world's XZ plane.</summary>
-        /// <param name="segmentCount">Number of straight pieces the circle is drawn with, at least 3.</param>
+        /// <param name="segmentCount">Number of straight pieces the circle is drawn with, from 3 to 1024.</param>
         public static ICircle CreateCircle(
             this WireframeContainer container, Vector3 center, float radius, int segmentCount = Ring.DefaultSegmentCount)
         {
-            return new Circle(WireframeContainer.ProxyOf(container), null, center, Quaternion.identity, radius, segmentCount);
+            MeshProxy proxy = WireframeContainer.ProxyOf(container);
+            return proxy.Add(new Circle(null, center, Quaternion.identity, radius, segmentCount));
         }
 
         /// <summary>
         /// Creates a white circle that follows <paramref name="bone"/>, around a position in the bone's local space
         /// and lying flat in the bone's XZ plane.
         /// </summary>
-        /// <param name="segmentCount">Number of straight pieces the circle is drawn with, at least 3.</param>
+        /// <param name="segmentCount">Number of straight pieces the circle is drawn with, from 3 to 1024.</param>
         public static ICircle CreateCircle(
             this WireframeContainer container,
             Transform bone,
@@ -33,11 +35,11 @@ namespace reromanlee.Wireframes
             int segmentCount = Ring.DefaultSegmentCount)
         {
             MeshProxy proxy = WireframeContainer.ProxyOf(container);
-            return new Circle(proxy, bone, localCenter, Quaternion.identity, radius, segmentCount);
+            return proxy.Add(new Circle(bone, localCenter, Quaternion.identity, radius, segmentCount));
         }
 
         /// <summary>Creates a white circle in world space, lying in the XZ plane of <paramref name="rotation"/>.</summary>
-        /// <param name="segmentCount">Number of straight pieces the circle is drawn with, at least 3.</param>
+        /// <param name="segmentCount">Number of straight pieces the circle is drawn with, from 3 to 1024.</param>
         public static ICircle CreateCircle(
             this WireframeContainer container,
             Vector3 center,
@@ -45,11 +47,12 @@ namespace reromanlee.Wireframes
             float radius,
             int segmentCount = Ring.DefaultSegmentCount)
         {
-            return new Circle(WireframeContainer.ProxyOf(container), null, center, rotation, radius, segmentCount);
+            MeshProxy proxy = WireframeContainer.ProxyOf(container);
+            return proxy.Add(new Circle(null, center, rotation, radius, segmentCount));
         }
 
         /// <summary>Creates a white circle around a world position, facing <paramref name="normal"/>.</summary>
-        /// <param name="segmentCount">Number of straight pieces the circle is drawn with, at least 3.</param>
+        /// <param name="segmentCount">Number of straight pieces the circle is drawn with, from 3 to 1024.</param>
         public static ICircle CreateCircle(
             this WireframeContainer container,
             Vector3 center,
@@ -58,7 +61,7 @@ namespace reromanlee.Wireframes
             int segmentCount = Ring.DefaultSegmentCount)
         {
             MeshProxy proxy = WireframeContainer.ProxyOf(container);
-            return new Circle(proxy, null, center, ShapeRotations.FromNormal(normal), radius, segmentCount);
+            return proxy.Add(new Circle(null, center, ShapeRotations.FromNormal(normal), radius, segmentCount));
         }
     }
 }

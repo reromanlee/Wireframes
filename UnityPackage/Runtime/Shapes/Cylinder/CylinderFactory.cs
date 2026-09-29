@@ -9,21 +9,20 @@ namespace reromanlee.Wireframes
         public static ICylinder CreateCylinder(this WireframeContainer container)
         {
             MeshProxy proxy = WireframeContainer.ProxyOf(container);
-            return new Cylinder(
-                proxy,
+            return proxy.Add(new Cylinder(
                 null,
                 Vector3.zero,
                 Quaternion.identity,
                 ShapeDefaults.Size,
                 ShapeDefaults.Radius,
-                Ring.DefaultSegmentCount);
+                Ring.DefaultSegmentCount));
         }
 
         /// <summary>
         /// Creates a white cylinder between two world positions. Its spin around the axis keeps the cylinder's +Y as
         /// close to world up as it can.
         /// </summary>
-        /// <param name="segmentCount">Number of straight pieces each ring is drawn with, a positive multiple of 4.</param>
+        /// <param name="segmentCount">Number of straight pieces each ring is drawn with, a multiple of 4 from 4 to 1024.</param>
         public static ICylinder CreateCylinder(
             this WireframeContainer container,
             Vector3 endA,
@@ -33,14 +32,14 @@ namespace reromanlee.Wireframes
         {
             MeshProxy proxy = WireframeContainer.ProxyOf(container);
             Quaternion rotation = ShapeRotations.FromAxis(endB - endA, Vector3.up);
-            return new Cylinder(proxy, null, endA, rotation, Vector3.Distance(endA, endB), radius, segmentCount);
+            return proxy.Add(new Cylinder(null, endA, rotation, Vector3.Distance(endA, endB), radius, segmentCount));
         }
 
         /// <summary>
         /// Creates a white cylinder that follows <paramref name="bone"/>, between two positions in the bone's local
         /// space. Its spin around the axis keeps the cylinder's +Y as close to the bone's up as it can.
         /// </summary>
-        /// <param name="segmentCount">Number of straight pieces each ring is drawn with, a positive multiple of 4.</param>
+        /// <param name="segmentCount">Number of straight pieces each ring is drawn with, a multiple of 4 from 4 to 1024.</param>
         public static ICylinder CreateCylinder(
             this WireframeContainer container,
             Transform bone,
@@ -52,14 +51,14 @@ namespace reromanlee.Wireframes
             MeshProxy proxy = WireframeContainer.ProxyOf(container);
             Quaternion rotation = ShapeRotations.FromAxis(localEndB - localEndA, Vector3.up);
             float length = Vector3.Distance(localEndA, localEndB);
-            return new Cylinder(proxy, bone, localEndA, rotation, length, radius, segmentCount);
+            return proxy.Add(new Cylinder(bone, localEndA, rotation, length, radius, segmentCount));
         }
 
         /// <summary>
         /// Creates a white cylinder in world space that starts at <paramref name="position"/> and runs
         /// <paramref name="length"/> along the +Z axis of <paramref name="rotation"/>.
         /// </summary>
-        /// <param name="segmentCount">Number of straight pieces each ring is drawn with, a positive multiple of 4.</param>
+        /// <param name="segmentCount">Number of straight pieces each ring is drawn with, a multiple of 4 from 4 to 1024.</param>
         public static ICylinder CreateCylinder(
             this WireframeContainer container,
             Vector3 position,
@@ -69,7 +68,7 @@ namespace reromanlee.Wireframes
             int segmentCount = Ring.DefaultSegmentCount)
         {
             MeshProxy proxy = WireframeContainer.ProxyOf(container);
-            return new Cylinder(proxy, null, position, rotation, length, radius, segmentCount);
+            return proxy.Add(new Cylinder(null, position, rotation, length, radius, segmentCount));
         }
     }
 }

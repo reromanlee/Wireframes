@@ -8,14 +8,12 @@ namespace reromanlee.Wireframes
         private Vector3 _radii;
 
         internal Ellipsoid(
-            MeshProxy proxy,
             Transform bone,
             Vector3 localCenter,
             Quaternion localRotation,
             Vector3 radii,
             int segmentCount)
             : base(
-                proxy,
                 Ring.CheckSegmentCount(segmentCount) * AxisRings.RingCount,
                 AxisRings.Patterns.Get(segmentCount),
                 bone,

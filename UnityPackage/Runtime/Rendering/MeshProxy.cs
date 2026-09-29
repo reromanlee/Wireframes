@@ -8,23 +8,37 @@ namespace reromanlee.Wireframes
     /// <summary>
     /// Component on the container's GameObject. Right before each render, it applies queued shape edits and reads the
     /// bones' matrices, so everything that moved or changed earlier in the frame shows up in that frame. It releases every
-    /// resource when its GameObject is destroyed, including when the scene unloads.
+    /// resource when its GameObject is destroyed, including when the scene unloads. Where nothing can draw, it keeps the
+    /// shapes in a <see cref="HeadlessHost"/> and does no rendering work at all.
     /// </summary>
     [AddComponentMenu("")]
     [DisallowMultipleComponent]
     internal sealed class MeshProxy : MonoBehaviour
     {
+        private static bool _hasWarnedAboutShader;
+
         private readonly BoneRegistry _bones = new();
         private readonly BoneTexture _boneTexture = new();
         private ChunkAllocator _chunks;
+        private HeadlessHost _headless;
         private WireframeContainer _container;
         private Material[] _materials;
         private bool _ownsMaterials;
         private bool _isShutDown;
+        private bool _hasLoggedFlushFailure;
+
+        /// <summary>Makes new containers act as they do without a graphics device, so tests can cover server builds.</summary>
+        internal static bool SimulateNoGraphics { get; set; }
+
+        /// <summary>True when the container draws nothing, because there is no graphics device or no usable shader.</summary>
+        internal bool IsHeadless
+        {
+            get => _headless != null;
+        }
 
         internal IReadOnlyList<MeshChunk> Chunks
         {
-            get => _chunks.Chunks;
+            get => _chunks != null ? _chunks.Chunks : Array.Empty<MeshChunk>();
         }
 
         internal ChunkAllocator ChunkAllocator
@@ -32,7 +46,12 @@ namespace reromanlee.Wireframes
             get => _chunks;
         }
 
-        /// <summary>The materials every chunk draws with.</summary>
+        internal HeadlessHost HeadlessHost
+        {
+            get => _headless;
+        }
+
+        /// <summary>The materials every chunk draws with; null when headless.</summary>
         internal Material[] Materials
         {
             get => _materials;
@@ -51,20 +70,10 @@ namespace reromanlee.Wireframes
         internal void Initialize(WireframeContainer container, WireframeContainerSettings settings)
         {
             _container = container;
-            if (settings.Material != null)
+            if (!TryCreateMaterials(settings))
             {
-                _materials = new[] { settings.Material };
-            }
-            else
-            {
-                // The shader sits in a Resources folder, which keeps it in player builds.
-                Shader shader = Shader.Find(WireframeMaterials.ShaderName);
-                if (shader == null)
-                {
-                    throw new InvalidOperationException($"Shader '{WireframeMaterials.ShaderName}' was not found.");
-                }
-                _materials = WireframeMaterials.Create(shader, settings.Occlusion, settings.UseAlpha);
-                _ownsMaterials = true;
+                _headless = new HeadlessHost(_bones);
+                return;
             }
             _chunks = new ChunkAllocator(transform, _materials, settings.Layer, _bones);
             _chunks.Reserve(settings.VertexCapacity, settings.EdgeCapacity);
@@ -72,15 +81,31 @@ namespace reromanlee.Wireframes
             Flush();
         }
 
-        /// <summary>Adds <paramref name="shape"/> to a chunk and returns that chunk.</summary>
-        internal MeshChunk Attach(Shape shape)
+        /// <summary>Attaches a newly built <paramref name="shape"/> and returns it. If that fails, nothing of it remains.</summary>
+        internal T Add<T>(T shape) where T : Shape
         {
+            shape.Attach(this);
+            return shape;
+        }
+
+        /// <summary>Hands <paramref name="shape"/> to a chunk, or to the headless host, and returns it.</summary>
+        internal IShapeHost Attach(Shape shape)
+        {
+            if (_headless != null)
+            {
+                _headless.Add(shape);
+                return _headless;
+            }
             return _chunks.Attach(shape);
         }
 
         /// <summary>Reads the bones, writes queued shapes and uploads what changed.</summary>
         internal void Flush()
         {
+            if (_chunks == null)
+            {
+                return;
+            }
             _bones.ReadMatrices();
             if (_boneTexture.Upload(_bones))
             {
@@ -96,7 +121,10 @@ namespace reromanlee.Wireframes
                 return;
             }
             _isShutDown = true;
+            // The container learns first, so it reads as disposed even if releasing something below throws.
+            _container?.OnProxyShutdown();
             _chunks?.Dispose();
+            _headless?.Dispose();
             _boneTexture.Dispose();
             if (_ownsMaterials)
             {
@@ -106,10 +134,52 @@ namespace reromanlee.Wireframes
                 }
             }
             _materials = null;
-            if (_container != null)
+        }
+
+        /// <summary>
+        /// Picks the materials to draw with, or returns false when nothing can draw: without a graphics device, silently,
+        /// as that is expected in server builds, and without a usable shader, with one warning per session.
+        /// </summary>
+        private bool TryCreateMaterials(WireframeContainerSettings settings)
+        {
+            if (SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null || SimulateNoGraphics)
             {
-                _container.OnProxyShutdown();
+                return false;
             }
+            if (settings.Material != null)
+            {
+                _materials = new[] { settings.Material };
+                return true;
+            }
+            // The shader sits in a Resources folder, which keeps it in player builds.
+            Shader shader = Shader.Find(WireframeMaterials.ShaderName);
+            if (shader == null || !shader.isSupported)
+            {
+                WarnAboutShader(shader == null
+                    ? $"The shader '{WireframeMaterials.ShaderName}' isn't in this build"
+                    : $"The shader '{WireframeMaterials.ShaderName}' isn't supported on {SystemInfo.graphicsDeviceType}");
+                return false;
+            }
+            _materials = WireframeMaterials.Create(shader, settings.Occlusion, settings.UseAlpha);
+            _ownsMaterials = true;
+            return true;
+        }
+
+        private void WarnAboutShader(string problem)
+        {
+            if (_hasWarnedAboutShader)
+            {
+                return;
+            }
+            _hasWarnedAboutShader = true;
+            WireframesLog.Warning($"{problem}, so wireframes won't be drawn. Their shapes still work.", this);
+        }
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetWarnings()
+        {
+            // Needed when domain reload is disabled, so each Play Mode session warns again.
+            _hasWarnedAboutShader = false;
         }
 
         private void OnEnable()
@@ -142,7 +212,7 @@ namespace reromanlee.Wireframes
 
         private void FlushBeforeRendering()
         {
-            if (_isShutDown)
+            if (_isShutDown || _chunks == null)
             {
                 return;
             }
@@ -157,8 +227,12 @@ namespace reromanlee.Wireframes
             }
             catch (Exception exception)
             {
-                // An exception must never escape into Unity's rendering.
-                Debug.LogException(exception, this);
+                // An exception must never escape into Unity's rendering, nor flood the console once every frame.
+                if (!_hasLoggedFlushFailure)
+                {
+                    _hasLoggedFlushFailure = true;
+                    WireframesLog.Error("Updating the wireframes before a render failed.", exception, this);
+                }
             }
         }
     }

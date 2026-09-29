@@ -13,11 +13,16 @@ namespace reromanlee.Wireframes
         private const int MergeGap = 64;
         // Past this many separate ranges, a single covering upload is cheaper.
         private const int MaxRanges = 16;
+        // Past this many collected ranges, they are merged as they come, so the list stays small when no flush clears
+        // it, such as while nothing renders.
+        private const int MaxCollectedRanges = 256;
 
         private static readonly Comparer<RangeInt> ByStart = Comparer<RangeInt>.Create((a, b) => a.start.CompareTo(b.start));
 
         private RangeInt[] _ranges = new RangeInt[16];
         private int _count;
+        // Once so many ranges came in that they collapsed into one covering range, later ones only widen it.
+        private bool _isCovering;
 
         internal int Count
         {
@@ -35,9 +40,28 @@ namespace reromanlee.Wireframes
             {
                 return;
             }
+            if (_isCovering)
+            {
+                RangeInt covering = _ranges[0];
+                int coveringStart = Math.Min(covering.start, start);
+                _ranges[0] = new RangeInt(coveringStart, Math.Max(covering.end, start + length) - coveringStart);
+                return;
+            }
             if (_count == _ranges.Length)
             {
-                Array.Resize(ref _ranges, _count * 2);
+                if (_count >= MaxCollectedRanges)
+                {
+                    _isCovering = Merge() == 1;
+                    if (_isCovering)
+                    {
+                        Add(start, length);
+                        return;
+                    }
+                }
+                if (_count == _ranges.Length)
+                {
+                    Array.Resize(ref _ranges, _count * 2);
+                }
             }
             _ranges[_count++] = new RangeInt(start, length);
         }
@@ -45,6 +69,7 @@ namespace reromanlee.Wireframes
         internal void Clear()
         {
             _count = 0;
+            _isCovering = false;
         }
 
         /// <summary>Sorts and merges the collected ranges in place and returns how many remain.</summary>

@@ -33,6 +33,7 @@ namespace reromanlee.Wireframes
         /// exact for uniformly scaled bones. If the bone is destroyed, the shape stays where it was and becomes world
         /// space.
         /// </summary>
+        /// <exception cref="System.ArgumentException">The Transform isn't in a scene, such as a prefab asset.</exception>
         Transform Bone { get; set; }
     }
 }

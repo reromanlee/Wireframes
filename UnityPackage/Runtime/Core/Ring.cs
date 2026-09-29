@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace reromanlee.Wireframes
@@ -9,18 +8,19 @@ namespace reromanlee.Wireframes
     {
         internal const int DefaultSegmentCount = 32;
 
+        /// <summary>Most segments a ring can have, which keeps a shape and its shared edge pattern to a sane size.</summary>
+        internal const int MaxSegmentCount = 1024;
+
         /// <summary>Edges of shapes that are one closed ring, by vertex count.</summary>
         internal static readonly PatternCache Patterns = new(BuildEdges);
-
-        // Cosine and sine around a unit circle for each segment count in use, shared by every ring with that count.
-        private static readonly Dictionary<int, Vector2[]> UnitCircles = new();
 
         /// <summary>Returns <paramref name="segmentCount"/> once it is checked, so it can be used in a base constructor call.</summary>
         internal static int CheckSegmentCount(int segmentCount)
         {
-            if (segmentCount < 3)
+            if (segmentCount < 3 || segmentCount > MaxSegmentCount)
             {
-                throw new ArgumentOutOfRangeException(nameof(segmentCount), segmentCount, "A ring needs at least 3 segments.");
+                throw new ArgumentOutOfRangeException(
+                    nameof(segmentCount), segmentCount, $"A ring needs 3 to {MaxSegmentCount} segments.");
             }
             return segmentCount;
         }
@@ -31,10 +31,12 @@ namespace reromanlee.Wireframes
         /// </summary>
         internal static int CheckQuarterSegmentCount(int segmentCount)
         {
-            if (segmentCount < 4 || segmentCount % 4 != 0)
+            if (segmentCount < 4 || segmentCount % 4 != 0 || segmentCount > MaxSegmentCount)
             {
                 throw new ArgumentOutOfRangeException(
-                    nameof(segmentCount), segmentCount, "This shape needs a positive multiple of 4 segments.");
+                    nameof(segmentCount),
+                    segmentCount,
+                    $"This shape needs a multiple of 4 segments, from 4 to {MaxSegmentCount}.");
             }
             return segmentCount;
         }
@@ -46,10 +48,11 @@ namespace reromanlee.Wireframes
         /// </summary>
         internal static void Write(Span<Vector3> positions, Vector3 center, Vector3 axisU, Vector3 axisV)
         {
-            Vector2[] circle = UnitCircle(positions.Length);
+            CirclePoints circle = new(positions.Length);
             for (int i = 0; i < positions.Length; i++)
             {
-                positions[i] = center + axisU * circle[i].x + axisV * circle[i].y;
+                Vector2 point = circle.Next();
+                positions[i] = center + axisU * point.x + axisV * point.y;
             }
         }
 
@@ -63,25 +66,6 @@ namespace reromanlee.Wireframes
                 pattern[cursor++] = first + i;
                 pattern[cursor++] = first + (i + 1) % count;
             }
-        }
-
-        /// <summary>
-        /// Cosine and sine of <paramref name="count"/> angles evenly spread over a full turn, starting at 0. The table
-        /// is shared, so callers must not change it.
-        /// </summary>
-        internal static Vector2[] UnitCircle(int count)
-        {
-            if (!UnitCircles.TryGetValue(count, out Vector2[] circle))
-            {
-                circle = new Vector2[count];
-                for (int i = 0; i < count; i++)
-                {
-                    double angle = 2.0 * Math.PI * i / count;
-                    circle[i] = new Vector2((float)Math.Cos(angle), (float)Math.Sin(angle));
-                }
-                UnitCircles.Add(count, circle);
-            }
-            return circle;
         }
 
         private static int[] BuildEdges(int count)

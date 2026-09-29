@@ -9,7 +9,7 @@ namespace reromanlee.Wireframes
         public static IRectangle CreateRectangle(this WireframeContainer container)
         {
             MeshProxy proxy = WireframeContainer.ProxyOf(container);
-            return new Rectangle(proxy, null, Vector3.zero, Quaternion.identity, Vector2.one * ShapeDefaults.Size);
+            return proxy.Add(new Rectangle(null, Vector3.zero, Quaternion.identity, Vector2.one * ShapeDefaults.Size));
         }
 
         /// <summary>
@@ -20,7 +20,8 @@ namespace reromanlee.Wireframes
         {
             MeshProxy proxy = WireframeContainer.ProxyOf(container);
             Vector3 center = (cornerA + cornerB) * 0.5f;
-            return new Rectangle(proxy, null, center, Quaternion.identity, RectangleShape.FlatSpan(cornerA, cornerB));
+            return proxy.Add(new Rectangle(
+                null, center, Quaternion.identity, RectangleShape.FlatSpan(cornerA, cornerB)));
         }
 
         /// <summary>
@@ -33,14 +34,15 @@ namespace reromanlee.Wireframes
             MeshProxy proxy = WireframeContainer.ProxyOf(container);
             Vector3 center = (localCornerA + localCornerB) * 0.5f;
             Vector2 size = RectangleShape.FlatSpan(localCornerA, localCornerB);
-            return new Rectangle(proxy, bone, center, Quaternion.identity, size);
+            return proxy.Add(new Rectangle(bone, center, Quaternion.identity, size));
         }
 
         /// <summary>Creates a white rectangle in world space, lying in the XZ plane of <paramref name="rotation"/>.</summary>
         public static IRectangle CreateRectangle(
             this WireframeContainer container, Vector3 center, Quaternion rotation, Vector2 size)
         {
-            return new Rectangle(WireframeContainer.ProxyOf(container), null, center, rotation, size);
+            MeshProxy proxy = WireframeContainer.ProxyOf(container);
+            return proxy.Add(new Rectangle(null, center, rotation, size));
         }
     }
 }

@@ -12,13 +12,12 @@ namespace reromanlee.Wireframes
         private float _length;
 
         protected AxialShape(
-            MeshProxy proxy,
             int vertexCount,
-            int[] edgePattern,
+            EdgeSource edgeSource,
             Transform bone,
             Vector3 localPosition,
             Quaternion localRotation,
-            float length) : base(proxy, vertexCount, edgePattern, bone, localPosition, localRotation)
+            float length) : base(vertexCount, edgeSource, bone, localPosition, localRotation)
         {
             _length = length;
         }

@@ -9,8 +9,8 @@ namespace reromanlee.Wireframes
         private readonly ShapePoint[] _points;
         private readonly bool _isClosed;
 
-        internal Polyline(MeshProxy proxy, IReadOnlyList<Vector3> points, bool isClosed)
-            : base(proxy, CheckCount(points, isClosed, nameof(points)), BuildEdges(points.Count, isClosed))
+        internal Polyline(IReadOnlyList<Vector3> points, bool isClosed)
+            : base(CheckCount(points, isClosed, nameof(points)), BuildEdges(points.Count, isClosed))
         {
             _isClosed = isClosed;
             _points = new ShapePoint[points.Count];
@@ -21,15 +21,15 @@ namespace reromanlee.Wireframes
         }
 
         /// <summary>Creates a polyline whose points sit at the origins of their bones.</summary>
-        internal Polyline(MeshProxy proxy, IReadOnlyList<Transform> bones, bool isClosed)
-            : base(proxy, CheckCount(bones, isClosed, nameof(bones)), BuildEdges(bones.Count, isClosed))
+        internal Polyline(IReadOnlyList<Transform> bones, bool isClosed)
+            : base(CheckCount(bones, isClosed, nameof(bones)), BuildEdges(bones.Count, isClosed))
         {
             _isClosed = isClosed;
             _points = new ShapePoint[bones.Count];
             for (int i = 0; i < _points.Length; i++)
             {
                 _points[i] = new ShapePoint(Vector3.zero);
-                AttachPoint(i, bones[i]);
+                InitializeBone(i, bones[i], nameof(bones));
             }
         }
 

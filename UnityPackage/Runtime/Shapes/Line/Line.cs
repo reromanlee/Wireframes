@@ -10,17 +10,17 @@ namespace reromanlee.Wireframes
         private ShapePoint _pointA;
         private ShapePoint _pointB;
 
-        internal Line(MeshProxy proxy, Vector3 positionA, Vector3 positionB) : base(proxy, LineVertexCount, EdgePattern)
+        internal Line(Vector3 positionA, Vector3 positionB) : base(LineVertexCount, EdgePattern)
         {
             _pointA = new ShapePoint(positionA);
             _pointB = new ShapePoint(positionB);
         }
 
         /// <summary>Creates a line whose endpoints sit at the origins of their bones.</summary>
-        internal Line(MeshProxy proxy, Transform boneA, Transform boneB) : this(proxy, Vector3.zero, Vector3.zero)
+        internal Line(Transform boneA, Transform boneB) : this(Vector3.zero, Vector3.zero)
         {
-            AttachPoint(0, boneA);
-            AttachPoint(1, boneB);
+            InitializeBone(0, boneA, nameof(boneA));
+            InitializeBone(1, boneB, nameof(boneB));
         }
 
         public Vector3 LocalPositionA

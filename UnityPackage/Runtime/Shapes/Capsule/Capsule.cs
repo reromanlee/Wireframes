@@ -12,7 +12,6 @@ namespace reromanlee.Wireframes
         private float _radiusB;
 
         internal Capsule(
-            MeshProxy proxy,
             Transform bone,
             Vector3 localPosition,
             Quaternion localRotation,
@@ -21,7 +20,6 @@ namespace reromanlee.Wireframes
             float radiusB,
             int segmentCount)
             : base(
-                proxy,
                 CountVertices(Ring.CheckQuarterSegmentCount(segmentCount)),
                 Patterns.Get(segmentCount),
                 bone,

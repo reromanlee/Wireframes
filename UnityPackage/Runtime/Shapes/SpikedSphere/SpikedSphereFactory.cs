@@ -15,7 +15,7 @@ namespace reromanlee.Wireframes
         {
             MeshProxy proxy = WireframeContainer.ProxyOf(container);
             float half = ShapeDefaults.Radius * 0.5f;
-            return new SpikedSphere(proxy, null, Vector3.zero, Quaternion.identity, half, half, DefaultSpikeCount);
+            return proxy.Add(new SpikedSphere(null, Vector3.zero, Quaternion.identity, half, half, DefaultSpikeCount));
         }
 
         /// <summary>Creates a white, world-aligned spiked sphere around a world position.</summary>
@@ -24,7 +24,7 @@ namespace reromanlee.Wireframes
             this WireframeContainer container, Vector3 center, float baseRadius, float spikeLength, int spikeCount)
         {
             MeshProxy proxy = WireframeContainer.ProxyOf(container);
-            return new SpikedSphere(proxy, null, center, Quaternion.identity, baseRadius, spikeLength, spikeCount);
+            return proxy.Add(new SpikedSphere(null, center, Quaternion.identity, baseRadius, spikeLength, spikeCount));
         }
 
         /// <summary>
@@ -41,7 +41,8 @@ namespace reromanlee.Wireframes
             int spikeCount)
         {
             MeshProxy proxy = WireframeContainer.ProxyOf(container);
-            return new SpikedSphere(proxy, bone, localCenter, Quaternion.identity, baseRadius, spikeLength, spikeCount);
+            return proxy.Add(new SpikedSphere(
+                bone, localCenter, Quaternion.identity, baseRadius, spikeLength, spikeCount));
         }
 
         /// <summary>Creates a white spiked sphere in world space, turned by <paramref name="rotation"/>.</summary>
@@ -55,7 +56,7 @@ namespace reromanlee.Wireframes
             int spikeCount)
         {
             MeshProxy proxy = WireframeContainer.ProxyOf(container);
-            return new SpikedSphere(proxy, null, center, rotation, baseRadius, spikeLength, spikeCount);
+            return proxy.Add(new SpikedSphere(null, center, rotation, baseRadius, spikeLength, spikeCount));
         }
     }
 }

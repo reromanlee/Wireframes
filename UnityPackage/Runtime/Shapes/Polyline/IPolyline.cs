@@ -42,6 +42,7 @@ namespace reromanlee.Wireframes
         /// Sets the Transform a point follows, or null for world space. Changing it keeps the point's world position,
         /// like reparenting a Transform. If the bone is destroyed, the point stays where it was and becomes world space.
         /// </summary>
+        /// <exception cref="System.ArgumentException">The Transform isn't in a scene, such as a prefab asset.</exception>
         void SetBone(int index, Transform bone);
     }
 }

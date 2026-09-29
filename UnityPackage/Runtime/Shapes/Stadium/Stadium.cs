@@ -11,7 +11,6 @@ namespace reromanlee.Wireframes
         private float _radiusB;
 
         internal Stadium(
-            MeshProxy proxy,
             Transform bone,
             Vector3 localPosition,
             Quaternion localRotation,
@@ -20,7 +19,6 @@ namespace reromanlee.Wireframes
             float radiusB,
             int segmentCount)
             : base(
-                proxy,
                 Ring.CheckQuarterSegmentCount(segmentCount) + ArcCount,
                 // One closed loop: arc A, the -X side, arc B and the +X side back to the start.
                 Ring.Patterns.Get(segmentCount + ArcCount),

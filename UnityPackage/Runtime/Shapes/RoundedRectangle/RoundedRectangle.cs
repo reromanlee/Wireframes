@@ -11,7 +11,6 @@ namespace reromanlee.Wireframes
         private float _cornerRadius;
 
         internal RoundedRectangle(
-            MeshProxy proxy,
             Transform bone,
             Vector3 localCenter,
             Quaternion localRotation,
@@ -19,7 +18,6 @@ namespace reromanlee.Wireframes
             float cornerRadius,
             int segmentCount)
             : base(
-                proxy,
                 Ring.CheckQuarterSegmentCount(segmentCount) + CornerCount,
                 Patterns.Get(segmentCount),
                 bone,
@@ -65,7 +63,6 @@ namespace reromanlee.Wireframes
             float mirrorX = size.x < 0f ? -1f : 1f;
             float mirrorZ = size.y < 0f ? -1f : 1f;
             float radius = Mathf.Clamp(_cornerRadius, 0f, Mathf.Min(halfX, halfZ));
-            Vector2[] circle = Ring.UnitCircle(segmentCount);
 
             // Going around from +Z toward +X, the corners are (+X, +Z), (+X, -Z), (-X, -Z) and (-X, +Z); each is a
             // quarter of a circle around a point inset by the radius.
@@ -74,9 +71,10 @@ namespace reromanlee.Wireframes
             {
                 float centerX = corner < 2 ? halfX - radius : radius - halfX;
                 float centerZ = corner == 0 || corner == 3 ? halfZ - radius : radius - halfZ;
+                CirclePoints arc = new(segmentCount, corner * quarter);
                 for (int step = 0; step <= quarter; step++)
                 {
-                    Vector2 direction = circle[(corner * quarter + step) % segmentCount];
+                    Vector2 direction = arc.Next();
                     positions[vertex++] = new Vector3(
                         (centerX + direction.y * radius) * mirrorX,
                         0f,

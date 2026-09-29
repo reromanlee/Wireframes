@@ -5,18 +5,19 @@ namespace reromanlee.Wireframes
 {
     internal sealed class Star : RigidShape, IStar
     {
+        internal const int MaxPointCount = Ring.MaxSegmentCount / 2;
+
         private float _innerRadius;
         private float _outerRadius;
 
         internal Star(
-            MeshProxy proxy,
             Transform bone,
             Vector3 localCenter,
             Quaternion localRotation,
             float innerRadius,
             float outerRadius,
             int pointCount)
-            : base(proxy, CountVertices(pointCount), Ring.Patterns.Get(pointCount * 2), bone, localCenter, localRotation)
+            : base(CountVertices(pointCount), Ring.Patterns.Get(pointCount * 2), bone, localCenter, localRotation)
         {
             _innerRadius = innerRadius;
             _outerRadius = outerRadius;
@@ -64,11 +65,12 @@ namespace reromanlee.Wireframes
         protected override void WriteShape(Span<Vector3> positions)
         {
             // A ring that alternates between the tips and the corners between them, starting with a tip on +Z.
-            Vector2[] circle = Ring.UnitCircle(positions.Length);
+            CirclePoints circle = new(positions.Length);
             for (int i = 0; i < positions.Length; i++)
             {
+                Vector2 point = circle.Next();
                 float radius = i % 2 == 0 ? _outerRadius : _innerRadius;
-                positions[i] = new Vector3(circle[i].y * radius, 0f, circle[i].x * radius);
+                positions[i] = new Vector3(point.y * radius, 0f, point.x * radius);
             }
         }
 
@@ -80,9 +82,11 @@ namespace reromanlee.Wireframes
 
         private static int CountVertices(int pointCount)
         {
-            if (pointCount < 3)
+            // Its tips and corners make one ring.
+            if (pointCount < 3 || pointCount > MaxPointCount)
             {
-                throw new ArgumentOutOfRangeException(nameof(pointCount), pointCount, "A star needs at least 3 points.");
+                throw new ArgumentOutOfRangeException(
+                    nameof(pointCount), pointCount, $"A star needs 3 to {MaxPointCount} points.");
             }
             return pointCount * 2;
         }

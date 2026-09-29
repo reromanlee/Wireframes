@@ -4,42 +4,40 @@ using UnityEngine;
 namespace reromanlee.Wireframes
 {
     /// <summary>
-    /// Base of every shape. It owns the shape's vertex block and edges inside a chunk, queues edits for the next
-    /// flush and handles disposal, so derived shapes only describe their geometry.
+    /// Base of every shape. Derived constructors only check and store the shape's state; <see cref="Attach"/> then takes
+    /// its bones and edge pattern and hands it to a host, so a shape that fails to build leaves nothing behind. It
+    /// queues edits for the next flush and handles disposal, so derived shapes only describe their geometry.
     /// </summary>
     internal abstract class Shape : IShape, IEdgeOwner
     {
-        private readonly int[] _edgePattern;
-        private readonly int[] _edgeSlots;
-        private MeshChunk _chunk;
+        private readonly EdgeSource _edgeSource;
+        private int[] _edgePattern;
+        private int[] _edgeSlots;
+        private IShapeHost _host;
         private DirtyFlags _dirty;
 
-        /// <param name="edgePattern">Pairs of local vertex indices, one pair per edge.</param>
-        protected Shape(MeshProxy proxy, int vertexCount, int[] edgePattern)
+        protected Shape(int vertexCount, EdgeSource edgeSource)
         {
             VertexCount = vertexCount;
-            _edgePattern = edgePattern;
-            _edgeSlots = new int[edgePattern.Length / 2];
-            _chunk = proxy.Attach(this);
-            MarkDirty(DirtyFlags.All);
+            _edgeSource = edgeSource;
         }
 
         public bool IsDisposed
         {
-            get => _chunk == null;
+            get => _host == null;
         }
 
-        /// <summary>The chunk holding the shape, or null once it is disposed.</summary>
+        /// <summary>The chunk that draws the shape, or null when it is disposed or nothing can draw it.</summary>
         internal MeshChunk Chunk
         {
-            get => _chunk;
+            get => _host as MeshChunk;
         }
 
         internal int VertexCount { get; }
 
         internal int VertexStart { get; set; }
 
-        /// <summary>Position in the chunk's shape list.</summary>
+        /// <summary>Position in its host's shape list.</summary>
         internal int ShapeIndex { get; set; }
 
         internal int EdgeCount
@@ -47,25 +45,53 @@ namespace reromanlee.Wireframes
             get => _edgeSlots.Length;
         }
 
+        /// <summary>True once a problem with the shape was logged, so each shape logs at most one.</summary>
+        internal bool HasReportedProblem { get; set; }
+
         /// <summary>The registry of the bones this shape follows.</summary>
         protected BoneRegistry Bones
         {
-            get => _chunk.Bones;
+            get => _host.Bones;
         }
 
         public void Dispose()
         {
-            if (_chunk == null)
+            MainThread.Check();
+            if (_host == null)
             {
                 return;
             }
-            MeshChunk chunk = _chunk;
-            chunk.Remove(this);
-            ReleaseBones(chunk.Bones);
-            _chunk = null;
+            IShapeHost host = _host;
+            host.Remove(this);
+            ReleaseBones(host.Bones);
+            _edgeSource.Release();
+            _host = null;
         }
 
         public abstract void SetColor(Color color);
+
+        /// <summary>
+        /// Takes the shape's edge pattern and bones and adds it to <paramref name="proxy"/>. If that fails, everything
+        /// taken is given back.
+        /// </summary>
+        internal void Attach(MeshProxy proxy)
+        {
+            _edgePattern = _edgeSource.Acquire();
+            _edgeSlots = new int[_edgePattern.Length / 2];
+            BoneRegistry bones = proxy.Bones;
+            AcquireBones(bones);
+            try
+            {
+                _host = proxy.Attach(this);
+            }
+            catch
+            {
+                ReleaseBones(bones);
+                _edgeSource.Release();
+                throw;
+            }
+            MarkDirty(DirtyFlags.All);
+        }
 
         internal int GetEdgeSlot(int edge)
         {
@@ -87,7 +113,7 @@ namespace reromanlee.Wireframes
         {
             if (_dirty == DirtyFlags.None)
             {
-                _chunk.Enqueue(this);
+                _host.Enqueue(this);
             }
             _dirty |= flags;
         }
@@ -99,10 +125,11 @@ namespace reromanlee.Wireframes
             return dirty;
         }
 
-        /// <summary>Marks the shape disposed when its whole chunk goes away.</summary>
+        /// <summary>Marks the shape disposed when its whole host goes away, bone registry included.</summary>
         internal void Detach()
         {
-            _chunk = null;
+            _edgeSource.Release();
+            _host = null;
         }
 
         internal void WriteEdges(EdgeList edges, DirtyRanges ranges)
@@ -121,15 +148,19 @@ namespace reromanlee.Wireframes
 
         internal abstract void WriteBoneIndices(Span<float> boneIndices);
 
+        /// <summary>Registers the bones the shape was built with, when it is attached.</summary>
+        protected abstract void AcquireBones(BoneRegistry bones);
+
         protected abstract void ReleaseBones(BoneRegistry bones);
 
         /// <summary>
-        /// Throws once the shape is disposed, and otherwise lets it notice a bone that was destroyed, so every member
-        /// sees the shape in world space from then on.
+        /// Throws off the main thread (in the Editor and development builds) or once the shape is disposed, and
+        /// otherwise lets it notice a bone that was destroyed, so every member sees the shape in world space from then on.
         /// </summary>
         protected void EnsureUsable()
         {
-            if (_chunk == null)
+            MainThread.Check();
+            if (_host == null)
             {
                 throw new ObjectDisposedException(GetType().Name);
             }
@@ -144,19 +175,37 @@ namespace reromanlee.Wireframes
         {
         }
 
-        /// <summary>Points a bone field at <paramref name="value"/> and moves its registry slot along.</summary>
+        /// <summary>
+        /// Points a bone field at <paramref name="value"/>, already checked with <see cref="CheckBone"/>, and moves its
+        /// registry slot along.
+        /// </summary>
         protected void ReplaceBone(ref Transform bone, ref int slot, Transform value)
         {
-            // Destroyed transforms compare equal to null; they are stored as null so they are never read again.
-            if (value == null)
-            {
-                value = null;
-            }
             // Acquiring first keeps a bone that is re-assigned from being released and re-registered in between.
-            int newSlot = _chunk.Bones.Acquire(value);
-            _chunk.Bones.Release(slot);
+            int newSlot = _host.Bones.Acquire(value);
+            _host.Bones.Release(slot);
             bone = value;
             slot = newSlot;
+        }
+
+        /// <summary>
+        /// Returns <paramref name="bone"/> once it is checked to be a Transform in a scene, or null for no bone and for
+        /// a destroyed one, which is how bone fields store them so they are never read again.
+        /// </summary>
+        /// <exception cref="ArgumentException"><paramref name="bone"/> isn't in a scene, such as a prefab asset.</exception>
+        protected static Transform CheckBone(Transform bone, string parameterName)
+        {
+            if (bone == null)
+            {
+                return null;
+            }
+            if (!bone.gameObject.scene.IsValid())
+            {
+                throw new ArgumentException(
+                    $"'{bone.name}' isn't in a scene. Shapes can follow scene objects only, not prefab assets.",
+                    parameterName);
+            }
+            return bone;
         }
 
         /// <summary>True when <paramref name="bone"/> was a transform that has since been destroyed.</summary>

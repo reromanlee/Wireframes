@@ -9,22 +9,24 @@ namespace reromanlee.Wireframes
         public static ISphere CreateSphere(this WireframeContainer container)
         {
             MeshProxy proxy = WireframeContainer.ProxyOf(container);
-            return new Sphere(proxy, null, Vector3.zero, Quaternion.identity, ShapeDefaults.Radius, Ring.DefaultSegmentCount);
+            return proxy.Add(new Sphere(
+                null, Vector3.zero, Quaternion.identity, ShapeDefaults.Radius, Ring.DefaultSegmentCount));
         }
 
         /// <summary>Creates a white, world-aligned sphere around a world position.</summary>
-        /// <param name="segmentCount">Number of straight pieces each great circle is drawn with, at least 3.</param>
+        /// <param name="segmentCount">Number of straight pieces each great circle is drawn with, from 3 to 1024.</param>
         public static ISphere CreateSphere(
             this WireframeContainer container, Vector3 center, float radius, int segmentCount = Ring.DefaultSegmentCount)
         {
-            return new Sphere(WireframeContainer.ProxyOf(container), null, center, Quaternion.identity, radius, segmentCount);
+            MeshProxy proxy = WireframeContainer.ProxyOf(container);
+            return proxy.Add(new Sphere(null, center, Quaternion.identity, radius, segmentCount));
         }
 
         /// <summary>
         /// Creates a white sphere that follows <paramref name="bone"/>, around a position in the bone's local space and
         /// aligned to the bone's axes.
         /// </summary>
-        /// <param name="segmentCount">Number of straight pieces each great circle is drawn with, at least 3.</param>
+        /// <param name="segmentCount">Number of straight pieces each great circle is drawn with, from 3 to 1024.</param>
         public static ISphere CreateSphere(
             this WireframeContainer container,
             Transform bone,
@@ -33,11 +35,11 @@ namespace reromanlee.Wireframes
             int segmentCount = Ring.DefaultSegmentCount)
         {
             MeshProxy proxy = WireframeContainer.ProxyOf(container);
-            return new Sphere(proxy, bone, localCenter, Quaternion.identity, radius, segmentCount);
+            return proxy.Add(new Sphere(bone, localCenter, Quaternion.identity, radius, segmentCount));
         }
 
         /// <summary>Creates a white sphere in world space, with its great circles turned by <paramref name="rotation"/>.</summary>
-        /// <param name="segmentCount">Number of straight pieces each great circle is drawn with, at least 3.</param>
+        /// <param name="segmentCount">Number of straight pieces each great circle is drawn with, from 3 to 1024.</param>
         public static ISphere CreateSphere(
             this WireframeContainer container,
             Vector3 center,
@@ -45,7 +47,8 @@ namespace reromanlee.Wireframes
             float radius,
             int segmentCount = Ring.DefaultSegmentCount)
         {
-            return new Sphere(WireframeContainer.ProxyOf(container), null, center, rotation, radius, segmentCount);
+            MeshProxy proxy = WireframeContainer.ProxyOf(container);
+            return proxy.Add(new Sphere(null, center, rotation, radius, segmentCount));
         }
     }
 }

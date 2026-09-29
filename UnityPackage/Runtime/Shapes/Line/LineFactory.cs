@@ -8,13 +8,15 @@ namespace reromanlee.Wireframes
         /// <summary>Creates a white line with both endpoints at the world origin.</summary>
         public static ILine CreateLine(this WireframeContainer container)
         {
-            return new Line(WireframeContainer.ProxyOf(container), Vector3.zero, Vector3.zero);
+            MeshProxy proxy = WireframeContainer.ProxyOf(container);
+            return proxy.Add(new Line(Vector3.zero, Vector3.zero));
         }
 
         /// <summary>Creates a white line between two world positions.</summary>
         public static ILine CreateLine(this WireframeContainer container, Vector3 positionA, Vector3 positionB)
         {
-            return new Line(WireframeContainer.ProxyOf(container), positionA, positionB);
+            MeshProxy proxy = WireframeContainer.ProxyOf(container);
+            return proxy.Add(new Line(positionA, positionB));
         }
 
         /// <summary>
@@ -23,7 +25,8 @@ namespace reromanlee.Wireframes
         /// </summary>
         public static ILine CreateLine(this WireframeContainer container, Transform boneA, Transform boneB)
         {
-            return new Line(WireframeContainer.ProxyOf(container), boneA, boneB);
+            MeshProxy proxy = WireframeContainer.ProxyOf(container);
+            return proxy.Add(new Line(boneA, boneB));
         }
     }
 }

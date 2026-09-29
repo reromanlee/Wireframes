@@ -18,8 +18,8 @@ namespace reromanlee.Wireframes
 
         private Vector3 _size;
 
-        internal Box(MeshProxy proxy, Transform bone, Vector3 localCenter, Quaternion localRotation, Vector3 size)
-            : base(proxy, CornerCount, EdgePattern, bone, localCenter, localRotation)
+        internal Box(Transform bone, Vector3 localCenter, Quaternion localRotation, Vector3 size)
+            : base(CornerCount, EdgePattern, bone, localCenter, localRotation)
         {
             _size = size;
         }
