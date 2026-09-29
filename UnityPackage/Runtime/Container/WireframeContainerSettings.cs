@@ -30,6 +30,12 @@ namespace reromanlee.Wireframes
         [Tooltip("Edges reserved up front, so a load known in advance never grows the buffers later.")]
         [SerializeField, Min(0)] private int _edgeCapacity;
 
+        [Tooltip("What is drawn of lines that other geometry hides. Ignored with a custom material.")]
+        [SerializeField] private WireframeOcclusion _occlusion = WireframeOcclusion.Hide;
+
+        [Tooltip("Blends each color by its alpha. Ignored with a custom material.")]
+        [SerializeField] private bool _useAlpha;
+
         /// <summary>Name of the container's GameObject in the Hierarchy. Null or empty uses "Wireframes".</summary>
         public string Name
         {
@@ -81,6 +87,26 @@ namespace reromanlee.Wireframes
             set => _edgeCapacity = value;
         }
 
+        /// <summary>
+        /// What is drawn of lines that other geometry hides: nothing (the default), everything, or a dimmer line. It
+        /// applies to the package's material and is ignored with a custom <see cref="Material"/>.
+        /// </summary>
+        public WireframeOcclusion Occlusion
+        {
+            get => _occlusion;
+            set => _occlusion = value;
+        }
+
+        /// <summary>
+        /// True blends each color by its alpha, drawing the lines as transparent; false, the default, draws them opaque.
+        /// It applies to the package's material and is ignored with a custom <see cref="Material"/>.
+        /// </summary>
+        public bool UseAlpha
+        {
+            get => _useAlpha;
+            set => _useAlpha = value;
+        }
+
         internal string ResolvedName
         {
             get => string.IsNullOrEmpty(_name) ? DefaultName : _name;
@@ -103,6 +129,11 @@ namespace reromanlee.Wireframes
             {
                 throw new ArgumentOutOfRangeException(
                     parameterName, _edgeCapacity, $"{nameof(EdgeCapacity)} can't be negative.");
+            }
+            if (_occlusion < WireframeOcclusion.Hide || _occlusion > WireframeOcclusion.Fade)
+            {
+                throw new ArgumentOutOfRangeException(
+                    parameterName, _occlusion, $"{nameof(Occlusion)} isn't a {nameof(WireframeOcclusion)} value.");
             }
         }
     }

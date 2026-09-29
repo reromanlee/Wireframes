@@ -20,11 +20,13 @@ namespace reromanlee.Wireframes.Tests
             {
                 container.Dispose();
             }
-            foreach (Object target in _objects)
+            // Right away, because tests without a yield share one frame and would otherwise see each other's objects,
+            // and newest first, so nothing is destroyed while an object created after it still uses it.
+            for (int i = _objects.Count - 1; i >= 0; i--)
             {
-                if (target != null)
+                if (_objects[i] != null)
                 {
-                    Object.Destroy(target);
+                    Object.DestroyImmediate(_objects[i]);
                 }
             }
             _containers.Clear();

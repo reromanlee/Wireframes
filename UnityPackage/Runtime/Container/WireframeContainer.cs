@@ -11,7 +11,7 @@ namespace reromanlee.Wireframes
     /// <remarks>
     /// Main thread only. Each shape type adds its Create methods as extension methods, declared in a factory class next
     /// to the shape, such as <see cref="CircleFactory"/>. The container creates a GameObject in the active scene; edits
-    /// made to its shapes are uploaded once per frame at the end of LateUpdate.
+    /// made to its shapes are uploaded right before a camera renders them.
     /// </remarks>
     public sealed class WireframeContainer : IDisposable
     {

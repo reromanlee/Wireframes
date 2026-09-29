@@ -14,15 +14,13 @@ namespace reromanlee.Wireframes
     [DisallowMultipleComponent]
     internal sealed class MeshProxy : MonoBehaviour
     {
-        private const string ShaderName = "reromanlee/Wireframes/Unlit";
-
         private readonly List<MeshChunk> _chunks = new();
         private readonly BoneRegistry _bones = new();
         private readonly BoneTexture _boneTexture = new();
         private MaterialPropertyBlock _propertyBlock;
         private WireframeContainer _container;
-        private Material _material;
-        private bool _ownsMaterial;
+        private Material[] _materials;
+        private bool _ownsMaterials;
         private bool _isShutDown;
 
         internal IReadOnlyList<MeshChunk> Chunks
@@ -45,21 +43,21 @@ namespace reromanlee.Wireframes
             _container = container;
             if (settings.Material != null)
             {
-                _material = settings.Material;
+                _materials = new[] { settings.Material };
             }
             else
             {
                 // The shader sits in a Resources folder, which keeps it in player builds.
-                Shader shader = Shader.Find(ShaderName);
+                Shader shader = Shader.Find(WireframeMaterials.ShaderName);
                 if (shader == null)
                 {
-                    throw new InvalidOperationException($"Shader '{ShaderName}' was not found.");
+                    throw new InvalidOperationException($"Shader '{WireframeMaterials.ShaderName}' was not found.");
                 }
-                _material = new Material(shader) { name = ShaderName, hideFlags = HideFlags.DontSave };
-                _ownsMaterial = true;
+                _materials = WireframeMaterials.Create(shader, settings.Occlusion, settings.UseAlpha);
+                _ownsMaterials = true;
             }
             _propertyBlock = new MaterialPropertyBlock();
-            _chunks.Add(new MeshChunk(transform, _material, settings, _bones));
+            _chunks.Add(new MeshChunk(transform, _materials, settings, _bones));
             // Uploads the bone texture and hands it to the renderers.
             Flush();
         }
@@ -104,11 +102,14 @@ namespace reromanlee.Wireframes
             }
             _chunks.Clear();
             _boneTexture.Dispose();
-            if (_ownsMaterial)
+            if (_ownsMaterials)
             {
-                UnityObjects.Destroy(_material);
+                foreach (Material material in _materials)
+                {
+                    UnityObjects.Destroy(material);
+                }
             }
-            _material = null;
+            _materials = null;
             if (_container != null)
             {
                 _container.OnProxyShutdown();

@@ -64,7 +64,10 @@ namespace reromanlee.Wireframes
         private IndexFormat _meshIndexFormat;
         private int _meshEdgeCount = -1;
 
-        internal MeshChunk(Transform parent, Material material, WireframeContainerSettings settings, BoneRegistry bones)
+        /// <param name="materials">
+        /// Materials the mesh is drawn with, each drawing all of it; the chunk leaves them to their owner.
+        /// </param>
+        internal MeshChunk(Transform parent, Material[] materials, WireframeContainerSettings settings, BoneRegistry bones)
         {
             // Reserved before anything is created, so a device limit leaves nothing behind.
             EnsureVertexCapacity(settings.VertexCapacity);
@@ -81,7 +84,8 @@ namespace reromanlee.Wireframes
             chunkObject.AddComponent<MeshFilter>().sharedMesh = _mesh;
 
             _renderer = chunkObject.AddComponent<MeshRenderer>();
-            _renderer.sharedMaterial = material;
+            // A renderer with more materials than sub-meshes draws its last sub-mesh once per extra material.
+            _renderer.sharedMaterials = materials;
             _renderer.motionVectorGenerationMode = MotionVectorGenerationMode.ForceNoMotion;
             _renderer.shadowCastingMode = ShadowCastingMode.Off;
             _renderer.receiveShadows = false;
@@ -216,6 +220,11 @@ namespace reromanlee.Wireframes
             _shapeCount = 0;
             Array.Clear(_pending, 0, _pendingCount);
             _pendingCount = 0;
+            // Play Mode destroys objects at the end of the frame, and a render before that must not draw the chunk.
+            if (_renderer != null)
+            {
+                _renderer.enabled = false;
+            }
             // The chunk's GameObject is a child of the proxy and goes away with it; the mesh is an asset and doesn't.
             UnityObjects.Destroy(_mesh);
         }
