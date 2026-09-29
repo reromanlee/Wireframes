@@ -1,0 +1,31 @@
+{
+    "name": "reromanlee.Wireframes.Tests.Performance",
+    "rootNamespace": "reromanlee.Wireframes.Tests",
+    "references": [
+        "reromanlee.Wireframes",
+        "reromanlee.Wireframes.Tests.Runtime",
+        "Unity.PerformanceTesting",
+        "UnityEngine.TestRunner",
+        "UnityEditor.TestRunner"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS",
+        "WIREFRAMES_PERFORMANCE_TESTING"
+    ],
+    "versionDefines": [
+        {
+            "name": "com.unity.test-framework.performance",
+            "expression": "3.0.0",
+            "define": "WIREFRAMES_PERFORMANCE_TESTING"
+        }
+    ],
+    "noEngineReferences": false
+}

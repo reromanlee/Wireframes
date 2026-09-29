@@ -50,6 +50,40 @@ namespace reromanlee.Wireframes.Tests
         }
 
         [Test]
+        public void Edits_UploadOnlyWhatTheyChange()
+        {
+            WireframeContainer container = CreateContainer();
+            Transform bone = CreateBone(Vector3.zero, Quaternion.identity);
+            ILine[] lines = new ILine[100];
+            for (int i = 0; i < lines.Length; i++)
+            {
+                lines[i] = container.CreateLine(bone, bone);
+            }
+            ISphere sphere = container.CreateSphere(bone, Vector3.zero, 1f);
+            MeshChunk chunk = ChunkOf(container);
+            container.Proxy.Flush();
+
+            lines[50].ColorA = Color.red;
+            container.Proxy.Flush();
+            Assert.That(chunk.UploadedVertexCount, Is.EqualTo(2), "A color edit uploaded more than the line's colors.");
+            Assert.That(chunk.UploadedIndexCount, Is.Zero);
+
+            sphere.Radius = 2f;
+            container.Proxy.Flush();
+            Assert.That(chunk.UploadedVertexCount, Is.EqualTo(((Shape)sphere).VertexCount),
+                "A radius edit uploaded more than the sphere's positions.");
+
+            bone.position = Vector3.one;
+            container.Proxy.Flush();
+            Assert.That(chunk.UploadedVertexCount, Is.Zero, "Moving a bone uploaded vertices.");
+
+            lines[20].IsVisible = false;
+            container.Proxy.Flush();
+            Assert.That(chunk.UploadedVertexCount, Is.Zero);
+            Assert.That(chunk.UploadedIndexCount, Is.EqualTo(2), "Hiding a line uploaded more than the edge moved into its slot.");
+        }
+
+        [Test]
         public void FreedBlock_IsReusedByShapeOfSameSize()
         {
             WireframeContainer container = CreateContainer();

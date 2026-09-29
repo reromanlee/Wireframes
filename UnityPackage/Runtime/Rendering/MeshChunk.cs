@@ -207,6 +207,12 @@ namespace reromanlee.Wireframes
             get => _pending.Length;
         }
 
+        /// <summary>Vertices the last flush uploaded, counted once for each stream they were uploaded to.</summary>
+        internal int UploadedVertexCount { get; private set; }
+
+        /// <summary>Indices the last flush uploaded.</summary>
+        internal int UploadedIndexCount { get; private set; }
+
         internal int EdgeCount
         {
             get => _edges.Count;
@@ -359,6 +365,8 @@ namespace reromanlee.Wireframes
             }
             using (WireframesMarkers.UploadMesh.Auto())
             {
+                UploadedVertexCount = 0;
+                UploadedIndexCount = 0;
                 UploadVertices();
                 UploadIndices();
             }
@@ -555,6 +563,7 @@ namespace reromanlee.Wireframes
                 _mesh.SetVertexBufferData(_colors, 0, 0, capacity, ColorStream, UploadFlags);
                 _mesh.SetVertexBufferData(_boneIndices, 0, 0, capacity, BoneStream, UploadFlags);
             }
+            UploadedVertexCount += capacity * 3;
             _positionRanges.Clear();
             _colorRanges.Clear();
             _boneRanges.Clear();
@@ -570,6 +579,7 @@ namespace reromanlee.Wireframes
             {
                 RangeInt range = ranges[i];
                 _mesh.SetVertexBufferData(data, range.start, range.start, range.length, stream, UploadFlags);
+                UploadedVertexCount += range.length;
             }
             ranges.Clear();
         }
@@ -624,6 +634,7 @@ namespace reromanlee.Wireframes
             {
                 return;
             }
+            UploadedIndexCount += count;
             int[] indices = _edges.Indices;
             if (_meshIndexFormat == IndexFormat.UInt32)
             {

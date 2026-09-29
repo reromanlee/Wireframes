@@ -136,7 +136,7 @@ namespace reromanlee.Wireframes.Tests
         [Test]
         public void Settings_OutOfRange_ThrowBeforeAnythingIsCreated()
         {
-            int objectsBefore = Object.FindObjectsByType<MeshProxy>(FindObjectsSortMode.None).Length;
+            int objectsBefore = Resources.FindObjectsOfTypeAll<MeshProxy>().Length;
 
             Assert.Throws<ArgumentOutOfRangeException>(() => CreateContainer(new WireframeContainerSettings { Layer = 32 }));
             Assert.Throws<ArgumentOutOfRangeException>(() => CreateContainer(new WireframeContainerSettings { Layer = -1 }));
@@ -144,7 +144,7 @@ namespace reromanlee.Wireframes.Tests
                 () => CreateContainer(new WireframeContainerSettings { VertexCapacity = -1 }));
             Assert.Throws<ArgumentOutOfRangeException>(
                 () => CreateContainer(new WireframeContainerSettings { EdgeCapacity = -1 }));
-            Assert.That(Object.FindObjectsByType<MeshProxy>(FindObjectsSortMode.None), Has.Length.EqualTo(objectsBefore));
+            Assert.That(Resources.FindObjectsOfTypeAll<MeshProxy>(), Has.Length.EqualTo(objectsBefore));
         }
 
         [Test]

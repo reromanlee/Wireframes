@@ -3,3 +3,4 @@ using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo("reromanlee.Wireframes.Editor")]
 [assembly: InternalsVisibleTo("reromanlee.Wireframes.Tests.Editor")]
 [assembly: InternalsVisibleTo("reromanlee.Wireframes.Tests.Runtime")]
+[assembly: InternalsVisibleTo("reromanlee.Wireframes.Tests.Performance")]
