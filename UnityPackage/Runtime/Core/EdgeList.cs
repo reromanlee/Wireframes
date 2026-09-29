@@ -8,11 +8,16 @@ namespace reromanlee.Wireframes
     /// </summary>
     internal sealed class EdgeList
     {
-        private const int InitialCapacity = 128;
+        private int[] _indices;
+        private IEdgeOwner[] _owners;
+        private int[] _ownerEdges;
 
-        private int[] _indices = new int[InitialCapacity * 2];
-        private IEdgeOwner[] _owners = new IEdgeOwner[InitialCapacity];
-        private int[] _ownerEdges = new int[InitialCapacity];
+        internal EdgeList(int capacity)
+        {
+            _indices = new int[capacity * 2];
+            _owners = new IEdgeOwner[capacity];
+            _ownerEdges = new int[capacity];
+        }
 
         internal int Count { get; private set; }
 
@@ -33,14 +38,22 @@ namespace reromanlee.Wireframes
             {
                 return;
             }
-            int newCapacity = _owners.Length;
+            int newCapacity = Math.Max(_owners.Length, 1);
             while (newCapacity < capacity)
             {
                 newCapacity *= 2;
             }
-            Array.Resize(ref _indices, newCapacity * 2);
-            Array.Resize(ref _owners, newCapacity);
-            Array.Resize(ref _ownerEdges, newCapacity);
+            Resize(newCapacity);
+        }
+
+        /// <summary>Lowers the capacity to <paramref name="capacity"/>, but never below the edges it holds.</summary>
+        internal void Shrink(int capacity)
+        {
+            capacity = Math.Max(capacity, Count);
+            if (capacity < _owners.Length)
+            {
+                Resize(capacity);
+            }
         }
 
         /// <summary>Appends an edge of <paramref name="owner"/> and returns its slot. Its indices are set later.</summary>
@@ -76,6 +89,13 @@ namespace reromanlee.Wireframes
             }
             _owners[last] = null;
             return moved;
+        }
+
+        private void Resize(int capacity)
+        {
+            Array.Resize(ref _indices, capacity * 2);
+            Array.Resize(ref _owners, capacity);
+            Array.Resize(ref _ownerEdges, capacity);
         }
     }
 }

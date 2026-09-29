@@ -9,7 +9,7 @@ namespace reromanlee.Wireframes.Tests
         [Test]
         public void Sphere_IsThreeGreatCirclesTurnedWithTheShape()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
             Vector3 center = new(0f, 5f, 0f);
             Quaternion rotation = Quaternion.Euler(0f, 0f, 30f);
             ISphere sphere = container.CreateSphere(center, rotation, 2f, 8);
@@ -39,14 +39,14 @@ namespace reromanlee.Wireframes.Tests
             ISphere sphere = CreateContainer().CreateSphere();
 
             Assert.That(sphere.Radius, Is.EqualTo(0.5f));
-            Assert.That(sphere.Segments, Is.EqualTo(32));
+            Assert.That(sphere.SegmentCount, Is.EqualTo(32));
             Assert.That(((Sphere)sphere).VertexCount, Is.EqualTo(96));
         }
 
         [Test]
         public void CreateSphereOnBone_FollowsTheBone()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
             Transform bone = CreateBone(new Vector3(-2f, 0f, 0f), Quaternion.Euler(45f, 0f, 0f));
             ISphere sphere = container.CreateSphere(bone, new Vector3(0f, 0f, 1f), 0.5f, 4);
 
@@ -60,10 +60,10 @@ namespace reromanlee.Wireframes.Tests
         [Test]
         public void FewerThanThreeSegments_Throw()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
 
             Assert.Throws<ArgumentOutOfRangeException>(() => container.CreateSphere(Vector3.zero, 1f, 0));
-            Assert.That(ChunkOf(container).ShapeCount, Is.Zero);
+            Assert.That(ShapeCountOf(container), Is.Zero);
         }
     }
 }

@@ -18,8 +18,8 @@ namespace reromanlee.Wireframes
 
         private Vector3 _size;
 
-        internal Box(MeshProxy proxy, Transform bone, Vector3 localCenter, Quaternion localRotation, Vector3 size)
-            : base(proxy, CornerCount, EdgePattern, bone, localCenter, localRotation)
+        internal Box(Transform bone, Vector3 localCenter, Quaternion localRotation, Vector3 size)
+            : base(CornerCount, EdgePattern, bone, localCenter, localRotation)
         {
             _size = size;
         }
@@ -28,12 +28,12 @@ namespace reromanlee.Wireframes
         {
             get
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 return _size;
             }
             set
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 _size = value;
                 MarkDirty(DirtyFlags.Positions);
             }
@@ -43,12 +43,12 @@ namespace reromanlee.Wireframes
         {
             get
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 return LocalPosition - LocalRotation * (_size * 0.5f);
             }
             set
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 SetCorners(value, LocalCornerB);
             }
         }
@@ -57,12 +57,12 @@ namespace reromanlee.Wireframes
         {
             get
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 return LocalPosition + LocalRotation * (_size * 0.5f);
             }
             set
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 SetCorners(LocalCornerA, value);
             }
         }
@@ -71,12 +71,12 @@ namespace reromanlee.Wireframes
         {
             get
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 return ToWorld(Bone, LocalCornerA);
             }
             set
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 LocalCornerA = ToLocal(Bone, value);
             }
         }
@@ -85,12 +85,12 @@ namespace reromanlee.Wireframes
         {
             get
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 return ToWorld(Bone, LocalCornerB);
             }
             set
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 LocalCornerB = ToLocal(Bone, value);
             }
         }

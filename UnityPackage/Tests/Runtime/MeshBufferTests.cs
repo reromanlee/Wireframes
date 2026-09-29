@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEngine;
-using UnityEngine.Rendering;
 
 namespace reromanlee.Wireframes.Tests
 {
@@ -11,7 +10,7 @@ namespace reromanlee.Wireframes.Tests
         public void DisposingShapes_KeepsRemainingEdgesOnTheirOwnVertices()
         {
             // Mixing sizes makes removals move edges between different owners.
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
             List<IShape> shapes = new();
             for (int i = 0; i < 30; i++)
             {
@@ -51,9 +50,43 @@ namespace reromanlee.Wireframes.Tests
         }
 
         [Test]
+        public void Edits_UploadOnlyWhatTheyChange()
+        {
+            WireframeContainer container = CreateContainer();
+            Transform bone = CreateBone(Vector3.zero, Quaternion.identity);
+            ILine[] lines = new ILine[100];
+            for (int i = 0; i < lines.Length; i++)
+            {
+                lines[i] = container.CreateLine(bone, bone);
+            }
+            ISphere sphere = container.CreateSphere(bone, Vector3.zero, 1f);
+            MeshChunk chunk = ChunkOf(container);
+            container.Proxy.Flush();
+
+            lines[50].ColorA = Color.red;
+            container.Proxy.Flush();
+            Assert.That(chunk.UploadedVertexCount, Is.EqualTo(2), "A color edit uploaded more than the line's colors.");
+            Assert.That(chunk.UploadedIndexCount, Is.Zero);
+
+            sphere.Radius = 2f;
+            container.Proxy.Flush();
+            Assert.That(chunk.UploadedVertexCount, Is.EqualTo(((Shape)sphere).VertexCount),
+                "A radius edit uploaded more than the sphere's positions.");
+
+            bone.position = Vector3.one;
+            container.Proxy.Flush();
+            Assert.That(chunk.UploadedVertexCount, Is.Zero, "Moving a bone uploaded vertices.");
+
+            lines[20].IsVisible = false;
+            container.Proxy.Flush();
+            Assert.That(chunk.UploadedVertexCount, Is.Zero);
+            Assert.That(chunk.UploadedIndexCount, Is.EqualTo(2), "Hiding a line uploaded more than the edge moved into its slot.");
+        }
+
+        [Test]
         public void FreedBlock_IsReusedByShapeOfSameSize()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
             ILine first = container.CreateLine();
             container.CreateLine();
             int start = ((Line)first).VertexStart;
@@ -69,7 +102,7 @@ namespace reromanlee.Wireframes.Tests
         [Test]
         public void FreedBlocks_AreCompactedOnceTheyFillHalfTheBuffer()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
             List<ILine> lines = new();
             for (int i = 0; i < 2000; i++)
             {
@@ -80,7 +113,8 @@ namespace reromanlee.Wireframes.Tests
             {
                 lines[i].Dispose();
             }
-            VertexAllocator allocator = ChunkOf(container).Allocator;
+            MeshChunk chunk = ChunkOf(container);
+            VertexAllocator allocator = chunk.Allocator;
             Assert.That(allocator.FreeCount, Is.EqualTo(3000));
 
             Vector3[] baked = FlushAndBake(container);
@@ -93,37 +127,51 @@ namespace reromanlee.Wireframes.Tests
                 AssertApproximately(new Vector3(i, 0f, 0f), baked[start]);
                 AssertApproximately(new Vector3(i, 1f, 0f), baked[start + 1]);
             }
-            Assert.That(ChunkOf(container).Mesh.GetIndices(0), Has.Length.EqualTo(1000));
+            Assert.That(chunk.Mesh.GetIndices(0), Has.Length.EqualTo(1000));
         }
 
         [Test]
-        public void ManyVertices_SwitchTheIndexBufferTo32Bit()
+        public void Compaction_ShrinksBuffersToTwiceWhatLiveShapesUse()
         {
-            LineContainer container = CreateContainer();
-            container.Proxy.Flush();
-            Assert.That(ChunkOf(container).Mesh.indexFormat, Is.EqualTo(IndexFormat.UInt16));
-
-            ILine last = null;
-            for (int i = 0; i < 40000; i++)
+            WireframeContainer container = CreateContainer();
+            List<ILine> lines = new();
+            for (int i = 0; i < 20000; i++)
             {
-                last = container.CreateLine(new Vector3(i, 0f, 0f), new Vector3(i, 1f, 0f));
+                lines.Add(container.CreateLine(new Vector3(i, 0f, 0f), new Vector3(i, 1f, 0f)));
+            }
+            container.Proxy.Flush();
+            MeshChunk chunk = ChunkOf(container);
+            Assert.That(chunk.VertexCapacity, Is.EqualTo(65535));
+
+            // A fifth of the lines stay, scattered through the buffer: 8000 vertices and 4000 edges.
+            for (int i = 0; i < lines.Count; i++)
+            {
+                if (i % 5 != 0)
+                {
+                    lines[i].Dispose();
+                }
             }
             Vector3[] baked = FlushAndBake(container);
 
-            Mesh mesh = ChunkOf(container).Mesh;
-            Assert.That(mesh.indexFormat, Is.EqualTo(IndexFormat.UInt32));
-            Assert.That(mesh.GetIndexCount(0), Is.EqualTo(80000u));
-            int start = ((Line)last).VertexStart;
-            AssertApproximately(new Vector3(39999f, 0f, 0f), baked[start]);
-            AssertApproximately(new Vector3(39999f, 1f, 0f), baked[start + 1]);
+            Assert.That(chunk.VertexCapacity, Is.EqualTo(16000));
+            Assert.That(chunk.EdgeCapacity, Is.EqualTo(8000));
+            Assert.That(chunk.Mesh.vertexCount, Is.EqualTo(16000));
+            Assert.That(chunk.Mesh.GetIndices(0), Has.Length.EqualTo(8000));
+            for (int i = 0; i < lines.Count; i += 5)
+            {
+                int start = ((Line)lines[i]).VertexStart;
+                AssertApproximately(new Vector3(i, 0f, 0f), baked[start]);
+                AssertApproximately(new Vector3(i, 1f, 0f), baked[start + 1]);
+            }
         }
 
         [Test]
-        public void ManyBones_GrowTheBoneArrayWithMatchingBindposes()
+        public void ManyBones_GrowTheBoneTextureWithEveryMatrix()
         {
-            LineContainer container = CreateContainer();
+            // More bones than one texture row holds, so the texture grows while the matrices stay in their slots.
+            WireframeContainer container = CreateContainer();
             List<ILine> lines = new();
-            for (int i = 0; i < 100; i++)
+            for (int i = 0; i < BoneTexture.BonesPerRow + 44; i++)
             {
                 ILine line = container.CreateLine();
                 line.BoneA = CreateBone(new Vector3(i, 0f, 0f), Quaternion.identity);
@@ -133,13 +181,18 @@ namespace reromanlee.Wireframes.Tests
 
             Vector3[] baked = FlushAndBake(container);
 
-            MeshChunk chunk = ChunkOf(container);
-            Assert.That(chunk.Renderer.bones, Has.Length.EqualTo(chunk.Mesh.bindposes.Length));
-            Assert.That(chunk.Bones.Count, Is.EqualTo(100));
+            Texture2D texture = container.Proxy.BoneTexture.Texture;
+            Assert.That(container.Proxy.Bones.Count, Is.EqualTo(lines.Count));
+            Assert.That(texture.height, Is.GreaterThanOrEqualTo(2));
             for (int i = 0; i < lines.Count; i++)
             {
                 AssertApproximately(new Vector3(i, 0f, 0f), baked[((Line)lines[i]).VertexStart]);
             }
+            // The translation of the last bone, read back from where the shader finds it.
+            int slot = lines.Count;
+            int texel = slot / BoneTexture.BonesPerRow * BoneTexture.BonesPerRow * 3 + slot % BoneTexture.BonesPerRow * 3;
+            Unity.Collections.NativeArray<Vector4> texels = texture.GetPixelData<Vector4>(0);
+            AssertApproximately(lines.Count - 1f, texels[texel].w);
         }
     }
 }

@@ -9,7 +9,7 @@ namespace reromanlee.Wireframes.Tests
         [Test]
         public void Star_AlternatesTipsAndInnerCorners()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
             Vector3 center = new(0f, 1f, 0f);
 
             IStar star = container.CreateStar(center, 0.4f, 1f, 5);
@@ -32,7 +32,7 @@ namespace reromanlee.Wireframes.Tests
         [Test]
         public void PoseForm_PointsTheFirstTipAlongTheRotationsZ()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
             Quaternion rotation = Quaternion.Euler(-90f, 0f, 0f);
 
             IStar star = container.CreateStar(Vector3.zero, rotation, 0.5f, 2f, 3);
@@ -64,11 +64,11 @@ namespace reromanlee.Wireframes.Tests
         [Test]
         public void FewerThanThreePoints_Throw()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
 
             Assert.Throws<ArgumentOutOfRangeException>(() => container.CreateStar(Vector3.zero, 0.5f, 1f, 2));
             Assert.Throws<ArgumentOutOfRangeException>(() => container.CreateStar(Vector3.zero, 0.5f, 1f, -1));
-            Assert.That(ChunkOf(container).ShapeCount, Is.Zero);
+            Assert.That(ShapeCountOf(container), Is.Zero);
         }
     }
 }

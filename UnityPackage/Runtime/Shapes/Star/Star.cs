@@ -5,18 +5,19 @@ namespace reromanlee.Wireframes
 {
     internal sealed class Star : RigidShape, IStar
     {
+        internal const int MaxPointCount = Ring.MaxSegmentCount / 2;
+
         private float _innerRadius;
         private float _outerRadius;
 
         internal Star(
-            MeshProxy proxy,
             Transform bone,
             Vector3 localCenter,
             Quaternion localRotation,
             float innerRadius,
             float outerRadius,
-            int points)
-            : base(proxy, CountVertices(points), Ring.Patterns.Get(points * 2), bone, localCenter, localRotation)
+            int pointCount)
+            : base(CountVertices(pointCount), Ring.Patterns.Get(pointCount * 2), bone, localCenter, localRotation)
         {
             _innerRadius = innerRadius;
             _outerRadius = outerRadius;
@@ -26,12 +27,12 @@ namespace reromanlee.Wireframes
         {
             get
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 return _innerRadius;
             }
             set
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 _innerRadius = value;
                 MarkDirty(DirtyFlags.Positions);
             }
@@ -41,12 +42,12 @@ namespace reromanlee.Wireframes
         {
             get
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 return _outerRadius;
             }
             set
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 _outerRadius = value;
                 MarkDirty(DirtyFlags.Positions);
             }
@@ -56,7 +57,7 @@ namespace reromanlee.Wireframes
         {
             get
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 return VertexCount / 2;
             }
         }
@@ -64,11 +65,12 @@ namespace reromanlee.Wireframes
         protected override void WriteShape(Span<Vector3> positions)
         {
             // A ring that alternates between the tips and the corners between them, starting with a tip on +Z.
-            Vector2[] circle = Ring.UnitCircle(positions.Length);
+            CirclePoints circle = new(positions.Length);
             for (int i = 0; i < positions.Length; i++)
             {
+                Vector2 point = circle.Next();
                 float radius = i % 2 == 0 ? _outerRadius : _innerRadius;
-                positions[i] = new Vector3(circle[i].y * radius, 0f, circle[i].x * radius);
+                positions[i] = new Vector3(point.y * radius, 0f, point.x * radius);
             }
         }
 
@@ -78,13 +80,15 @@ namespace reromanlee.Wireframes
             _outerRadius *= factor;
         }
 
-        private static int CountVertices(int points)
+        private static int CountVertices(int pointCount)
         {
-            if (points < 3)
+            // Its tips and corners make one ring.
+            if (pointCount < 3 || pointCount > MaxPointCount)
             {
-                throw new ArgumentOutOfRangeException(nameof(points), points, "A star needs at least 3 points.");
+                throw new ArgumentOutOfRangeException(
+                    nameof(pointCount), pointCount, $"A star needs 3 to {MaxPointCount} points.");
             }
-            return points * 2;
+            return pointCount * 2;
         }
     }
 }

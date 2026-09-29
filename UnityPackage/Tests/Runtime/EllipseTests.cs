@@ -9,7 +9,7 @@ namespace reromanlee.Wireframes.Tests
         [Test]
         public void Ellipse_HasItsRadiiAlongXAndZ()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
             Vector3 center = new(1f, 2f, 3f);
             IEllipse ellipse = container.CreateEllipse(center, Quaternion.identity, new Vector2(3f, 1f), 8);
 
@@ -30,7 +30,7 @@ namespace reromanlee.Wireframes.Tests
         [Test]
         public void CreateEllipseFromTips_RunsBetweenThemLyingFlat()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
 
             IEllipse ellipse = container.CreateEllipse(new Vector3(-2f, 1f, 0f), new Vector3(2f, 1f, 0f), 0.5f, 8);
 
@@ -48,7 +48,7 @@ namespace reromanlee.Wireframes.Tests
         [Test]
         public void CreateEllipseFromTipsWithNormal_FacesTheNormal()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
 
             IEllipse ellipse = container.CreateEllipse(Vector3.zero, new Vector3(0f, 0f, 4f), 1f, Vector3.right, 8);
 
@@ -77,17 +77,17 @@ namespace reromanlee.Wireframes.Tests
             IEllipse ellipse = CreateContainer().CreateEllipse();
 
             Assert.That(ellipse.Radii, Is.EqualTo(new Vector2(0.25f, 0.5f)));
-            Assert.That(ellipse.Segments, Is.EqualTo(32));
+            Assert.That(ellipse.SegmentCount, Is.EqualTo(32));
         }
 
         [Test]
         public void FewerThanThreeSegments_Throw()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
 
             Assert.Throws<ArgumentOutOfRangeException>(
                 () => container.CreateEllipse(Vector3.zero, Quaternion.identity, Vector2.one, 2));
-            Assert.That(ChunkOf(container).ShapeCount, Is.Zero);
+            Assert.That(ShapeCountOf(container), Is.Zero);
         }
     }
 }

@@ -17,6 +17,12 @@
     "defineConstraints": [
         "UNITY_INCLUDE_TESTS"
     ],
-    "versionDefines": [],
+    "versionDefines": [
+        {
+            "name": "com.unity.profiling.core",
+            "expression": "1.0.0",
+            "define": "WIREFRAMES_PROFILING_CORE"
+        }
+    ],
     "noEngineReferences": false
 }

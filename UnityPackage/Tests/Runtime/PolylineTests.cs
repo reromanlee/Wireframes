@@ -18,7 +18,7 @@ namespace reromanlee.Wireframes.Tests
         [Test]
         public void OpenPolyline_JoinsPointsInOrder()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
             IPolyline polyline = container.CreatePolyline(Square);
 
             (Vector3 A, Vector3 B)[] edges = BakeEdges(container, polyline);
@@ -36,7 +36,7 @@ namespace reromanlee.Wireframes.Tests
         [Test]
         public void Polygon_ClosesBackToTheFirstPoint()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
             IPolyline polygon = container.CreatePolygon(Square);
 
             (Vector3 A, Vector3 B)[] edges = BakeEdges(container, polygon);
@@ -50,7 +50,7 @@ namespace reromanlee.Wireframes.Tests
         [Test]
         public void Triangle_IsAClosedPolylineOfThreePoints()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
             IPolyline triangle = container.CreateTriangle(Vector3.zero, Vector3.right, Vector3.up);
 
             Assert.That(triangle.PointCount, Is.EqualTo(3));
@@ -74,13 +74,13 @@ namespace reromanlee.Wireframes.Tests
         [Test]
         public void TooFewPoints_Throw()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
 
             Assert.Throws<ArgumentException>(() => container.CreatePolyline(Vector3.zero));
             Assert.Throws<ArgumentException>(() => container.CreatePolygon(Vector3.zero, Vector3.one));
             Assert.Throws<ArgumentNullException>(() => container.CreatePolyline((Vector3[])null));
             Assert.Throws<ArgumentNullException>(() => container.CreatePolygon((Transform[])null));
-            Assert.That(ChunkOf(container).ShapeCount, Is.Zero);
+            Assert.That(ShapeCountOf(container), Is.Zero);
         }
 
         [Test]
@@ -95,7 +95,7 @@ namespace reromanlee.Wireframes.Tests
         [Test]
         public void CreatePolylineFromBones_PutsPointsOnTheBones()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
             Transform hips = CreateBone(new Vector3(0f, 1f, 0f), Quaternion.identity);
             Transform chest = CreateBone(new Vector3(0f, 1.5f, 0f), Quaternion.identity);
             Transform head = CreateBone(new Vector3(0f, 2f, 0f), Quaternion.identity);
@@ -128,7 +128,7 @@ namespace reromanlee.Wireframes.Tests
         [Test]
         public void Colors_AreUploadedPerPoint()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
             IPolyline polyline = container.CreatePolyline(Square);
             int start = ((Polyline)polyline).VertexStart;
 
@@ -148,25 +148,28 @@ namespace reromanlee.Wireframes.Tests
         [Test]
         public void Dispose_ReleasesEveryBone()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
             Transform bone = CreateBone(Vector3.zero, Quaternion.identity);
             IPolyline polyline = container.CreatePolygon(bone, bone, CreateBone(Vector3.one, Quaternion.identity));
-            Assert.That(ChunkOf(container).Bones.Count, Is.EqualTo(2));
+            Assert.That(container.Proxy.Bones.Count, Is.EqualTo(2));
 
             polyline.Dispose();
 
-            Assert.That(ChunkOf(container).Bones.Count, Is.Zero);
+            Assert.That(container.Proxy.Bones.Count, Is.Zero);
             Assert.Throws<ObjectDisposedException>(() => _ = polyline.PointCount);
         }
 
         [UnityTest]
         public IEnumerator DestroyedBone_LeavesItsPointsInPlace()
         {
+            WireframeContainer container = CreateContainer();
             Transform bone = CreateBone(new Vector3(2f, 0f, 0f), Quaternion.Euler(0f, 90f, 0f));
-            IPolyline polyline = CreateContainer().CreatePolyline(Square);
+            IPolyline polyline = container.CreatePolyline(Square);
             polyline.SetBone(0, bone);
             polyline.SetBone(3, bone);
             bone.position = new Vector3(5f, 1f, 0f);
+            // A drawn frame, which reads the bone's pose; a destroyed bone leaves its last drawn pose behind.
+            container.Proxy.Flush();
             Vector3 expected0 = polyline.GetWorldPosition(0);
             Vector3 expected3 = polyline.GetWorldPosition(3);
 

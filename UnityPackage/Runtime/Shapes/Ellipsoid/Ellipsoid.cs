@@ -8,16 +8,14 @@ namespace reromanlee.Wireframes
         private Vector3 _radii;
 
         internal Ellipsoid(
-            MeshProxy proxy,
             Transform bone,
             Vector3 localCenter,
             Quaternion localRotation,
             Vector3 radii,
-            int segments)
+            int segmentCount)
             : base(
-                proxy,
-                Ring.CheckSegments(segments) * AxisRings.RingCount,
-                AxisRings.Patterns.Get(segments),
+                Ring.CheckSegmentCount(segmentCount) * AxisRings.RingCount,
+                AxisRings.Patterns.Get(segmentCount),
                 bone,
                 localCenter,
                 localRotation)
@@ -29,22 +27,22 @@ namespace reromanlee.Wireframes
         {
             get
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 return _radii;
             }
             set
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 _radii = value;
                 MarkDirty(DirtyFlags.Positions);
             }
         }
 
-        public int Segments
+        public int SegmentCount
         {
             get
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 return VertexCount / AxisRings.RingCount;
             }
         }

@@ -12,18 +12,16 @@ namespace reromanlee.Wireframes
         private float _radiusB;
 
         internal Capsule(
-            MeshProxy proxy,
             Transform bone,
             Vector3 localPosition,
             Quaternion localRotation,
             float length,
             float radiusA,
             float radiusB,
-            int segments)
+            int segmentCount)
             : base(
-                proxy,
-                CountVertices(Ring.CheckQuarterSegments(segments)),
-                Patterns.Get(segments),
+                CountVertices(Ring.CheckQuarterSegmentCount(segmentCount)),
+                Patterns.Get(segmentCount),
                 bone,
                 localPosition,
                 localRotation,
@@ -37,12 +35,12 @@ namespace reromanlee.Wireframes
         {
             get
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 return _radiusA;
             }
             set
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 _radiusA = value;
                 MarkDirty(DirtyFlags.Positions);
             }
@@ -52,22 +50,22 @@ namespace reromanlee.Wireframes
         {
             get
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 return _radiusB;
             }
             set
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 _radiusB = value;
                 MarkDirty(DirtyFlags.Positions);
             }
         }
 
-        public int Segments
+        public int SegmentCount
         {
             get
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 return (VertexCount + 6) / 4;
             }
         }
@@ -75,8 +73,8 @@ namespace reromanlee.Wireframes
         // Vertices: the ring on sphere A, the ring on sphere B, then the inside points of cap A's arcs and cap B's arcs.
         protected override void WriteShape(Span<Vector3> positions, float length)
         {
-            int segments = (positions.Length + 6) / 4;
-            int capVertices = segments - 3;
+            int segmentCount = (positions.Length + 6) / 4;
+            int capVertices = segmentCount - 3;
             // Built along +Z for the sizes without their signs, then mirrored when the length is negative.
             float span = Mathf.Abs(length);
             float radiusA = Mathf.Abs(_radiusA);
@@ -84,10 +82,10 @@ namespace reromanlee.Wireframes
             Vector3 centerB = new(0f, 0f, span);
             Hull.Tangent(radiusA, radiusB, span, out float sine, out float cosine);
 
-            Span<Vector3> ringA = positions.Slice(0, segments);
-            Span<Vector3> ringB = positions.Slice(segments, segments);
-            Span<Vector3> capA = positions.Slice(segments * 2, capVertices);
-            Span<Vector3> capB = positions.Slice(segments * 2 + capVertices, capVertices);
+            Span<Vector3> ringA = positions.Slice(0, segmentCount);
+            Span<Vector3> ringB = positions.Slice(segmentCount, segmentCount);
+            Span<Vector3> capA = positions.Slice(segmentCount * 2, capVertices);
+            Span<Vector3> capB = positions.Slice(segmentCount * 2 + capVertices, capVertices);
             WriteRing(ringA, Vector3.zero, radiusA, sine, cosine);
             WriteRing(ringB, centerB, radiusB, sine, cosine);
             WriteCap(capA, Vector3.zero, radiusA, Vector3.back, Mathf.Atan2(cosine, sine));
@@ -123,10 +121,10 @@ namespace reromanlee.Wireframes
             _radiusB *= factor;
         }
 
-        private static int CountVertices(int segments)
+        private static int CountVertices(int segmentCount)
         {
             // Two rings, and two caps whose arcs share the ring points and each cap's pole.
-            return segments * 4 - 6;
+            return segmentCount * 4 - 6;
         }
 
         /// <summary>
@@ -165,30 +163,30 @@ namespace reromanlee.Wireframes
             }
         }
 
-        private static int[] BuildEdges(int segments)
+        private static int[] BuildEdges(int segmentCount)
         {
-            int[] pattern = new int[(segments * 4 + SideLineCount) * 2];
+            int[] pattern = new int[(segmentCount * 4 + SideLineCount) * 2];
             int cursor = 0;
-            Ring.AddEdges(pattern, ref cursor, 0, segments);
-            Ring.AddEdges(pattern, ref cursor, segments, segments);
-            // The side lines join the rings at their quarter points, which is why segments must be a multiple of 4.
+            Ring.AddEdges(pattern, ref cursor, 0, segmentCount);
+            Ring.AddEdges(pattern, ref cursor, segmentCount, segmentCount);
+            // The side lines join the rings at their quarter points, which is why the segment count must be a multiple of 4.
             for (int line = 0; line < SideLineCount; line++)
             {
-                int vertex = line * segments / SideLineCount;
+                int vertex = line * segmentCount / SideLineCount;
                 pattern[cursor++] = vertex;
-                pattern[cursor++] = segments + vertex;
+                pattern[cursor++] = segmentCount + vertex;
             }
-            int capVertices = segments - 3;
-            AddCapEdges(pattern, ref cursor, 0, segments * 2, segments);
-            AddCapEdges(pattern, ref cursor, segments, segments * 2 + capVertices, segments);
+            int capVertices = segmentCount - 3;
+            AddCapEdges(pattern, ref cursor, 0, segmentCount * 2, segmentCount);
+            AddCapEdges(pattern, ref cursor, segmentCount, segmentCount * 2 + capVertices, segmentCount);
             return pattern;
         }
 
         /// <summary>Adds the edges of a cap's two arcs, in the order <see cref="WriteCap"/> writes their points.</summary>
-        private static void AddCapEdges(int[] pattern, ref int cursor, int ring, int inside, int segments)
+        private static void AddCapEdges(int[] pattern, ref int cursor, int ring, int inside, int segmentCount)
         {
-            int half = segments / 2;
-            int quarter = segments / 4;
+            int half = segmentCount / 2;
+            int quarter = segmentCount / 4;
             int pole = inside + quarter - 1;
 
             // From the ring's +Y point over the pole to its -Y point.

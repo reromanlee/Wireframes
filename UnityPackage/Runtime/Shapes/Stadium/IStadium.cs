@@ -15,6 +15,6 @@ namespace reromanlee.Wireframes
         /// <summary>
         /// Number of straight pieces a full circle would be drawn with, fixed at creation. Each end is half of them.
         /// </summary>
-        int Segments { get; }
+        int SegmentCount { get; }
     }
 }

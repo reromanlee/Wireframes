@@ -12,13 +12,12 @@ namespace reromanlee.Wireframes
         private float _length;
 
         protected AxialShape(
-            MeshProxy proxy,
             int vertexCount,
-            int[] edgePattern,
+            EdgeSource edgeSource,
             Transform bone,
             Vector3 localPosition,
             Quaternion localRotation,
-            float length) : base(proxy, vertexCount, edgePattern, bone, localPosition, localRotation)
+            float length) : base(vertexCount, edgeSource, bone, localPosition, localRotation)
         {
             _length = length;
         }
@@ -27,27 +26,43 @@ namespace reromanlee.Wireframes
         {
             get
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 return _length;
             }
             set
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 _length = value;
                 MarkDirty(DirtyFlags.Positions);
             }
         }
 
-        public Vector3 LocalEnd
+        public Vector3 LocalEndA
         {
             get
             {
-                ThrowIfDisposed();
+                EnsureUsable();
+                return LocalPosition;
+            }
+            set
+            {
+                EnsureUsable();
+                Vector3 endB = LocalEndB;
+                LocalPosition = value;
+                LocalEndB = endB;
+            }
+        }
+
+        public Vector3 LocalEndB
+        {
+            get
+            {
+                EnsureUsable();
                 return LocalPosition + LocalRotation * new Vector3(0f, 0f, _length);
             }
             set
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 Vector3 axis = value - LocalPosition;
                 float length = axis.magnitude;
                 // An end on top of end A has no direction, so the rotation stays as it is.
@@ -62,17 +77,31 @@ namespace reromanlee.Wireframes
             }
         }
 
-        public Vector3 WorldEnd
+        public Vector3 WorldEndA
         {
             get
             {
-                ThrowIfDisposed();
-                return ToWorld(Bone, LocalEnd);
+                EnsureUsable();
+                return ToWorld(Bone, LocalEndA);
             }
             set
             {
-                ThrowIfDisposed();
-                LocalEnd = ToLocal(Bone, value);
+                EnsureUsable();
+                LocalEndA = ToLocal(Bone, value);
+            }
+        }
+
+        public Vector3 WorldEndB
+        {
+            get
+            {
+                EnsureUsable();
+                return ToWorld(Bone, LocalEndB);
+            }
+            set
+            {
+                EnsureUsable();
+                LocalEndB = ToLocal(Bone, value);
             }
         }
 

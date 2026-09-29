@@ -9,7 +9,7 @@ namespace reromanlee.Wireframes.Tests
         [Test]
         public void RoundedRectangle_IsFourQuarterCirclesJoinedBySides()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
             IRoundedRectangle rectangle =
                 container.CreateRoundedRectangle(new Vector3(-2f, 0f, -1f), new Vector3(2f, 0f, 1f), 0.5f, 8);
 
@@ -37,7 +37,7 @@ namespace reromanlee.Wireframes.Tests
         [Test]
         public void CornerRadius_IsDrawnClampedToHalfTheShorterSide()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
             IRoundedRectangle rectangle =
                 container.CreateRoundedRectangle(Vector3.zero, Quaternion.identity, new Vector2(4f, 2f), 5f, 8);
 
@@ -54,7 +54,7 @@ namespace reromanlee.Wireframes.Tests
         [Test]
         public void NegativeCornerRadius_DrawsSharpCorners()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
             IRoundedRectangle rectangle =
                 container.CreateRoundedRectangle(Vector3.zero, Quaternion.identity, new Vector2(2f, 2f), -1f, 4);
 
@@ -83,7 +83,7 @@ namespace reromanlee.Wireframes.Tests
 
             Assert.That(rectangle.Size, Is.EqualTo(Vector2.one));
             Assert.That(rectangle.CornerRadius, Is.EqualTo(0.25f));
-            Assert.That(rectangle.Segments, Is.EqualTo(32));
+            Assert.That(rectangle.SegmentCount, Is.EqualTo(32));
         }
 
         [Test]
@@ -100,11 +100,11 @@ namespace reromanlee.Wireframes.Tests
         [Test]
         public void SegmentsThatAreNotAMultipleOfFour_Throw()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
 
             Assert.Throws<ArgumentOutOfRangeException>(
                 () => container.CreateRoundedRectangle(Vector3.zero, Vector3.one, 0.1f, 6));
-            Assert.That(ChunkOf(container).ShapeCount, Is.Zero);
+            Assert.That(ShapeCountOf(container), Is.Zero);
         }
     }
 }

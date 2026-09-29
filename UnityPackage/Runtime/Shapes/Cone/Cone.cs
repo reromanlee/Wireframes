@@ -12,17 +12,15 @@ namespace reromanlee.Wireframes
         private float _radius;
 
         internal Cone(
-            MeshProxy proxy,
             Transform bone,
             Vector3 localPosition,
             Quaternion localRotation,
             float length,
             float radius,
-            int segments)
+            int segmentCount)
             : base(
-                proxy,
-                Ring.CheckQuarterSegments(segments) + TipCount,
-                Patterns.Get(segments),
+                Ring.CheckQuarterSegmentCount(segmentCount) + TipCount,
+                Patterns.Get(segmentCount),
                 bone,
                 localPosition,
                 localRotation,
@@ -35,36 +33,36 @@ namespace reromanlee.Wireframes
         {
             get
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 return _radius;
             }
             set
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 _radius = value;
                 MarkDirty(DirtyFlags.Positions);
             }
         }
 
-        public int Segments
+        public int SegmentCount
         {
             get
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 return VertexCount - TipCount;
             }
         }
 
         protected override void WriteShape(Span<Vector3> positions, float length)
         {
-            int segments = positions.Length - TipCount;
+            int segmentCount = positions.Length - TipCount;
             // The base ring starts on +Y and passes +X a quarter turn later; the tip comes last.
             Ring.Write(
-                positions.Slice(0, segments),
+                positions.Slice(0, segmentCount),
                 new Vector3(0f, 0f, length),
                 new Vector3(0f, _radius, 0f),
                 new Vector3(_radius, 0f, 0f));
-            positions[segments] = Vector3.zero;
+            positions[segmentCount] = Vector3.zero;
         }
 
         protected override void ScaleCrossSection(float factor)
@@ -72,16 +70,16 @@ namespace reromanlee.Wireframes
             _radius *= factor;
         }
 
-        private static int[] BuildEdges(int segments)
+        private static int[] BuildEdges(int segmentCount)
         {
-            int[] pattern = new int[(segments + SideLineCount) * 2];
+            int[] pattern = new int[(segmentCount + SideLineCount) * 2];
             int cursor = 0;
-            Ring.AddEdges(pattern, ref cursor, 0, segments);
-            // The side lines meet the ring at its quarter points, which is why segments must be a multiple of 4.
+            Ring.AddEdges(pattern, ref cursor, 0, segmentCount);
+            // The side lines meet the ring at its quarter points, which is why the segment count must be a multiple of 4.
             for (int line = 0; line < SideLineCount; line++)
             {
-                pattern[cursor++] = segments;
-                pattern[cursor++] = line * segments / SideLineCount;
+                pattern[cursor++] = segmentCount;
+                pattern[cursor++] = line * segmentCount / SideLineCount;
             }
             return pattern;
         }

@@ -10,19 +10,17 @@ namespace reromanlee.Wireframes
         private float _spikeLength;
 
         internal SpikedSphere(
-            MeshProxy proxy,
             Transform bone,
             Vector3 localCenter,
             Quaternion localRotation,
             float baseRadius,
             float spikeLength,
             int spikeCount)
-            : this(proxy, bone, localCenter, localRotation, baseRadius, spikeLength, SolidFor(spikeCount))
+            : this(bone, localCenter, localRotation, baseRadius, spikeLength, SolidFor(spikeCount))
         {
         }
 
         private SpikedSphere(
-            MeshProxy proxy,
             Transform bone,
             Vector3 localCenter,
             Quaternion localRotation,
@@ -30,7 +28,6 @@ namespace reromanlee.Wireframes
             float spikeLength,
             PlatonicSolid solid)
             : base(
-                proxy,
                 solid.Corners.Length + solid.Faces.Length,
                 solid.EdgePattern,
                 bone,
@@ -46,12 +43,12 @@ namespace reromanlee.Wireframes
         {
             get
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 return _baseRadius;
             }
             set
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 _baseRadius = value;
                 MarkDirty(DirtyFlags.Positions);
             }
@@ -61,12 +58,12 @@ namespace reromanlee.Wireframes
         {
             get
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 return _spikeLength;
             }
             set
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 _spikeLength = value;
                 MarkDirty(DirtyFlags.Positions);
             }
@@ -76,7 +73,7 @@ namespace reromanlee.Wireframes
         {
             get
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 return _solid.Faces.Length;
             }
         }

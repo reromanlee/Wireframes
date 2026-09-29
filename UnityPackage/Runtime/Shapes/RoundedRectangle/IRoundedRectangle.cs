@@ -13,6 +13,6 @@ namespace reromanlee.Wireframes
         /// Number of straight pieces a full circle of the corners is drawn with, fixed at creation. Each corner is a
         /// quarter of them.
         /// </summary>
-        int Segments { get; }
+        int SegmentCount { get; }
     }
 }

@@ -9,7 +9,7 @@ namespace reromanlee.Wireframes.Tests
         [Test]
         public void Ellipsoid_IsThreeEllipsesOnItsSurface()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
 
             IEllipsoid ellipsoid = container.CreateEllipsoid(Vector3.zero, Quaternion.identity, new Vector3(1f, 2f, 3f), 8);
 
@@ -42,7 +42,7 @@ namespace reromanlee.Wireframes.Tests
         [Test]
         public void CreateEllipsoidOnBone_FollowsTheBone()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
             Transform bone = CreateBone(Vector3.zero, Quaternion.identity);
             IEllipsoid ellipsoid = container.CreateEllipsoid(bone, new Vector3(0f, 0f, -1f), new Vector3(0f, 0f, 1f), 0.5f, 4);
 
@@ -58,17 +58,17 @@ namespace reromanlee.Wireframes.Tests
             IEllipsoid ellipsoid = CreateContainer().CreateEllipsoid();
 
             Assert.That(ellipsoid.Radii, Is.EqualTo(new Vector3(0.25f, 0.25f, 0.5f)));
-            Assert.That(ellipsoid.Segments, Is.EqualTo(32));
+            Assert.That(ellipsoid.SegmentCount, Is.EqualTo(32));
         }
 
         [Test]
         public void FewerThanThreeSegments_Throw()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
 
             Assert.Throws<ArgumentOutOfRangeException>(
                 () => container.CreateEllipsoid(Vector3.zero, Vector3.up, 1f, 1));
-            Assert.That(ChunkOf(container).ShapeCount, Is.Zero);
+            Assert.That(ShapeCountOf(container), Is.Zero);
         }
     }
 }

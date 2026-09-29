@@ -16,6 +16,6 @@ namespace reromanlee.Wireframes
         /// <summary>
         /// Number of straight pieces each ring is drawn with, fixed at creation. Each arc over a cap is half of them.
         /// </summary>
-        int Segments { get; }
+        int SegmentCount { get; }
     }
 }

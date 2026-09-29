@@ -8,16 +8,14 @@ namespace reromanlee.Wireframes
         private float _radius;
 
         internal Sphere(
-            MeshProxy proxy,
             Transform bone,
             Vector3 localCenter,
             Quaternion localRotation,
             float radius,
-            int segments)
+            int segmentCount)
             : base(
-                proxy,
-                Ring.CheckSegments(segments) * AxisRings.RingCount,
-                AxisRings.Patterns.Get(segments),
+                Ring.CheckSegmentCount(segmentCount) * AxisRings.RingCount,
+                AxisRings.Patterns.Get(segmentCount),
                 bone,
                 localCenter,
                 localRotation)
@@ -29,22 +27,22 @@ namespace reromanlee.Wireframes
         {
             get
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 return _radius;
             }
             set
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 _radius = value;
                 MarkDirty(DirtyFlags.Positions);
             }
         }
 
-        public int Segments
+        public int SegmentCount
         {
             get
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 return VertexCount / AxisRings.RingCount;
             }
         }

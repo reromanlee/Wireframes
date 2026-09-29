@@ -10,30 +10,32 @@ namespace reromanlee.Wireframes.Tests
     {
         private const float Tolerance = 1e-4f;
 
-        private readonly List<LineContainer> _containers = new();
+        private readonly List<WireframeContainer> _containers = new();
         private readonly List<Object> _objects = new();
 
         [TearDown]
         public void DestroyTestObjects()
         {
-            foreach (LineContainer container in _containers)
+            foreach (WireframeContainer container in _containers)
             {
                 container.Dispose();
             }
-            foreach (Object target in _objects)
+            // Right away, because tests without a yield share one frame and would otherwise see each other's objects,
+            // and newest first, so nothing is destroyed while an object created after it still uses it.
+            for (int i = _objects.Count - 1; i >= 0; i--)
             {
-                if (target != null)
+                if (_objects[i] != null)
                 {
-                    Object.Destroy(target);
+                    Object.DestroyImmediate(_objects[i]);
                 }
             }
             _containers.Clear();
             _objects.Clear();
         }
 
-        protected LineContainer CreateContainer(Material material = null)
+        protected WireframeContainer CreateContainer(WireframeContainerSettings settings = null)
         {
-            LineContainer container = material == null ? new LineContainer() : new LineContainer(material);
+            WireframeContainer container = new(settings);
             _containers.Add(container);
             return container;
         }
@@ -54,26 +56,51 @@ namespace reromanlee.Wireframes.Tests
             return target;
         }
 
-        private protected static MeshChunk ChunkOf(LineContainer container)
+        /// <summary>The container's first chunk, which holds every shape of a test that creates only a few.</summary>
+        private protected static MeshChunk ChunkOf(WireframeContainer container)
         {
             return container.Proxy.Chunks[0];
         }
 
-        /// <summary>Applies pending edits, then skins the mesh on the CPU and returns world-space vertices.</summary>
-        protected static Vector3[] FlushAndBake(LineContainer container)
+        private protected static MeshChunk ChunkOf(IShape shape)
+        {
+            return ((Shape)shape).Chunk;
+        }
+
+        protected static int ShapeCountOf(WireframeContainer container)
+        {
+            int count = 0;
+            foreach (MeshChunk chunk in container.Proxy.Chunks)
+            {
+                count += chunk.ShapeCount;
+            }
+            return count;
+        }
+
+        /// <summary>
+        /// Applies pending edits and reads the bones, then skins the vertices uploaded to <paramref name="chunk"/>, or
+        /// to the first chunk, on the CPU with the matrices the shader receives, and returns world-space vertices.
+        /// ShaderTests checks that the GPU draws the same.
+        /// </summary>
+        private protected static Vector3[] FlushAndBake(WireframeContainer container, MeshChunk chunk = null)
         {
             container.Proxy.Flush();
-            Mesh baked = new();
-            ChunkOf(container).Renderer.BakeMesh(baked);
-            Vector3[] vertices = baked.vertices;
-            Object.Destroy(baked);
+            chunk ??= ChunkOf(container);
+            BoneRegistry bones = container.Proxy.Bones;
+            Vector3[] positions = chunk.Positions;
+            float[] boneIndices = chunk.BoneIndices;
+            Vector3[] vertices = new Vector3[positions.Length];
+            for (int i = 0; i < vertices.Length; i++)
+            {
+                vertices[i] = bones.MatrixOf((int)boneIndices[i]).MultiplyPoint3x4(positions[i]);
+            }
             return vertices;
         }
 
         /// <summary>Applies pending edits, then skins the mesh on the CPU and returns the shape's world-space vertices.</summary>
-        protected static Vector3[] BakeShape(LineContainer container, IShape shape)
+        protected static Vector3[] BakeShape(WireframeContainer container, IShape shape)
         {
-            Vector3[] baked = FlushAndBake(container);
+            Vector3[] baked = FlushAndBake(container, ChunkOf(shape));
             Shape target = (Shape)shape;
             Vector3[] vertices = new Vector3[target.VertexCount];
             Array.Copy(baked, target.VertexStart, vertices, 0, vertices.Length);
@@ -81,10 +108,10 @@ namespace reromanlee.Wireframes.Tests
         }
 
         /// <summary>Applies pending edits, then skins the mesh on the CPU and returns the world-space ends of the shape's edges.</summary>
-        protected static (Vector3 A, Vector3 B)[] BakeEdges(LineContainer container, IShape shape)
+        protected static (Vector3 A, Vector3 B)[] BakeEdges(WireframeContainer container, IShape shape)
         {
-            Vector3[] baked = FlushAndBake(container);
-            int[] indices = ChunkOf(container).Mesh.GetIndices(0);
+            Vector3[] baked = FlushAndBake(container, ChunkOf(shape));
+            int[] indices = ChunkOf(shape).Mesh.GetIndices(0);
             Shape target = (Shape)shape;
             (Vector3 A, Vector3 B)[] edges = new (Vector3, Vector3)[target.EdgeCount];
             for (int edge = 0; edge < edges.Length; edge++)

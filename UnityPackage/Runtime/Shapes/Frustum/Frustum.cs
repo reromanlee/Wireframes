@@ -12,15 +12,14 @@ namespace reromanlee.Wireframes
         private float _radiusB;
 
         internal Frustum(
-            MeshProxy proxy,
             Transform bone,
             Vector3 localPosition,
             Quaternion localRotation,
             float length,
             float radiusA,
             float radiusB,
-            int sides)
-            : base(proxy, CountVertices(sides), Patterns.Get(sides), bone, localPosition, localRotation, length)
+            int sideCount)
+            : base(CountVertices(sideCount), Patterns.Get(sideCount), bone, localPosition, localRotation, length)
         {
             _radiusA = radiusA;
             _radiusB = radiusB;
@@ -30,12 +29,12 @@ namespace reromanlee.Wireframes
         {
             get
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 return _radiusA;
             }
             set
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 _radiusA = value;
                 MarkDirty(DirtyFlags.Positions);
             }
@@ -45,37 +44,37 @@ namespace reromanlee.Wireframes
         {
             get
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 return _radiusB;
             }
             set
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 _radiusB = value;
                 MarkDirty(DirtyFlags.Positions);
             }
         }
 
-        public int Sides
+        public int SideCount
         {
             get
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 return VertexCount / PolygonCount;
             }
         }
 
         protected override void WriteShape(Span<Vector3> positions, float length)
         {
-            int sides = positions.Length / PolygonCount;
-            for (int corner = 0; corner < sides; corner++)
+            int sideCount = positions.Length / PolygonCount;
+            for (int corner = 0; corner < sideCount; corner++)
             {
                 // Half a side past -Y, so the bottom side is level.
-                float angle = Mathf.PI * (2f * corner + 1f) / sides - Mathf.PI * 0.5f;
+                float angle = Mathf.PI * (2f * corner + 1f) / sideCount - Mathf.PI * 0.5f;
                 float cos = Mathf.Cos(angle);
                 float sin = Mathf.Sin(angle);
                 positions[corner] = new Vector3(cos * _radiusA, sin * _radiusA, 0f);
-                positions[sides + corner] = new Vector3(cos * _radiusB, sin * _radiusB, length);
+                positions[sideCount + corner] = new Vector3(cos * _radiusB, sin * _radiusB, length);
             }
         }
 
@@ -85,25 +84,26 @@ namespace reromanlee.Wireframes
             _radiusB *= factor;
         }
 
-        private static int CountVertices(int sides)
+        private static int CountVertices(int sideCount)
         {
-            if (sides < 3)
+            if (sideCount < 3 || sideCount > Ring.MaxSegmentCount)
             {
-                throw new ArgumentOutOfRangeException(nameof(sides), sides, "A frustum needs at least 3 sides.");
+                throw new ArgumentOutOfRangeException(
+                    nameof(sideCount), sideCount, $"A frustum needs 3 to {Ring.MaxSegmentCount} sides.");
             }
-            return sides * PolygonCount;
+            return sideCount * PolygonCount;
         }
 
-        private static int[] BuildEdges(int sides)
+        private static int[] BuildEdges(int sideCount)
         {
-            int[] pattern = new int[sides * 3 * 2];
+            int[] pattern = new int[sideCount * 3 * 2];
             int cursor = 0;
-            Ring.AddEdges(pattern, ref cursor, 0, sides);
-            Ring.AddEdges(pattern, ref cursor, sides, sides);
-            for (int corner = 0; corner < sides; corner++)
+            Ring.AddEdges(pattern, ref cursor, 0, sideCount);
+            Ring.AddEdges(pattern, ref cursor, sideCount, sideCount);
+            for (int corner = 0; corner < sideCount; corner++)
             {
                 pattern[cursor++] = corner;
-                pattern[cursor++] = sides + corner;
+                pattern[cursor++] = sideCount + corner;
             }
             return pattern;
         }

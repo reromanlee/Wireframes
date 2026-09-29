@@ -11,13 +11,12 @@ namespace reromanlee.Wireframes
         private Vector2 _size;
 
         protected RectangleShape(
-            MeshProxy proxy,
             int vertexCount,
-            int[] edgePattern,
+            EdgeSource edgeSource,
             Transform bone,
             Vector3 localCenter,
             Quaternion localRotation,
-            Vector2 size) : base(proxy, vertexCount, edgePattern, bone, localCenter, localRotation)
+            Vector2 size) : base(vertexCount, edgeSource, bone, localCenter, localRotation)
         {
             _size = size;
         }
@@ -26,12 +25,12 @@ namespace reromanlee.Wireframes
         {
             get
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 return _size;
             }
             set
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 _size = value;
                 MarkDirty(DirtyFlags.Positions);
             }
@@ -41,12 +40,12 @@ namespace reromanlee.Wireframes
         {
             get
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 return LocalPosition - LocalRotation * HalfSize();
             }
             set
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 Vector3 cornerB = LocalCornerB;
                 SpanCorners(OntoPlane(value, cornerB), cornerB);
             }
@@ -56,12 +55,12 @@ namespace reromanlee.Wireframes
         {
             get
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 return LocalPosition + LocalRotation * HalfSize();
             }
             set
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 Vector3 cornerA = LocalCornerA;
                 SpanCorners(cornerA, OntoPlane(value, cornerA));
             }
@@ -71,12 +70,12 @@ namespace reromanlee.Wireframes
         {
             get
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 return ToWorld(Bone, LocalCornerA);
             }
             set
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 LocalCornerA = ToLocal(Bone, value);
             }
         }
@@ -85,14 +84,20 @@ namespace reromanlee.Wireframes
         {
             get
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 return ToWorld(Bone, LocalCornerB);
             }
             set
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 LocalCornerB = ToLocal(Bone, value);
             }
+        }
+
+        /// <summary>Size of the XZ rectangle spanned by two corners; their difference in height is ignored.</summary>
+        internal static Vector2 FlatSpan(Vector3 cornerA, Vector3 cornerB)
+        {
+            return new Vector2(cornerB.x - cornerA.x, cornerB.z - cornerA.z);
         }
 
         protected override void ScaleSizes(float factor)

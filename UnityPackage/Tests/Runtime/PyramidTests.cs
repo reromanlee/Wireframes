@@ -8,7 +8,7 @@ namespace reromanlee.Wireframes.Tests
         [Test]
         public void Pyramid_IsARectangularBaseJoinedToTheTip()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
 
             IPyramid pyramid = container.CreatePyramid(Vector3.zero, new Vector3(0f, 0f, 2f), new Vector2(2f, 1f));
 
@@ -28,7 +28,7 @@ namespace reromanlee.Wireframes.Tests
         [Test]
         public void PointingDown_KeepsTheBaseAlignedWithTheWorldAxes()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
 
             IPyramid pyramid = container.CreatePyramid(new Vector3(0f, 3f, 0f), Vector3.zero, new Vector2(2f, 2f));
 
@@ -47,20 +47,20 @@ namespace reromanlee.Wireframes.Tests
             IPyramid pyramid = CreateContainer().CreatePyramid();
 
             Assert.That(pyramid.BaseSize, Is.EqualTo(Vector2.one));
-            Assert.That(pyramid.WorldEnd, Is.EqualTo(new Vector3(0f, 0f, 1f)));
+            Assert.That(pyramid.WorldEndB, Is.EqualTo(new Vector3(0f, 0f, 1f)));
         }
 
         [Test]
         public void CreatePyramidOnBone_PutsTheTipOnTheBone()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
             Transform eye = CreateBone(new Vector3(0f, 2f, 0f), Quaternion.Euler(0f, -90f, 0f));
 
             IPyramid view = container.CreatePyramid(eye, Vector3.zero, new Vector3(0f, 0f, 5f), new Vector2(4f, 3f));
 
             Assert.That(view.Bone, Is.SameAs(eye));
             AssertApproximately(eye.position, BakeShape(container, view)[0]);
-            AssertApproximately(eye.TransformPoint(new Vector3(0f, 0f, 5f)), view.WorldEnd);
+            AssertApproximately(eye.TransformPoint(new Vector3(0f, 0f, 5f)), view.WorldEndB);
         }
 
         [Test]

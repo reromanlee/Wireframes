@@ -14,6 +14,6 @@ namespace reromanlee.Wireframes
         float RadiusB { get; set; }
 
         /// <summary>Number of sides of each polygon, fixed at creation.</summary>
-        int Sides { get; }
+        int SideCount { get; }
     }
 }

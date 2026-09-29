@@ -8,13 +8,12 @@ namespace reromanlee.Wireframes
         private Vector2 _radii;
 
         internal Ellipse(
-            MeshProxy proxy,
             Transform bone,
             Vector3 localCenter,
             Quaternion localRotation,
             Vector2 radii,
-            int segments)
-            : base(proxy, Ring.CheckSegments(segments), Ring.Patterns.Get(segments), bone, localCenter, localRotation)
+            int segmentCount)
+            : base(Ring.CheckSegmentCount(segmentCount), Ring.Patterns.Get(segmentCount), bone, localCenter, localRotation)
         {
             _radii = radii;
         }
@@ -23,22 +22,22 @@ namespace reromanlee.Wireframes
         {
             get
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 return _radii;
             }
             set
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 _radii = value;
                 MarkDirty(DirtyFlags.Positions);
             }
         }
 
-        public int Segments
+        public int SegmentCount
         {
             get
             {
-                ThrowIfDisposed();
+                EnsureUsable();
                 return VertexCount;
             }
         }

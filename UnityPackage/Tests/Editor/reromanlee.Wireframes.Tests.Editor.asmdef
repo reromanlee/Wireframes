@@ -3,6 +3,7 @@
     "rootNamespace": "reromanlee.Wireframes.Tests",
     "references": [
         "reromanlee.Wireframes",
+        "reromanlee.Wireframes.Editor",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"
     ],

@@ -15,22 +15,22 @@ namespace reromanlee.Wireframes
         /// <summary>Writes the three rings, each with a third of the positions, with the given radius along each axis.</summary>
         internal static void Write(Span<Vector3> positions, Vector3 radii)
         {
-            int segments = positions.Length / RingCount;
+            int segmentCount = positions.Length / RingCount;
             Vector3 x = new(radii.x, 0f, 0f);
             Vector3 y = new(0f, radii.y, 0f);
             Vector3 z = new(0f, 0f, radii.z);
-            Ring.Write(positions.Slice(0, segments), Vector3.zero, z, x);
-            Ring.Write(positions.Slice(segments, segments), Vector3.zero, y, x);
-            Ring.Write(positions.Slice(segments * 2, segments), Vector3.zero, y, z);
+            Ring.Write(positions.Slice(0, segmentCount), Vector3.zero, z, x);
+            Ring.Write(positions.Slice(segmentCount, segmentCount), Vector3.zero, y, x);
+            Ring.Write(positions.Slice(segmentCount * 2, segmentCount), Vector3.zero, y, z);
         }
 
-        private static int[] BuildEdges(int segments)
+        private static int[] BuildEdges(int segmentCount)
         {
-            int[] pattern = new int[segments * RingCount * 2];
+            int[] pattern = new int[segmentCount * RingCount * 2];
             int cursor = 0;
             for (int ring = 0; ring < RingCount; ring++)
             {
-                Ring.AddEdges(pattern, ref cursor, ring * segments, segments);
+                Ring.AddEdges(pattern, ref cursor, ring * segmentCount, segmentCount);
             }
             return pattern;
         }

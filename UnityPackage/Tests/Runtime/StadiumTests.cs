@@ -9,7 +9,7 @@ namespace reromanlee.Wireframes.Tests
         [Test]
         public void Stadium_IsTwoArcsJoinedByStraightSides()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
 
             IStadium stadium = container.CreateStadium(Vector3.zero, new Vector3(0f, 0f, 4f), 1f, 8);
 
@@ -35,7 +35,7 @@ namespace reromanlee.Wireframes.Tests
         [Test]
         public void TaperedStadium_SidesTouchBothCircles()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
             Vector3 centerB = new(0f, 0f, 4f);
 
             IStadium stadium = container.CreateStadium(Vector3.zero, centerB, 1f, 0.5f, 8);
@@ -58,7 +58,7 @@ namespace reromanlee.Wireframes.Tests
         [Test]
         public void CreateStadiumWithNormal_FacesTheNormal()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
 
             IStadium stadium = container.CreateStadium(Vector3.zero, new Vector3(4f, 0f, 0f), 1f, 1f, Vector3.forward, 8);
 
@@ -72,7 +72,7 @@ namespace reromanlee.Wireframes.Tests
         [Test]
         public void CircleInsideTheOther_DrawsOnlyTheBiggerCircle()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
 
             IStadium stadium = container.CreateStadium(Vector3.zero, new Vector3(0f, 0f, 1f), 0.5f, 3f, 8);
 
@@ -85,7 +85,7 @@ namespace reromanlee.Wireframes.Tests
         [Test]
         public void CreateStadiumOnBone_LiesFlatInTheBonesXZ()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
             Transform bone = CreateBone(new Vector3(0f, 1f, 0f), Quaternion.Euler(0f, 0f, 30f));
 
             IStadium stadium = container.CreateStadium(bone, Vector3.zero, new Vector3(2f, 0f, 0f), 0.5f, 0.5f, 8);
@@ -105,16 +105,16 @@ namespace reromanlee.Wireframes.Tests
             Assert.That(stadium.Length, Is.EqualTo(1f));
             Assert.That(stadium.RadiusA, Is.EqualTo(0.5f));
             Assert.That(stadium.RadiusB, Is.EqualTo(0.5f));
-            Assert.That(stadium.Segments, Is.EqualTo(32));
+            Assert.That(stadium.SegmentCount, Is.EqualTo(32));
         }
 
         [Test]
         public void SegmentsThatAreNotAMultipleOfFour_Throw()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
 
             Assert.Throws<ArgumentOutOfRangeException>(() => container.CreateStadium(Vector3.zero, Vector3.right, 1f, 2));
-            Assert.That(ChunkOf(container).ShapeCount, Is.Zero);
+            Assert.That(ShapeCountOf(container), Is.Zero);
         }
     }
 }

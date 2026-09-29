@@ -14,7 +14,7 @@ namespace reromanlee.Wireframes.Tests
         [TestCase(20, 12, 30, 3, TestName = "Icosahedron")]
         public void SpikedSphere_PutsASpikeOnEveryFaceOfItsSolid(int spikes, int corners, int solidEdges, int faceSize)
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
 
             ISpikedSphere sphere = container.CreateSpikedSphere(Vector3.zero, 1f, 0.5f, spikes);
 
@@ -62,7 +62,7 @@ namespace reromanlee.Wireframes.Tests
         [Test]
         public void CubeSpikes_PointAlongTheAxes()
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
 
             ISpikedSphere sphere = container.CreateSpikedSphere(Vector3.zero, 1f, 1f, 6);
 
@@ -103,10 +103,10 @@ namespace reromanlee.Wireframes.Tests
         [TestCase(24)]
         public void SpikeCountThatIsNotAPlatonicSolid_Throws(int spikes)
         {
-            LineContainer container = CreateContainer();
+            WireframeContainer container = CreateContainer();
 
             Assert.Throws<ArgumentOutOfRangeException>(() => container.CreateSpikedSphere(Vector3.zero, 1f, 1f, spikes));
-            Assert.That(ChunkOf(container).ShapeCount, Is.Zero);
+            Assert.That(ShapeCountOf(container), Is.Zero);
         }
     }
 }
