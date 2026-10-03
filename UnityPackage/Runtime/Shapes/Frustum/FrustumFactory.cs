@@ -5,7 +5,7 @@ namespace reromanlee.Wireframes
     /// <summary>Creates frustums, prisms and regular pyramids in a <see cref="WireframeContainer"/>.</summary>
     public static class FrustumFactory
     {
-        private const int DefaultSideCount = 4;
+        internal const int DefaultSideCount = 4;
 
         /// <summary>
         /// Creates a white square frustum from the world origin, 1 unit along +Z, with corners 0.25 out at end A and
