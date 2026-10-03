@@ -102,6 +102,12 @@ namespace reromanlee.Wireframes
             get => _boneTexture;
         }
 
+        /// <summary>
+        /// Called during a flush whose bones turned out to include destroyed ones, right after they are read, so the
+        /// shapes on them can be changed in time for the upload. Containers that shape components share use it.
+        /// </summary>
+        internal Action<MeshProxy> BonesDestroyed { get; set; }
+
         internal void Initialize(WireframeContainer container, WireframeContainerSettings settings)
         {
             _container = container;
@@ -190,6 +196,10 @@ namespace reromanlee.Wireframes
             using (WireframesMarkers.Flush.Auto())
             {
                 _bones.ReadMatrices();
+                if (_bones.TakeDestroyedBones())
+                {
+                    BonesDestroyed?.Invoke(this);
+                }
                 if (_boneTexture.Upload(_bones))
                 {
                     _chunks.SetBoneTexture(_boneTexture.Texture);

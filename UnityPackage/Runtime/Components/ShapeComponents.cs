@@ -103,6 +103,22 @@ namespace reromanlee.Wireframes
         }
 
         /// <summary>
+        /// Writes the fields of the point shapes in <paramref name="proxy"/> into their shapes again, after its flush found
+        /// bones destroyed, so points that followed one follow their GameObject instead in the same frame.
+        /// </summary>
+        internal static void RefreshAfterBonesDestroyed(MeshProxy proxy)
+        {
+            for (int i = Enabled.Count - 1; i >= 0; i--)
+            {
+                if (Enabled[i] is WireframePointShape component && component.SharedContainer != null
+                    && component.SharedContainer.Container == proxy.Container)
+                {
+                    component.RefreshInPlace();
+                }
+            }
+        }
+
+        /// <summary>
         /// Asks for the editor's views to be repainted on its next update, so a change made outside the Inspector shows up
         /// in Edit Mode too. Play Mode renders every frame anyway.
         /// </summary>

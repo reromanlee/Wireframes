@@ -142,6 +142,26 @@ namespace reromanlee.Wireframes
         }
 
         /// <summary>
+        /// Writes the fields into the drawn shape, for callbacks where creating and destroying objects is forbidden, such
+        /// as rendering. A refresh that needs more waits for the editor's next update, or for the next refresh in builds.
+        /// </summary>
+        internal void RefreshInPlace()
+        {
+            if (EnabledIndex < 0)
+            {
+                return;
+            }
+            if (!NeedsStructuralRefresh())
+            {
+                ApplyFields();
+                return;
+            }
+#if UNITY_EDITOR
+            ShapeComponents.Defer(this);
+#endif
+        }
+
+        /// <summary>
         /// Returns the drawn shape for an edit that can go straight into it. Otherwise refreshes, which catches up a
         /// component that lost its shape and does nothing while it is disabled, and returns false.
         /// </summary>

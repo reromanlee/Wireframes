@@ -82,7 +82,9 @@ namespace reromanlee.Wireframes
                 Layer = key.Layer,
                 PersistAcrossScenes = isMainStage
             };
-            return new WireframeContainer(settings, key.Stage, true);
+            WireframeContainer container = new(settings, key.Stage, true);
+            container.Proxy.BonesDestroyed = ShapeComponents.RefreshAfterBonesDestroyed;
+            return container;
         }
     }
 }
