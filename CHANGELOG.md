@@ -1,3 +1,23 @@
+# Wireframes (Unreleased)
+
+### What's new
+
+1. Shape components draw a shape on their GameObject without code, in Edit Mode, Play Mode and builds: **Add Component > Wireframes** has one for every shape, such as `WireframeSphere` and `WireframeLine`.
+2. Every change to a component shows up in the next render, made in the Inspector, by undo, animation or a script, and components do no work per frame.
+3. Disabling a component or its GameObject hides its shape at no cost, and enabling it again allocates nothing.
+4. Components share containers by occlusion, transparency and layer, so many of them draw in a few draw calls; a color with alpha below 1 draws transparent, and shapes draw on their GameObject's layer.
+5. `DrawAsGizmo` draws a component's shape like a gizmo, in the Scene view and in the Game view while its Gizmos button is on, and builds leave it out.
+6. Prefab Mode draws the components of the prefab being edited.
+7. The Shape Gallery sample has a ComponentGallery scene made of components, and continuous integration builds it too.
+8. A container without shapes skips its work before each render once its empty chunks are released.
+
+### Known issues
+
+1. The Hierarchy's Scene visibility toggles don't hide components' wireframes, and the Gizmos menu's per-component checkboxes don't affect gizmo shapes.
+2. Clicking a component's wireframe in the Scene view doesn't select its GameObject.
+3. A script that changes a GameObject's layer moves its components' shapes to that layer on their next change.
+4. Stereo rendering for XR is untested.
+
 # Wireframes 2.0.0
 
 ### What's new
