@@ -26,7 +26,7 @@
   "samples": [
     {
       "displayName": "Shape Gallery",
-      "description": "A scene with every shape the package draws, laid out in rows and turning with their bones.",
+      "description": "Every shape the package draws, laid out in rows: one scene creates them from code and turns their bones, another is made of shape components that draw in Edit Mode.",
       "path": "Samples~/ShapeGallery"
     },
     {
