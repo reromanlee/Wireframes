@@ -11,9 +11,10 @@ namespace reromanlee.Wireframes
     /// shape, which then costs nothing, and enabling it again allocates nothing.
     /// </summary>
     /// <remarks>
-    /// Components share containers, one per combination of <see cref="Occlusion"/>, transparency and layer, so many
-    /// shapes draw in a few draw calls. A shape draws on its GameObject's layer, and a <see cref="Color"/> with alpha
-    /// below 1 draws it transparent. Main thread only; shape components are made by the package only.
+    /// Components share containers, one per combination of <see cref="Occlusion"/>, transparency, layer and
+    /// <see cref="DrawAsGizmo"/>, so many shapes draw in a few draw calls. A shape draws on its GameObject's layer, and a
+    /// <see cref="Color"/> with alpha below 1 draws it transparent. Main thread only; shape components are made by the
+    /// package only.
     /// </remarks>
     [ExecuteAlways]
     [HelpURL(HelpUrl)]
@@ -26,6 +27,10 @@ namespace reromanlee.Wireframes
 
         [Tooltip("What is drawn of the lines that other geometry hides: nothing, everything, or a dimmer line.")]
         [SerializeField] private WireframeOcclusion _occlusion = WireframeOcclusion.Hide;
+
+        [Tooltip("Draws the shape like a gizmo: in the Scene view, and in the Game view only while its Gizmos button is on. "
+                 + "Builds leave it out.")]
+        [SerializeField] private bool _drawAsGizmo;
 
         private Shape _shape;
         private SharedContainer _container;
@@ -76,6 +81,20 @@ namespace reromanlee.Wireframes
             }
         }
 
+        /// <summary>
+        /// True draws the shape like a gizmo: in Scene views, and in the Game view only while its Gizmos button is on. Other
+        /// cameras never draw it, and builds create nothing for it. False, the default, draws it like any other object.
+        /// </summary>
+        public bool DrawAsGizmo
+        {
+            get => _drawAsGizmo;
+            set
+            {
+                _drawAsGizmo = value;
+                Refresh();
+            }
+        }
+
         /// <summary>Position in the list of enabled components, or -1 while the component is disabled.</summary>
         internal int EnabledIndex { get; set; } = -1;
 
@@ -115,6 +134,18 @@ namespace reromanlee.Wireframes
         internal virtual bool CanCreateShape
         {
             get => true;
+        }
+
+        /// <summary>
+        /// False when nothing is drawn: for fields that can't make a shape, or for a gizmo outside the Editor.
+        /// </summary>
+        private bool IsDrawn
+        {
+#if UNITY_EDITOR
+            get => CanCreateShape;
+#else
+            get => !_drawAsGizmo && CanCreateShape;
+#endif
         }
 
         /// <summary>
@@ -261,7 +292,7 @@ namespace reromanlee.Wireframes
                 // Its container went away under it, as when its scene closed, so it is created again.
                 _shape = null;
             }
-            if (!CanCreateShape)
+            if (!IsDrawn)
             {
                 _shape?.Dispose();
                 _shape = null;
@@ -329,7 +360,7 @@ namespace reromanlee.Wireframes
         /// <summary>True when the fields need more than writing them into the drawn shape.</summary>
         private bool NeedsStructuralRefresh()
         {
-            return _shape == null || _shape.IsDisposed || _shape.IsSuspended || !CanCreateShape
+            return _shape == null || _shape.IsDisposed || _shape.IsSuspended || !IsDrawn
                    || _container.Container.IsDisposed || !_container.Key.Equals(CurrentKey())
                    || _builtSignature != BuildSignature;
         }
@@ -337,7 +368,7 @@ namespace reromanlee.Wireframes
         private SharedContainerKey CurrentKey()
         {
             Scene stage = SharedContainers.StageOf(gameObject);
-            return new SharedContainerKey(stage, _occlusion, _color.a < 1f, gameObject.layer);
+            return new SharedContainerKey(stage, _occlusion, _color.a < 1f, gameObject.layer, _drawAsGizmo);
         }
 
         private void SanitizeFields()

@@ -84,6 +84,10 @@ namespace reromanlee.Wireframes
             };
             WireframeContainer container = new(settings, key.Stage, true);
             container.Proxy.BonesDestroyed = ShapeComponents.RefreshAfterBonesDestroyed;
+            if (key.DrawsAsGizmo)
+            {
+                container.Proxy.CameraFilter = GizmoCameras.ShouldDraw;
+            }
             return container;
         }
     }
