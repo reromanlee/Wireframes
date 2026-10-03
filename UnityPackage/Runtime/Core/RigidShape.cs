@@ -160,6 +160,11 @@ namespace reromanlee.Wireframes
 
         protected sealed override void AcquireBones(BoneRegistry bones)
         {
+            // A bone destroyed while the shape was suspended left no pose to hold it by, so it resumes in world space.
+            if (IsDestroyed(_bone))
+            {
+                _bone = null;
+            }
             _boneSlot = bones.Acquire(_bone);
         }
 
