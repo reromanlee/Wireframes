@@ -304,7 +304,8 @@ namespace reromanlee.Wireframes
             try
             {
                 WireframesCounters.Update();
-                if (_chunks == null)
+                // Without chunks there is nothing to draw, as in a container whose shapes are all gone for now.
+                if (_chunks == null || _chunks.Chunks.Count == 0)
                 {
                     return;
                 }
