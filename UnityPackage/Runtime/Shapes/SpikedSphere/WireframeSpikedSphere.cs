@@ -19,7 +19,7 @@ namespace reromanlee.Wireframes
         [SerializeField] private float _spikeLength = ShapeDefaults.Radius * 0.5f;
 
         [Tooltip("Number of spikes, one on each face of a Platonic solid: 4, 6, 8, 12 or 20.")]
-        [SerializeField] private int _spikeCount = SpikedSphereFactory.DefaultSpikeCount;
+        [SerializeField, IntegerOptions(4, 6, 8, 12, 20)] private int _spikeCount = SpikedSphereFactory.DefaultSpikeCount;
 
         /// <summary>
         /// Distance from the center to the corners of the solid, in the GameObject's local units. 0.25 by default.
