@@ -20,6 +20,18 @@ namespace reromanlee.Wireframes
             }
         }
 
+        /// <summary>Creates a polyline of <paramref name="pointCount"/> white points at the world origin.</summary>
+        internal Polyline(int pointCount, bool isClosed)
+            : base(CheckCount(pointCount, isClosed, nameof(pointCount)), BuildEdges(pointCount, isClosed))
+        {
+            _isClosed = isClosed;
+            _points = new ShapePoint[pointCount];
+            for (int i = 0; i < _points.Length; i++)
+            {
+                _points[i] = new ShapePoint(Vector3.zero);
+            }
+        }
+
         /// <summary>Creates a polyline whose points sit at the origins of their bones.</summary>
         internal Polyline(IReadOnlyList<Transform> bones, bool isClosed)
             : base(CheckCount(bones, isClosed, nameof(bones)), BuildEdges(bones.Count, isClosed))
@@ -66,13 +78,18 @@ namespace reromanlee.Wireframes
             {
                 throw new ArgumentNullException(parameterName);
             }
+            return CheckCount(items.Count, isClosed, parameterName);
+        }
+
+        private static int CheckCount(int pointCount, bool isClosed, string parameterName)
+        {
             int minimum = isClosed ? 3 : 2;
-            if (items.Count < minimum)
+            if (pointCount < minimum)
             {
                 throw new ArgumentException(
                     $"{(isClosed ? "A closed" : "An open")} polyline needs at least {minimum} points.", parameterName);
             }
-            return items.Count;
+            return pointCount;
         }
 
         private static int[] BuildEdges(int pointCount, bool isClosed)

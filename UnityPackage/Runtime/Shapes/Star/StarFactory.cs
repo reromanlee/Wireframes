@@ -5,8 +5,8 @@ namespace reromanlee.Wireframes
     /// <summary>Creates stars in a <see cref="WireframeContainer"/>.</summary>
     public static class StarFactory
     {
-        private const float DefaultInnerRadius = 0.2f;
-        private const int DefaultPointCount = 5;
+        internal const float DefaultInnerRadius = 0.2f;
+        internal const int DefaultPointCount = 5;
 
         /// <summary>
         /// Creates a white five-pointed star around the world origin, lying flat in the XZ plane, with an outer radius

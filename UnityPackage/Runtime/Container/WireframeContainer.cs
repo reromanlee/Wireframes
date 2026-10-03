@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
 
 namespace reromanlee.Wireframes
@@ -36,7 +37,14 @@ namespace reromanlee.Wireframes
         /// settings are read once, so changing them later doesn't affect the container.
         /// </summary>
         /// <exception cref="ArgumentOutOfRangeException">A setting is outside its valid range.</exception>
-        public WireframeContainer(WireframeContainerSettings settings)
+        public WireframeContainer(WireframeContainerSettings settings) : this(settings, default, false)
+        {
+        }
+
+        /// <summary>Creates a container for the package's own use, such as the ones that shape components share.</summary>
+        /// <param name="scene">Scene the container belongs to, or an invalid scene for the active one.</param>
+        /// <param name="isHiddenInHierarchy">True keeps the container's GameObjects out of the Hierarchy.</param>
+        internal WireframeContainer(WireframeContainerSettings settings, Scene scene, bool isHiddenInHierarchy)
         {
             MainThread.Check();
             settings ??= new WireframeContainerSettings();
@@ -44,11 +52,20 @@ namespace reromanlee.Wireframes
 
             // In Edit Mode it is kept out of the saved scene, which also keeps the scene from being marked as changed.
             HideFlags hideFlags = HideFlags.NotEditable | (Application.isPlaying ? HideFlags.None : HideFlags.DontSave);
+            if (isHiddenInHierarchy)
+            {
+                hideFlags |= HideFlags.HideInHierarchy;
+            }
             GameObject proxyObject = new(settings.ResolvedName) { hideFlags = hideFlags, layer = settings.Layer };
             try
             {
-                // Otherwise the proxy lives in the active scene, and unloading that scene disposes the container.
-                if (settings.PersistAcrossScenes && Application.isPlaying)
+                // Without a scene of its own and unless it persists, the proxy lives in the active scene, and unloading
+                // that scene disposes the container.
+                if (scene.IsValid())
+                {
+                    SceneManager.MoveGameObjectToScene(proxyObject, scene);
+                }
+                else if (settings.PersistAcrossScenes && Application.isPlaying)
                 {
                     Object.DontDestroyOnLoad(proxyObject);
                 }

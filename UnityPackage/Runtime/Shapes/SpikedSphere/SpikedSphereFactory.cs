@@ -5,7 +5,7 @@ namespace reromanlee.Wireframes
     /// <summary>Creates spiked spheres in a <see cref="WireframeContainer"/>.</summary>
     public static class SpikedSphereFactory
     {
-        private const int DefaultSpikeCount = 12;
+        internal const int DefaultSpikeCount = 12;
 
         /// <summary>
         /// Creates a white spiked sphere around the world origin: a dodecahedron with corners 0.25 from the center and

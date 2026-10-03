@@ -6,22 +6,25 @@ Wireframe shapes for Unity that follow Transforms on the GPU: create a shape onc
 
 Lines, polylines, boxes, circles, spheres, capsules, cones and more attach to any Transforms, called bones. The package uploads each bone's matrix once per frame and the vertex shader moves every vertex, so moving shapes cost your code nothing and an edit uploads only what it changed.
 
+Without writing code, add a shape component to a GameObject: it draws there at once, in Edit Mode too, and shows every change to its fields as you make it.
+
 Shapes draw the same in Play Mode, Edit Mode and player builds, under the Built-in Render Pipeline, URP and HDRP, from desktops and phones to WebGL, while server builds keep them working without drawing.
 
 ### Features
 
 1. Shapes follow Transforms on the GPU.
 2. 17 shapes, from lines to capsules.
-3. Edits upload only what they change.
-4. Steady frames allocate nothing.
-5. Built-in Render Pipeline, URP and HDRP.
-6. Windows, Android, WebGL and more.
-7. Play Mode, Edit Mode and builds.
-8. Hidden lines hide, show or fade.
-9. Shapes hide without being disposed.
-10. Statistics and Profiler markers.
-11. Destroyed bones leave shapes in place.
-12. A camera that draws in wireframe.
+3. Shape components, edited live in Edit Mode.
+4. Edits upload only what they change.
+5. Steady frames allocate nothing.
+6. Built-in Render Pipeline, URP and HDRP.
+7. Windows, Android, WebGL and more.
+8. Play Mode, Edit Mode and builds.
+9. Hidden lines hide, show or fade.
+10. Shapes hide without being disposed.
+11. Statistics and Profiler markers.
+12. Destroyed bones leave shapes in place.
+13. A camera that draws in wireframe.
 
 Detailed about features - see [FEATURES.md](Documentation/FEATURES.md).
 
@@ -106,6 +109,8 @@ ISphere sphere = _wireframes.CreateSphere(_target, Vector3.zero, 0.5f);
 sphere.Radius = 2f;
 sphere.IsVisible = false;
 ```
+
+**Or add a shape component to a GameObject, with no code at all.** **Add Component > Wireframes** has one for every shape, from **Line** to **Pyramid**. It draws on its GameObject right away, in Edit Mode, Play Mode and builds, follows it like a mesh, and shows each change to its fields in the next render; disabling it hides the shape.
 
 Detailed about usage - see [USAGE.md](Documentation/USAGE.md).
 

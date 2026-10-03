@@ -63,6 +63,12 @@ namespace reromanlee.Wireframes
         }
 
         /// <summary>
+        /// True creates chunks with their renderers switched off, for a container whose camera filter decides when they
+        /// draw.
+        /// </summary>
+        internal bool HidesNewChunks { get; set; }
+
+        /// <summary>
         /// Creates chunks with room for <paramref name="vertexCount"/> vertices and <paramref name="edgeCount"/> edges,
         /// split evenly between as few chunks as that takes. They are never released.
         /// </summary>
@@ -195,6 +201,7 @@ namespace reromanlee.Wireframes
             {
                 MeshChunk chunk = new(this, vertexCapacity, edgeCapacity);
                 chunk.Renderer.SetPropertyBlock(_propertyBlock);
+                chunk.Renderer.forceRenderingOff = HidesNewChunks;
                 _chunks.Add(chunk);
                 return chunk;
             }

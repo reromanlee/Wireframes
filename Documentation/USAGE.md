@@ -126,6 +126,42 @@ public sealed class BoundsPreview : MonoBehaviour
 2. It is disposed before scripts reload, after which Unity calls `OnEnable` again, and when its scene closes, unless it persists across scenes.
 3. Switching between Edit and Play Mode alone never disposes a container, though the script reload that Play Mode starts with by default does.
 
+### Components
+
+To draw a shape without writing code, add its component to a GameObject: **Add Component > Wireframes** has one for every shape, from **Line** to **Pyramid**. It draws there right away, in Edit Mode, Play Mode and builds, and follows the GameObject's Transform like a mesh, scale included. Its fields place the shape relative to the GameObject:
+
+| Components | Place the shape with |
+|---|---|
+| `WireframeBox`, `WireframeRectangle`, `WireframeRoundedRectangle`, `WireframeCircle`, `WireframeEllipse`, `WireframeStar`, `WireframeSphere`, `WireframeEllipsoid`, `WireframeSpikedSphere` | **Center** and **Rotation**, in Euler angles. Flat shapes lie flat on the GameObject with no rotation. |
+| `WireframeCylinder`, `WireframeCone`, `WireframeCapsule`, `WireframeStadium`, `WireframeFrustum`, `WireframePyramid` | **End A** and **End B**, the ends of the shape's axis, and **Roll** around it. A cone's or pyramid's tip is end A. With no roll, the shape's +Y stays as close to the GameObject's up as the axis allows. |
+| `WireframeLine`, `WireframePolyline` | A **Bone** and a **Position** for each point: the point follows that Transform, or the GameObject when it has none. |
+
+1. **Every change shows up in the next render,** made in the Inspector, by undo, a prefab revert, animation or a script. A count that runtime shapes fix at creation, such as **Segment Count**, creates the shape again, once you finish typing it, and invalid counts snap to the nearest valid one.
+2. **`enabled` shows and hides the shape.** Disabling the component or its GameObject costs nothing, and enabling it again allocates nothing.
+3. **One color per shape.** **Color** colors all of it, and an alpha below 1 draws it transparent; **Occlusion** works like the container setting. Shapes draw on their GameObject's layer, for camera culling masks.
+4. **Draw As Gizmo** draws the shape like a gizmo: in the Scene view, and in the Game view only while its **Gizmos** button is on. Other cameras never draw it, and builds leave it out. To leave out a whole GameObject meant for debugging, tag it **EditorOnly**, which strips it from builds with its children.
+5. **A destroyed bone counts as none,** so its point follows the GameObject from the next render on. A bone has to be in a scene: one that isn't, such as a prefab asset, is reported once and the GameObject followed instead.
+6. **New components draw what the Create methods without arguments draw,** relative to the GameObject: a white shape of unit size, with long shapes running 1 unit along +Z. A line runs 1 unit forward, and a polyline starts as a small triangle; it draws nothing with fewer than 2 points, or 3 when closed.
+
+Scripts set the same properties, and counts outside their range throw `ArgumentOutOfRangeException`, as Create methods do:
+
+```csharp
+WireframeLine line = gameObject.AddComponent<WireframeLine>();
+line.BoneB = target;
+line.PositionB = Vector3.up;
+line.Color = Color.cyan;
+
+WireframeSphere sphere = gameObject.AddComponent<WireframeSphere>();
+sphere.Radius = 2f;
+sphere.Occlusion = WireframeOcclusion.Show;
+```
+
+Components share containers, one per combination of occlusion, transparency, layer and **Draw As Gizmo**, so many components draw in a few draw calls. Those containers are never saved, stay out of the Hierarchy, and go away with their last component. Prefab Mode draws the components of the prefab being edited in its own scene.
+
+1. The Hierarchy's Scene visibility toggles don't hide components' wireframes, and the per-component checkboxes of the **Gizmos** menu don't affect gizmo shapes.
+2. A script that changes `gameObject.layer` moves the shape to that layer on the component's next change; a change in the Inspector moves it at once.
+3. Clicking a wireframe in the Scene view doesn't select its GameObject.
+
 ### Custom materials
 
 A custom material draws a container when its shader moves vertices with `WireframesSkin` from the package's include file. Each vertex arrives relative to its bone, with the bone's index in `TEXCOORD0`, and the package sets the `_WireframesBones` texture on every renderer. `WireframesColor` converts vertex colors in linear color space, as the package's shader does.
@@ -183,7 +219,7 @@ Add the **WireframeCamera** component to a Camera to draw everything that camera
 
 Import them from the package's **Samples** tab in the Package Manager.
 
-1. **Shape Gallery** lays out every shape in three rows, each turning with its own bone. Open its **ShapeGallery** scene and enter Play Mode.
+1. **Shape Gallery** lays out every shape in three rows, each turning with its own bone. Open its **ShapeGallery** scene and enter Play Mode. Its **ComponentGallery** scene has the same shapes made of components, drawn as soon as it opens, and turning in Play Mode.
 2. **Stress Test** spawns 10,000 lines, 1,000 boxes and 2,000 other shapes on 100 orbiting bones. Add the `StressTest` component to an empty GameObject in a scene with a camera, and enter Play Mode with the Profiler open. Raise **Recolor Per Frame** to measure the cost of edits.
 
 ### Tests
