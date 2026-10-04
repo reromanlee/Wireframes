@@ -1,0 +1,202 @@
+/* The Glyph Editor window, its popups and the glyph canvas. Colors follow the editor's theme. */
+
+.glyph-editor {
+    flex-grow: 1;
+}
+
+.glyph-editor__pack-field {
+    width: 220px;
+    margin-right: 4px;
+}
+
+.glyph-editor__search {
+    width: 160px;
+}
+
+.glyph-editor__tile-size {
+    width: 90px;
+    margin-left: 6px;
+    margin-right: 6px;
+}
+
+.glyph-editor__generate--out-of-date {
+    background-color: rgba(255, 180, 0, 0.35);
+}
+
+.glyph-editor__banner {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 8px;
+    background-color: var(--unity-colors-helpbox-background, rgba(96, 96, 96, 0.25));
+    border-bottom-width: 1px;
+    border-color: var(--unity-colors-default-border, rgba(0, 0, 0, 0.4));
+}
+
+.glyph-editor__banner > Label {
+    flex-shrink: 1;
+    white-space: normal;
+}
+
+.glyph-editor__empty {
+    flex-grow: 1;
+    align-items: center;
+    justify-content: center;
+}
+
+.glyph-editor__empty > Label {
+    margin-bottom: 8px;
+    white-space: normal;
+    -unity-text-align: middle-center;
+}
+
+.glyph-editor__split {
+    flex-grow: 1;
+}
+
+/* Gallery */
+
+.glyph-gallery {
+    flex-grow: 1;
+    min-width: 160px;
+}
+
+.glyph-gallery__section {
+    margin: 4px 6px;
+}
+
+.glyph-gallery__section > .unity-foldout__toggle {
+    -unity-font-style: bold;
+}
+
+.glyph-gallery__grid {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    padding: 2px 0 6px 0;
+}
+
+.glyph-tile {
+    margin: 2px;
+    padding: 3px;
+    border-radius: 3px;
+    border-width: 1px;
+    border-color: rgba(127, 127, 127, 0.15);
+    background-color: rgba(127, 127, 127, 0.08);
+    color: var(--unity-colors-default-text, #C4C4C4);
+}
+
+.glyph-tile:hover {
+    background-color: rgba(127, 127, 127, 0.18);
+}
+
+.glyph-tile--selected {
+    background-color: var(--unity-colors-highlight-background, #2C5D87);
+    border-color: var(--unity-colors-highlight-background-hover, #3A72B0);
+    color: var(--unity-colors-highlight-text, #FFFFFF);
+}
+
+.glyph-tile--dragged {
+    opacity: 0.4;
+}
+
+.glyph-preview {
+    width: 100%;
+}
+
+.glyph-tile__name {
+    -unity-text-align: middle-center;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    padding: 0;
+    margin: 0;
+}
+
+.glyph-tile__code {
+    -unity-text-align: middle-center;
+    font-size: 9px;
+    opacity: 0.6;
+    padding: 0;
+    margin: 0;
+}
+
+.glyph-gallery__add {
+    min-width: 40px;
+    height: 40px;
+    margin: 2px;
+    align-self: center;
+    font-size: 14px;
+}
+
+.glyph-gallery__drop-marker {
+    position: absolute;
+    width: 3px;
+    background-color: var(--unity-colors-highlight-background-hover, #3A72B0);
+}
+
+/* Editor pane */
+
+.glyph-editor-pane {
+    flex-grow: 1;
+    min-width: 300px;
+    border-left-width: 1px;
+    border-color: var(--unity-colors-default-border, rgba(0, 0, 0, 0.4));
+}
+
+.glyph-editor-pane__header {
+    flex-direction: row;
+    align-items: center;
+    padding: 4px 6px;
+    border-bottom-width: 1px;
+    border-color: var(--unity-colors-default-border, rgba(0, 0, 0, 0.4));
+}
+
+.glyph-editor-pane__title {
+    font-size: 16px;
+    -unity-font-style: bold;
+}
+
+.glyph-editor-pane__code {
+    margin-left: 8px;
+    opacity: 0.6;
+}
+
+.glyph-editor-pane__close {
+    width: 22px;
+    height: 20px;
+    font-size: 14px;
+}
+
+.glyph-editor-pane__body {
+    flex-grow: 1;
+    flex-direction: row;
+}
+
+/* Popups */
+
+.glyph-popup {
+    padding: 8px;
+}
+
+.glyph-popup > #Title {
+    -unity-font-style: bold;
+    margin-bottom: 4px;
+}
+
+.glyph-popup__problem {
+    min-height: 16px;
+    white-space: normal;
+    color: rgb(255, 196, 0);
+    margin: 2px 3px;
+}
+
+.glyph-popup__hint {
+    font-size: 10px;
+    opacity: 0.6;
+    margin: 0 3px 4px 3px;
+}
+
+.glyph-popup__field > .unity-base-field__label {
+    min-width: 120px;
+}
