@@ -1,0 +1,1138 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2921dbb8130f20aae9c1cc1231fb815e, type: 3}
+  m_Name: Default Font
+  m_EditorClassIdentifier: 
+  _formatVersion: 1
+  _spaceWidth: 0.25
+  _xHeight: 0.65
+  _capHeight: 0.85
+  _gridDivisions: 20
+  _characters:
+  - _character: 32
+    _strokes: []
+  - _character: 33
+    _strokes:
+    - _points:
+      - {x: 0.5, y: 0.85}
+      - {x: 0.5, y: 0.4}
+      _isClosed: 0
+    - _points:
+      - {x: 0.475, y: 0.25}
+      - {x: 0.525, y: 0.25}
+      - {x: 0.525, y: 0.3}
+      - {x: 0.475, y: 0.3}
+      _isClosed: 1
+  - _character: 34
+    _strokes:
+    - _points:
+      - {x: 0.4, y: 0.85}
+      - {x: 0.4, y: 0.7}
+      _isClosed: 0
+    - _points:
+      - {x: 0.6, y: 0.85}
+      - {x: 0.6, y: 0.7}
+      _isClosed: 0
+  - _character: 35
+    _strokes:
+    - _points:
+      - {x: 0.4, y: 0.35}
+      - {x: 0.4, y: 0.75}
+      _isClosed: 0
+    - _points:
+      - {x: 0.6, y: 0.35}
+      - {x: 0.6, y: 0.75}
+      _isClosed: 0
+    - _points:
+      - {x: 0.3, y: 0.45}
+      - {x: 0.7, y: 0.45}
+      _isClosed: 0
+    - _points:
+      - {x: 0.3, y: 0.65}
+      - {x: 0.7, y: 0.65}
+      _isClosed: 0
+  - _character: 36
+    _strokes:
+    - _points:
+      - {x: 0.7, y: 0.7}
+      - {x: 0.6, y: 0.8}
+      - {x: 0.4, y: 0.8}
+      - {x: 0.3, y: 0.7}
+      - {x: 0.3, y: 0.65}
+      - {x: 0.4, y: 0.55}
+      - {x: 0.6, y: 0.55}
+      - {x: 0.7, y: 0.45}
+      - {x: 0.7, y: 0.4}
+      - {x: 0.6, y: 0.3}
+      - {x: 0.4, y: 0.3}
+      - {x: 0.3, y: 0.4}
+      _isClosed: 0
+    - _points:
+      - {x: 0.5, y: 0.2}
+      - {x: 0.5, y: 0.9}
+      _isClosed: 0
+  - _character: 37
+    _strokes:
+    - _points:
+      - {x: 0.3, y: 0.25}
+      - {x: 0.7, y: 0.85}
+      _isClosed: 0
+    - _points:
+      - {x: 0.3, y: 0.7}
+      - {x: 0.45, y: 0.7}
+      - {x: 0.45, y: 0.85}
+      - {x: 0.3, y: 0.85}
+      _isClosed: 1
+    - _points:
+      - {x: 0.55, y: 0.25}
+      - {x: 0.7, y: 0.25}
+      - {x: 0.7, y: 0.4}
+      - {x: 0.55, y: 0.4}
+      _isClosed: 1
+  - _character: 38
+    _strokes:
+    - _points:
+      - {x: 0.7, y: 0.25}
+      - {x: 0.4, y: 0.6}
+      - {x: 0.4, y: 0.8}
+      - {x: 0.45, y: 0.85}
+      - {x: 0.55, y: 0.85}
+      - {x: 0.6, y: 0.8}
+      - {x: 0.6, y: 0.7}
+      - {x: 0.3, y: 0.45}
+      - {x: 0.3, y: 0.35}
+      - {x: 0.4, y: 0.25}
+      - {x: 0.5, y: 0.25}
+      - {x: 0.7, y: 0.5}
+      _isClosed: 0
+  - _character: 39
+    _strokes:
+    - _points:
+      - {x: 0.5, y: 0.85}
+      - {x: 0.5, y: 0.7}
+      _isClosed: 0
+  - _character: 40
+    _strokes:
+    - _points:
+      - {x: 0.55, y: 0.9}
+      - {x: 0.45, y: 0.8}
+      - {x: 0.45, y: 0.25}
+      - {x: 0.55, y: 0.15}
+      _isClosed: 0
+  - _character: 41
+    _strokes:
+    - _points:
+      - {x: 0.45, y: 0.9}
+      - {x: 0.55, y: 0.8}
+      - {x: 0.55, y: 0.25}
+      - {x: 0.45, y: 0.15}
+      _isClosed: 0
+  - _character: 42
+    _strokes:
+    - _points:
+      - {x: 0.5, y: 0.55}
+      - {x: 0.5, y: 0.85}
+      _isClosed: 0
+    - _points:
+      - {x: 0.35, y: 0.6}
+      - {x: 0.65, y: 0.8}
+      _isClosed: 0
+    - _points:
+      - {x: 0.35, y: 0.8}
+      - {x: 0.65, y: 0.6}
+      _isClosed: 0
+  - _character: 43
+    _strokes:
+    - _points:
+      - {x: 0.3, y: 0.5}
+      - {x: 0.7, y: 0.5}
+      _isClosed: 0
+    - _points:
+      - {x: 0.5, y: 0.3}
+      - {x: 0.5, y: 0.7}
+      _isClosed: 0
+  - _character: 44
+    _strokes:
+    - _points:
+      - {x: 0.5, y: 0.3}
+      - {x: 0.5, y: 0.225}
+      - {x: 0.45, y: 0.15}
+      _isClosed: 0
+  - _character: 45
+    _strokes:
+    - _points:
+      - {x: 0.35, y: 0.5}
+      - {x: 0.65, y: 0.5}
+      _isClosed: 0
+  - _character: 46
+    _strokes:
+    - _points:
+      - {x: 0.475, y: 0.25}
+      - {x: 0.525, y: 0.25}
+      - {x: 0.525, y: 0.3}
+      - {x: 0.475, y: 0.3}
+      _isClosed: 1
+  - _character: 47
+    _strokes:
+    - _points:
+      - {x: 0.35, y: 0.25}
+      - {x: 0.65, y: 0.85}
+      _isClosed: 0
+  - _character: 48
+    _strokes:
+    - _points:
+      - {x: 0.4, y: 0.25}
+      - {x: 0.6, y: 0.25}
+      - {x: 0.7, y: 0.35}
+      - {x: 0.7, y: 0.75}
+      - {x: 0.6, y: 0.85}
+      - {x: 0.4, y: 0.85}
+      - {x: 0.3, y: 0.75}
+      - {x: 0.3, y: 0.35}
+      _isClosed: 1
+    - _points:
+      - {x: 0.4, y: 0.4}
+      - {x: 0.6, y: 0.7}
+      _isClosed: 0
+  - _character: 49
+    _strokes:
+    - _points:
+      - {x: 0.35, y: 0.75}
+      - {x: 0.5, y: 0.85}
+      - {x: 0.5, y: 0.25}
+      _isClosed: 0
+    - _points:
+      - {x: 0.35, y: 0.25}
+      - {x: 0.65, y: 0.25}
+      _isClosed: 0
+  - _character: 50
+    _strokes:
+    - _points:
+      - {x: 0.3, y: 0.75}
+      - {x: 0.4, y: 0.85}
+      - {x: 0.6, y: 0.85}
+      - {x: 0.7, y: 0.75}
+      - {x: 0.7, y: 0.65}
+      - {x: 0.3, y: 0.25}
+      - {x: 0.7, y: 0.25}
+      _isClosed: 0
+  - _character: 51
+    _strokes:
+    - _points:
+      - {x: 0.3, y: 0.75}
+      - {x: 0.4, y: 0.85}
+      - {x: 0.6, y: 0.85}
+      - {x: 0.7, y: 0.75}
+      - {x: 0.7, y: 0.65}
+      - {x: 0.6, y: 0.55}
+      - {x: 0.45, y: 0.55}
+      _isClosed: 0
+    - _points:
+      - {x: 0.6, y: 0.55}
+      - {x: 0.7, y: 0.45}
+      - {x: 0.7, y: 0.35}
+      - {x: 0.6, y: 0.25}
+      - {x: 0.4, y: 0.25}
+      - {x: 0.3, y: 0.35}
+      _isClosed: 0
+  - _character: 52
+    _strokes:
+    - _points:
+      - {x: 0.6, y: 0.25}
+      - {x: 0.6, y: 0.85}
+      - {x: 0.3, y: 0.45}
+      - {x: 0.7, y: 0.45}
+      _isClosed: 0
+  - _character: 53
+    _strokes:
+    - _points:
+      - {x: 0.7, y: 0.85}
+      - {x: 0.3, y: 0.85}
+      - {x: 0.3, y: 0.6}
+      - {x: 0.6, y: 0.6}
+      - {x: 0.7, y: 0.5}
+      - {x: 0.7, y: 0.35}
+      - {x: 0.6, y: 0.25}
+      - {x: 0.4, y: 0.25}
+      - {x: 0.3, y: 0.35}
+      _isClosed: 0
+  - _character: 54
+    _strokes:
+    - _points:
+      - {x: 0.7, y: 0.75}
+      - {x: 0.6, y: 0.85}
+      - {x: 0.4, y: 0.85}
+      - {x: 0.3, y: 0.75}
+      - {x: 0.3, y: 0.35}
+      - {x: 0.4, y: 0.25}
+      - {x: 0.6, y: 0.25}
+      - {x: 0.7, y: 0.35}
+      - {x: 0.7, y: 0.5}
+      - {x: 0.6, y: 0.6}
+      - {x: 0.3, y: 0.6}
+      _isClosed: 0
+  - _character: 55
+    _strokes:
+    - _points:
+      - {x: 0.3, y: 0.85}
+      - {x: 0.7, y: 0.85}
+      - {x: 0.4, y: 0.25}
+      _isClosed: 0
+  - _character: 56
+    _strokes:
+    - _points:
+      - {x: 0.4, y: 0.55}
+      - {x: 0.35, y: 0.6}
+      - {x: 0.35, y: 0.75}
+      - {x: 0.45, y: 0.85}
+      - {x: 0.55, y: 0.85}
+      - {x: 0.65, y: 0.75}
+      - {x: 0.65, y: 0.6}
+      - {x: 0.6, y: 0.55}
+      - {x: 0.4, y: 0.55}
+      - {x: 0.3, y: 0.45}
+      - {x: 0.3, y: 0.35}
+      - {x: 0.4, y: 0.25}
+      - {x: 0.6, y: 0.25}
+      - {x: 0.7, y: 0.35}
+      - {x: 0.7, y: 0.45}
+      - {x: 0.6, y: 0.55}
+      _isClosed: 0
+  - _character: 57
+    _strokes:
+    - _points:
+      - {x: 0.3, y: 0.35}
+      - {x: 0.4, y: 0.25}
+      - {x: 0.6, y: 0.25}
+      - {x: 0.7, y: 0.35}
+      - {x: 0.7, y: 0.75}
+      - {x: 0.6, y: 0.85}
+      - {x: 0.4, y: 0.85}
+      - {x: 0.3, y: 0.75}
+      - {x: 0.3, y: 0.6}
+      - {x: 0.4, y: 0.5}
+      - {x: 0.7, y: 0.5}
+      _isClosed: 0
+  - _character: 58
+    _strokes:
+    - _points:
+      - {x: 0.475, y: 0.25}
+      - {x: 0.525, y: 0.25}
+      - {x: 0.525, y: 0.3}
+      - {x: 0.475, y: 0.3}
+      _isClosed: 1
+    - _points:
+      - {x: 0.475, y: 0.6}
+      - {x: 0.525, y: 0.6}
+      - {x: 0.525, y: 0.65}
+      - {x: 0.475, y: 0.65}
+      _isClosed: 1
+  - _character: 59
+    _strokes:
+    - _points:
+      - {x: 0.475, y: 0.6}
+      - {x: 0.525, y: 0.6}
+      - {x: 0.525, y: 0.65}
+      - {x: 0.475, y: 0.65}
+      _isClosed: 1
+    - _points:
+      - {x: 0.5, y: 0.3}
+      - {x: 0.5, y: 0.225}
+      - {x: 0.45, y: 0.15}
+      _isClosed: 0
+  - _character: 60
+    _strokes:
+    - _points:
+      - {x: 0.65, y: 0.7}
+      - {x: 0.35, y: 0.5}
+      - {x: 0.65, y: 0.3}
+      _isClosed: 0
+  - _character: 61
+    _strokes:
+    - _points:
+      - {x: 0.35, y: 0.4}
+      - {x: 0.65, y: 0.4}
+      _isClosed: 0
+    - _points:
+      - {x: 0.35, y: 0.6}
+      - {x: 0.65, y: 0.6}
+      _isClosed: 0
+  - _character: 62
+    _strokes:
+    - _points:
+      - {x: 0.35, y: 0.7}
+      - {x: 0.65, y: 0.5}
+      - {x: 0.35, y: 0.3}
+      _isClosed: 0
+  - _character: 63
+    _strokes:
+    - _points:
+      - {x: 0.3, y: 0.75}
+      - {x: 0.4, y: 0.85}
+      - {x: 0.6, y: 0.85}
+      - {x: 0.7, y: 0.75}
+      - {x: 0.7, y: 0.65}
+      - {x: 0.5, y: 0.5}
+      - {x: 0.5, y: 0.4}
+      _isClosed: 0
+    - _points:
+      - {x: 0.475, y: 0.25}
+      - {x: 0.525, y: 0.25}
+      - {x: 0.525, y: 0.3}
+      - {x: 0.475, y: 0.3}
+      _isClosed: 1
+  - _character: 64
+    _strokes:
+    - _points:
+      - {x: 0.6, y: 0.65}
+      - {x: 0.6, y: 0.45}
+      - {x: 0.65, y: 0.4}
+      - {x: 0.7, y: 0.4}
+      - {x: 0.75, y: 0.45}
+      - {x: 0.75, y: 0.75}
+      - {x: 0.65, y: 0.85}
+      - {x: 0.35, y: 0.85}
+      - {x: 0.25, y: 0.75}
+      - {x: 0.25, y: 0.35}
+      - {x: 0.35, y: 0.25}
+      - {x: 0.65, y: 0.25}
+      _isClosed: 0
+    - _points:
+      - {x: 0.6, y: 0.6}
+      - {x: 0.55, y: 0.65}
+      - {x: 0.45, y: 0.65}
+      - {x: 0.4, y: 0.6}
+      - {x: 0.4, y: 0.45}
+      - {x: 0.45, y: 0.4}
+      - {x: 0.55, y: 0.4}
+      - {x: 0.6, y: 0.45}
+      _isClosed: 0
+  - _character: 65
+    _strokes:
+    - _points:
+      - {x: 0.3, y: 0.25}
+      - {x: 0.45, y: 0.85}
+      - {x: 0.55, y: 0.85}
+      - {x: 0.7, y: 0.25}
+      _isClosed: 0
+    - _points:
+      - {x: 0.35, y: 0.45}
+      - {x: 0.65, y: 0.45}
+      _isClosed: 0
+  - _character: 66
+    _strokes:
+    - _points:
+      - {x: 0.3, y: 0.25}
+      - {x: 0.3, y: 0.85}
+      - {x: 0.55, y: 0.85}
+      - {x: 0.65, y: 0.75}
+      - {x: 0.65, y: 0.65}
+      - {x: 0.55, y: 0.55}
+      _isClosed: 0
+    - _points:
+      - {x: 0.3, y: 0.55}
+      - {x: 0.6, y: 0.55}
+      - {x: 0.7, y: 0.45}
+      - {x: 0.7, y: 0.35}
+      - {x: 0.6, y: 0.25}
+      - {x: 0.3, y: 0.25}
+      _isClosed: 0
+  - _character: 67
+    _strokes:
+    - _points:
+      - {x: 0.75, y: 0.75}
+      - {x: 0.65, y: 0.85}
+      - {x: 0.35, y: 0.85}
+      - {x: 0.25, y: 0.75}
+      - {x: 0.25, y: 0.35}
+      - {x: 0.35, y: 0.25}
+      - {x: 0.65, y: 0.25}
+      - {x: 0.75, y: 0.35}
+      _isClosed: 0
+  - _character: 68
+    _strokes:
+    - _points:
+      - {x: 0.3, y: 0.25}
+      - {x: 0.3, y: 0.85}
+      - {x: 0.6, y: 0.85}
+      - {x: 0.7, y: 0.75}
+      - {x: 0.7, y: 0.35}
+      - {x: 0.6, y: 0.25}
+      _isClosed: 1
+  - _character: 69
+    _strokes:
+    - _points:
+      - {x: 0.7, y: 0.85}
+      - {x: 0.3, y: 0.85}
+      - {x: 0.3, y: 0.25}
+      - {x: 0.7, y: 0.25}
+      _isClosed: 0
+    - _points:
+      - {x: 0.3, y: 0.55}
+      - {x: 0.6, y: 0.55}
+      _isClosed: 0
+  - _character: 70
+    _strokes:
+    - _points:
+      - {x: 0.7, y: 0.85}
+      - {x: 0.3, y: 0.85}
+      - {x: 0.3, y: 0.25}
+      _isClosed: 0
+    - _points:
+      - {x: 0.3, y: 0.55}
+      - {x: 0.6, y: 0.55}
+      _isClosed: 0
+  - _character: 71
+    _strokes:
+    - _points:
+      - {x: 0.75, y: 0.75}
+      - {x: 0.65, y: 0.85}
+      - {x: 0.35, y: 0.85}
+      - {x: 0.25, y: 0.75}
+      - {x: 0.25, y: 0.35}
+      - {x: 0.35, y: 0.25}
+      - {x: 0.65, y: 0.25}
+      - {x: 0.75, y: 0.35}
+      - {x: 0.75, y: 0.5}
+      - {x: 0.55, y: 0.5}
+      _isClosed: 0
+  - _character: 72
+    _strokes:
+    - _points:
+      - {x: 0.3, y: 0.25}
+      - {x: 0.3, y: 0.85}
+      _isClosed: 0
+    - _points:
+      - {x: 0.7, y: 0.25}
+      - {x: 0.7, y: 0.85}
+      _isClosed: 0
+    - _points:
+      - {x: 0.3, y: 0.55}
+      - {x: 0.7, y: 0.55}
+      _isClosed: 0
+  - _character: 73
+    _strokes:
+    - _points:
+      - {x: 0.4, y: 0.85}
+      - {x: 0.6, y: 0.85}
+      _isClosed: 0
+    - _points:
+      - {x: 0.5, y: 0.85}
+      - {x: 0.5, y: 0.25}
+      _isClosed: 0
+    - _points:
+      - {x: 0.4, y: 0.25}
+      - {x: 0.6, y: 0.25}
+      _isClosed: 0
+  - _character: 74
+    _strokes:
+    - _points:
+      - {x: 0.65, y: 0.85}
+      - {x: 0.65, y: 0.35}
+      - {x: 0.55, y: 0.25}
+      - {x: 0.45, y: 0.25}
+      - {x: 0.35, y: 0.35}
+      - {x: 0.35, y: 0.4}
+      _isClosed: 0
+  - _character: 75
+    _strokes:
+    - _points:
+      - {x: 0.3, y: 0.25}
+      - {x: 0.3, y: 0.85}
+      _isClosed: 0
+    - _points:
+      - {x: 0.7, y: 0.85}
+      - {x: 0.3, y: 0.55}
+      - {x: 0.7, y: 0.25}
+      _isClosed: 0
+  - _character: 76
+    _strokes:
+    - _points:
+      - {x: 0.3, y: 0.85}
+      - {x: 0.3, y: 0.25}
+      - {x: 0.65, y: 0.25}
+      _isClosed: 0
+  - _character: 77
+    _strokes:
+    - _points:
+      - {x: 0.25, y: 0.25}
+      - {x: 0.25, y: 0.85}
+      - {x: 0.5, y: 0.5}
+      - {x: 0.75, y: 0.85}
+      - {x: 0.75, y: 0.25}
+      _isClosed: 0
+  - _character: 78
+    _strokes:
+    - _points:
+      - {x: 0.3, y: 0.25}
+      - {x: 0.3, y: 0.85}
+      - {x: 0.7, y: 0.25}
+      - {x: 0.7, y: 0.85}
+      _isClosed: 0
+  - _character: 79
+    _strokes:
+    - _points:
+      - {x: 0.35, y: 0.25}
+      - {x: 0.65, y: 0.25}
+      - {x: 0.75, y: 0.35}
+      - {x: 0.75, y: 0.75}
+      - {x: 0.65, y: 0.85}
+      - {x: 0.35, y: 0.85}
+      - {x: 0.25, y: 0.75}
+      - {x: 0.25, y: 0.35}
+      _isClosed: 1
+  - _character: 80
+    _strokes:
+    - _points:
+      - {x: 0.3, y: 0.25}
+      - {x: 0.3, y: 0.85}
+      - {x: 0.6, y: 0.85}
+      - {x: 0.7, y: 0.75}
+      - {x: 0.7, y: 0.6}
+      - {x: 0.6, y: 0.5}
+      - {x: 0.3, y: 0.5}
+      _isClosed: 0
+  - _character: 81
+    _strokes:
+    - _points:
+      - {x: 0.35, y: 0.25}
+      - {x: 0.65, y: 0.25}
+      - {x: 0.75, y: 0.35}
+      - {x: 0.75, y: 0.75}
+      - {x: 0.65, y: 0.85}
+      - {x: 0.35, y: 0.85}
+      - {x: 0.25, y: 0.75}
+      - {x: 0.25, y: 0.35}
+      _isClosed: 1
+    - _points:
+      - {x: 0.6, y: 0.4}
+      - {x: 0.8, y: 0.2}
+      _isClosed: 0
+  - _character: 82
+    _strokes:
+    - _points:
+      - {x: 0.3, y: 0.25}
+      - {x: 0.3, y: 0.85}
+      - {x: 0.6, y: 0.85}
+      - {x: 0.7, y: 0.75}
+      - {x: 0.7, y: 0.6}
+      - {x: 0.6, y: 0.5}
+      - {x: 0.3, y: 0.5}
+      _isClosed: 0
+    - _points:
+      - {x: 0.5, y: 0.5}
+      - {x: 0.7, y: 0.25}
+      _isClosed: 0
+  - _character: 83
+    _strokes:
+    - _points:
+      - {x: 0.7, y: 0.75}
+      - {x: 0.6, y: 0.85}
+      - {x: 0.4, y: 0.85}
+      - {x: 0.3, y: 0.75}
+      - {x: 0.3, y: 0.65}
+      - {x: 0.4, y: 0.55}
+      - {x: 0.6, y: 0.55}
+      - {x: 0.7, y: 0.45}
+      - {x: 0.7, y: 0.35}
+      - {x: 0.6, y: 0.25}
+      - {x: 0.4, y: 0.25}
+      - {x: 0.3, y: 0.35}
+      _isClosed: 0
+  - _character: 84
+    _strokes:
+    - _points:
+      - {x: 0.3, y: 0.85}
+      - {x: 0.7, y: 0.85}
+      _isClosed: 0
+    - _points:
+      - {x: 0.5, y: 0.85}
+      - {x: 0.5, y: 0.25}
+      _isClosed: 0
+  - _character: 85
+    _strokes:
+    - _points:
+      - {x: 0.3, y: 0.85}
+      - {x: 0.3, y: 0.35}
+      - {x: 0.4, y: 0.25}
+      - {x: 0.6, y: 0.25}
+      - {x: 0.7, y: 0.35}
+      - {x: 0.7, y: 0.85}
+      _isClosed: 0
+  - _character: 86
+    _strokes:
+    - _points:
+      - {x: 0.3, y: 0.85}
+      - {x: 0.5, y: 0.25}
+      - {x: 0.7, y: 0.85}
+      _isClosed: 0
+  - _character: 87
+    _strokes:
+    - _points:
+      - {x: 0.25, y: 0.85}
+      - {x: 0.35, y: 0.25}
+      - {x: 0.5, y: 0.6}
+      - {x: 0.65, y: 0.25}
+      - {x: 0.75, y: 0.85}
+      _isClosed: 0
+  - _character: 88
+    _strokes:
+    - _points:
+      - {x: 0.3, y: 0.85}
+      - {x: 0.7, y: 0.25}
+      _isClosed: 0
+    - _points:
+      - {x: 0.3, y: 0.25}
+      - {x: 0.7, y: 0.85}
+      _isClosed: 0
+  - _character: 89
+    _strokes:
+    - _points:
+      - {x: 0.3, y: 0.85}
+      - {x: 0.5, y: 0.55}
+      - {x: 0.7, y: 0.85}
+      _isClosed: 0
+    - _points:
+      - {x: 0.5, y: 0.55}
+      - {x: 0.5, y: 0.25}
+      _isClosed: 0
+  - _character: 90
+    _strokes:
+    - _points:
+      - {x: 0.3, y: 0.85}
+      - {x: 0.7, y: 0.85}
+      - {x: 0.3, y: 0.25}
+      - {x: 0.7, y: 0.25}
+      _isClosed: 0
+  - _character: 91
+    _strokes:
+    - _points:
+      - {x: 0.55, y: 0.9}
+      - {x: 0.45, y: 0.9}
+      - {x: 0.45, y: 0.15}
+      - {x: 0.55, y: 0.15}
+      _isClosed: 0
+  - _character: 92
+    _strokes:
+    - _points:
+      - {x: 0.35, y: 0.85}
+      - {x: 0.65, y: 0.25}
+      _isClosed: 0
+  - _character: 93
+    _strokes:
+    - _points:
+      - {x: 0.45, y: 0.9}
+      - {x: 0.55, y: 0.9}
+      - {x: 0.55, y: 0.15}
+      - {x: 0.45, y: 0.15}
+      _isClosed: 0
+  - _character: 94
+    _strokes:
+    - _points:
+      - {x: 0.35, y: 0.7}
+      - {x: 0.5, y: 0.85}
+      - {x: 0.65, y: 0.7}
+      _isClosed: 0
+  - _character: 95
+    _strokes:
+    - _points:
+      - {x: 0.3, y: 0.15}
+      - {x: 0.7, y: 0.15}
+      _isClosed: 0
+  - _character: 96
+    _strokes:
+    - _points:
+      - {x: 0.45, y: 0.85}
+      - {x: 0.55, y: 0.75}
+      _isClosed: 0
+  - _character: 97
+    _strokes:
+    - _points:
+      - {x: 0.35, y: 0.65}
+      - {x: 0.55, y: 0.65}
+      - {x: 0.65, y: 0.55}
+      - {x: 0.65, y: 0.25}
+      _isClosed: 0
+    - _points:
+      - {x: 0.65, y: 0.45}
+      - {x: 0.4, y: 0.45}
+      - {x: 0.35, y: 0.4}
+      - {x: 0.35, y: 0.3}
+      - {x: 0.4, y: 0.25}
+      - {x: 0.55, y: 0.25}
+      - {x: 0.65, y: 0.35}
+      _isClosed: 0
+  - _character: 98
+    _strokes:
+    - _points:
+      - {x: 0.35, y: 0.85}
+      - {x: 0.35, y: 0.25}
+      _isClosed: 0
+    - _points:
+      - {x: 0.35, y: 0.55}
+      - {x: 0.45, y: 0.65}
+      - {x: 0.55, y: 0.65}
+      - {x: 0.65, y: 0.55}
+      - {x: 0.65, y: 0.35}
+      - {x: 0.55, y: 0.25}
+      - {x: 0.45, y: 0.25}
+      - {x: 0.35, y: 0.35}
+      _isClosed: 0
+  - _character: 99
+    _strokes:
+    - _points:
+      - {x: 0.65, y: 0.55}
+      - {x: 0.55, y: 0.65}
+      - {x: 0.45, y: 0.65}
+      - {x: 0.35, y: 0.55}
+      - {x: 0.35, y: 0.35}
+      - {x: 0.45, y: 0.25}
+      - {x: 0.55, y: 0.25}
+      - {x: 0.65, y: 0.35}
+      _isClosed: 0
+  - _character: 100
+    _strokes:
+    - _points:
+      - {x: 0.65, y: 0.85}
+      - {x: 0.65, y: 0.25}
+      _isClosed: 0
+    - _points:
+      - {x: 0.65, y: 0.55}
+      - {x: 0.55, y: 0.65}
+      - {x: 0.45, y: 0.65}
+      - {x: 0.35, y: 0.55}
+      - {x: 0.35, y: 0.35}
+      - {x: 0.45, y: 0.25}
+      - {x: 0.55, y: 0.25}
+      - {x: 0.65, y: 0.35}
+      _isClosed: 0
+  - _character: 101
+    _strokes:
+    - _points:
+      - {x: 0.35, y: 0.45}
+      - {x: 0.65, y: 0.45}
+      - {x: 0.65, y: 0.55}
+      - {x: 0.55, y: 0.65}
+      - {x: 0.45, y: 0.65}
+      - {x: 0.35, y: 0.55}
+      - {x: 0.35, y: 0.35}
+      - {x: 0.45, y: 0.25}
+      - {x: 0.65, y: 0.25}
+      _isClosed: 0
+  - _character: 102
+    _strokes:
+    - _points:
+      - {x: 0.45, y: 0.25}
+      - {x: 0.45, y: 0.75}
+      - {x: 0.55, y: 0.85}
+      - {x: 0.65, y: 0.85}
+      _isClosed: 0
+    - _points:
+      - {x: 0.35, y: 0.65}
+      - {x: 0.6, y: 0.65}
+      _isClosed: 0
+  - _character: 103
+    _strokes:
+    - _points:
+      - {x: 0.65, y: 0.65}
+      - {x: 0.65, y: 0.15}
+      - {x: 0.55, y: 0.05}
+      - {x: 0.45, y: 0.05}
+      - {x: 0.35, y: 0.15}
+      _isClosed: 0
+    - _points:
+      - {x: 0.65, y: 0.55}
+      - {x: 0.55, y: 0.65}
+      - {x: 0.45, y: 0.65}
+      - {x: 0.35, y: 0.55}
+      - {x: 0.35, y: 0.35}
+      - {x: 0.45, y: 0.25}
+      - {x: 0.55, y: 0.25}
+      - {x: 0.65, y: 0.35}
+      _isClosed: 0
+  - _character: 104
+    _strokes:
+    - _points:
+      - {x: 0.35, y: 0.85}
+      - {x: 0.35, y: 0.25}
+      _isClosed: 0
+    - _points:
+      - {x: 0.35, y: 0.55}
+      - {x: 0.45, y: 0.65}
+      - {x: 0.55, y: 0.65}
+      - {x: 0.65, y: 0.55}
+      - {x: 0.65, y: 0.25}
+      _isClosed: 0
+  - _character: 105
+    _strokes:
+    - _points:
+      - {x: 0.5, y: 0.65}
+      - {x: 0.5, y: 0.25}
+      _isClosed: 0
+    - _points:
+      - {x: 0.475, y: 0.75}
+      - {x: 0.525, y: 0.75}
+      - {x: 0.525, y: 0.8}
+      - {x: 0.475, y: 0.8}
+      _isClosed: 1
+  - _character: 106
+    _strokes:
+    - _points:
+      - {x: 0.55, y: 0.65}
+      - {x: 0.55, y: 0.15}
+      - {x: 0.45, y: 0.05}
+      - {x: 0.35, y: 0.05}
+      _isClosed: 0
+    - _points:
+      - {x: 0.525, y: 0.75}
+      - {x: 0.575, y: 0.75}
+      - {x: 0.575, y: 0.8}
+      - {x: 0.525, y: 0.8}
+      _isClosed: 1
+  - _character: 107
+    _strokes:
+    - _points:
+      - {x: 0.35, y: 0.85}
+      - {x: 0.35, y: 0.25}
+      _isClosed: 0
+    - _points:
+      - {x: 0.65, y: 0.65}
+      - {x: 0.35, y: 0.45}
+      - {x: 0.65, y: 0.25}
+      _isClosed: 0
+  - _character: 108
+    _strokes:
+    - _points:
+      - {x: 0.45, y: 0.85}
+      - {x: 0.45, y: 0.35}
+      - {x: 0.55, y: 0.25}
+      _isClosed: 0
+  - _character: 109
+    _strokes:
+    - _points:
+      - {x: 0.25, y: 0.65}
+      - {x: 0.25, y: 0.25}
+      _isClosed: 0
+    - _points:
+      - {x: 0.25, y: 0.55}
+      - {x: 0.35, y: 0.65}
+      - {x: 0.4, y: 0.65}
+      - {x: 0.5, y: 0.55}
+      - {x: 0.5, y: 0.25}
+      _isClosed: 0
+    - _points:
+      - {x: 0.5, y: 0.55}
+      - {x: 0.6, y: 0.65}
+      - {x: 0.65, y: 0.65}
+      - {x: 0.75, y: 0.55}
+      - {x: 0.75, y: 0.25}
+      _isClosed: 0
+  - _character: 110
+    _strokes:
+    - _points:
+      - {x: 0.35, y: 0.65}
+      - {x: 0.35, y: 0.25}
+      _isClosed: 0
+    - _points:
+      - {x: 0.35, y: 0.55}
+      - {x: 0.45, y: 0.65}
+      - {x: 0.55, y: 0.65}
+      - {x: 0.65, y: 0.55}
+      - {x: 0.65, y: 0.25}
+      _isClosed: 0
+  - _character: 111
+    _strokes:
+    - _points:
+      - {x: 0.45, y: 0.25}
+      - {x: 0.55, y: 0.25}
+      - {x: 0.65, y: 0.35}
+      - {x: 0.65, y: 0.55}
+      - {x: 0.55, y: 0.65}
+      - {x: 0.45, y: 0.65}
+      - {x: 0.35, y: 0.55}
+      - {x: 0.35, y: 0.35}
+      _isClosed: 1
+  - _character: 112
+    _strokes:
+    - _points:
+      - {x: 0.35, y: 0.65}
+      - {x: 0.35, y: 0.05}
+      _isClosed: 0
+    - _points:
+      - {x: 0.35, y: 0.55}
+      - {x: 0.45, y: 0.65}
+      - {x: 0.55, y: 0.65}
+      - {x: 0.65, y: 0.55}
+      - {x: 0.65, y: 0.35}
+      - {x: 0.55, y: 0.25}
+      - {x: 0.45, y: 0.25}
+      - {x: 0.35, y: 0.35}
+      _isClosed: 0
+  - _character: 113
+    _strokes:
+    - _points:
+      - {x: 0.65, y: 0.65}
+      - {x: 0.65, y: 0.05}
+      _isClosed: 0
+    - _points:
+      - {x: 0.65, y: 0.55}
+      - {x: 0.55, y: 0.65}
+      - {x: 0.45, y: 0.65}
+      - {x: 0.35, y: 0.55}
+      - {x: 0.35, y: 0.35}
+      - {x: 0.45, y: 0.25}
+      - {x: 0.55, y: 0.25}
+      - {x: 0.65, y: 0.35}
+      _isClosed: 0
+  - _character: 114
+    _strokes:
+    - _points:
+      - {x: 0.35, y: 0.65}
+      - {x: 0.35, y: 0.25}
+      _isClosed: 0
+    - _points:
+      - {x: 0.35, y: 0.55}
+      - {x: 0.45, y: 0.65}
+      - {x: 0.6, y: 0.65}
+      _isClosed: 0
+  - _character: 115
+    _strokes:
+    - _points:
+      - {x: 0.65, y: 0.6}
+      - {x: 0.6, y: 0.65}
+      - {x: 0.4, y: 0.65}
+      - {x: 0.35, y: 0.6}
+      - {x: 0.35, y: 0.5}
+      - {x: 0.4, y: 0.45}
+      - {x: 0.6, y: 0.45}
+      - {x: 0.65, y: 0.4}
+      - {x: 0.65, y: 0.3}
+      - {x: 0.6, y: 0.25}
+      - {x: 0.4, y: 0.25}
+      - {x: 0.35, y: 0.3}
+      _isClosed: 0
+  - _character: 116
+    _strokes:
+    - _points:
+      - {x: 0.45, y: 0.8}
+      - {x: 0.45, y: 0.35}
+      - {x: 0.55, y: 0.25}
+      - {x: 0.65, y: 0.25}
+      _isClosed: 0
+    - _points:
+      - {x: 0.35, y: 0.65}
+      - {x: 0.6, y: 0.65}
+      _isClosed: 0
+  - _character: 117
+    _strokes:
+    - _points:
+      - {x: 0.35, y: 0.65}
+      - {x: 0.35, y: 0.35}
+      - {x: 0.45, y: 0.25}
+      - {x: 0.55, y: 0.25}
+      - {x: 0.65, y: 0.35}
+      _isClosed: 0
+    - _points:
+      - {x: 0.65, y: 0.65}
+      - {x: 0.65, y: 0.25}
+      _isClosed: 0
+  - _character: 118
+    _strokes:
+    - _points:
+      - {x: 0.35, y: 0.65}
+      - {x: 0.5, y: 0.25}
+      - {x: 0.65, y: 0.65}
+      _isClosed: 0
+  - _character: 119
+    _strokes:
+    - _points:
+      - {x: 0.25, y: 0.65}
+      - {x: 0.35, y: 0.25}
+      - {x: 0.5, y: 0.55}
+      - {x: 0.65, y: 0.25}
+      - {x: 0.75, y: 0.65}
+      _isClosed: 0
+  - _character: 120
+    _strokes:
+    - _points:
+      - {x: 0.35, y: 0.65}
+      - {x: 0.65, y: 0.25}
+      _isClosed: 0
+    - _points:
+      - {x: 0.35, y: 0.25}
+      - {x: 0.65, y: 0.65}
+      _isClosed: 0
+  - _character: 121
+    _strokes:
+    - _points:
+      - {x: 0.35, y: 0.65}
+      - {x: 0.5, y: 0.25}
+      _isClosed: 0
+    - _points:
+      - {x: 0.65, y: 0.65}
+      - {x: 0.425, y: 0.05}
+      _isClosed: 0
+  - _character: 122
+    _strokes:
+    - _points:
+      - {x: 0.35, y: 0.65}
+      - {x: 0.65, y: 0.65}
+      - {x: 0.35, y: 0.25}
+      - {x: 0.65, y: 0.25}
+      _isClosed: 0
+  - _character: 123
+    _strokes:
+    - _points:
+      - {x: 0.6, y: 0.9}
+      - {x: 0.55, y: 0.9}
+      - {x: 0.5, y: 0.85}
+      - {x: 0.5, y: 0.6}
+      - {x: 0.425, y: 0.525}
+      - {x: 0.5, y: 0.45}
+      - {x: 0.5, y: 0.2}
+      - {x: 0.55, y: 0.15}
+      - {x: 0.6, y: 0.15}
+      _isClosed: 0
+  - _character: 124
+    _strokes:
+    - _points:
+      - {x: 0.5, y: 0.15}
+      - {x: 0.5, y: 0.9}
+      _isClosed: 0
+  - _character: 125
+    _strokes:
+    - _points:
+      - {x: 0.4, y: 0.9}
+      - {x: 0.45, y: 0.9}
+      - {x: 0.5, y: 0.85}
+      - {x: 0.5, y: 0.6}
+      - {x: 0.575, y: 0.525}
+      - {x: 0.5, y: 0.45}
+      - {x: 0.5, y: 0.2}
+      - {x: 0.45, y: 0.15}
+      - {x: 0.4, y: 0.15}
+      _isClosed: 0
+  - _character: 126
+    _strokes:
+    - _points:
+      - {x: 0.3, y: 0.45}
+      - {x: 0.4, y: 0.55}
+      - {x: 0.45, y: 0.55}
+      - {x: 0.55, y: 0.45}
+      - {x: 0.6, y: 0.45}
+      - {x: 0.7, y: 0.55}
+      _isClosed: 0
+  _symbols: []
+  _enumSettings:
+    _name: 
+    _namespace: 
+    _scriptGuid: 

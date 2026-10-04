@@ -196,7 +196,10 @@ namespace reromanlee.Wireframes.Tests
             }
         }
 
-        /// <summary>Every public extension method on <see cref="WireframeContainer"/> in the package.</summary>
+        /// <summary>
+        /// Every public extension method on <see cref="WireframeContainer"/> in the package, with the generic ones, which
+        /// take a symbol enum, made for <see cref="DefaultSymbols"/>.
+        /// </summary>
         private static List<MethodInfo> FactoryMethods()
         {
             List<MethodInfo> methods = new();
@@ -211,7 +214,7 @@ namespace reromanlee.Wireframes.Tests
                     ParameterInfo[] parameters = method.GetParameters();
                     if (parameters.Length > 0 && parameters[0].ParameterType == typeof(WireframeContainer))
                     {
-                        methods.Add(method);
+                        methods.Add(method.IsGenericMethodDefinition ? method.MakeGenericMethod(typeof(DefaultSymbols)) : method);
                     }
                 }
             }

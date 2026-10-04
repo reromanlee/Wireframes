@@ -4,26 +4,28 @@ using UnityEngine;
 namespace reromanlee.Wireframes.Samples
 {
     /// <summary>
-    /// Lays out every shape the package draws in three rows: shapes made of points and flat shapes on top, shapes
-    /// around a center in the middle and long shapes at the bottom. Each shape follows its own bone, and only the bones
-    /// turn each frame, so the package does no work to animate them. Open the ShapeGallery scene and enter Play mode,
-    /// or add it to an empty GameObject in any scene with a camera and frame that GameObject.
+    /// Lays out the package's shapes in three rows, each named below it with text: shapes made of points and flat shapes
+    /// on top, shapes around a center in the middle and long shapes at the bottom. Each shape follows its own bone, and
+    /// only the bones turn each frame, so the package does no work to animate them. Open the ShapeGallery scene and enter
+    /// Play mode, or add it to an empty GameObject in any scene with a camera and frame that GameObject.
     /// </summary>
     public sealed class ShapeGallery : MonoBehaviour
     {
         [SerializeField, Min(1f)] private float _spacing = 3f;
         [Tooltip("Degrees per second each shape turns around the world's up axis.")]
         [SerializeField] private float _turnSpeed = 30f;
+        [Tooltip("Shows each shape's name below it.")]
         [SerializeField] private bool _showNames = true;
 
         private readonly List<Transform> _bones = new();
-        private readonly List<string> _names = new();
+        private readonly List<IText> _labels = new();
         private WireframeContainer _container;
-        private GUIStyle _nameStyle;
+        private bool _areNamesShown;
 
         private void Start()
         {
             _container = new WireframeContainer();
+            _areNamesShown = _showNames;
             // Flat shapes lie in their bone's XZ plane, so their bones are tipped over to face the camera.
             Quaternion facing = Quaternion.Euler(-90f, 0f, 0f);
             Quaternion tilted = Quaternion.Euler(-20f, 0f, 0f);
@@ -89,22 +91,12 @@ namespace reromanlee.Wireframes.Samples
             {
                 bone.Rotate(0f, angle, 0f, Space.World);
             }
-        }
-
-        private void OnGUI()
-        {
-            Camera camera = Camera.main;
-            if (!_showNames || camera == null)
+            if (_areNamesShown != _showNames)
             {
-                return;
-            }
-            _nameStyle ??= new GUIStyle(GUI.skin.label) { alignment = TextAnchor.UpperCenter };
-            for (int i = 0; i < _bones.Count; i++)
-            {
-                Vector3 screen = camera.WorldToScreenPoint(_bones[i].position + Vector3.down * (_spacing * 0.4f));
-                if (screen.z > 0f)
+                _areNamesShown = _showNames;
+                foreach (IText label in _labels)
                 {
-                    GUI.Label(new Rect(screen.x - 75f, Screen.height - screen.y, 150f, 22f), _names[i], _nameStyle);
+                    label.IsVisible = _showNames;
                 }
             }
         }
@@ -126,6 +118,12 @@ namespace reromanlee.Wireframes.Samples
         /// <summary>Hands out the bones of one row of exhibits, centered on the gallery, and a color for each.</summary>
         private sealed class Row
         {
+            // Height of a name's glyph box, and how far below its shape it is, as shares of the spacing between shapes.
+            private const float LabelSize = 0.1f;
+            private const float LabelDepth = 0.47f;
+
+            private static readonly Color LabelColor = new(0.75f, 0.75f, 0.8f);
+
             private readonly ShapeGallery _gallery;
             private readonly float _height;
             private readonly int _count;
@@ -149,9 +147,16 @@ namespace reromanlee.Wireframes.Samples
                 bone.localPosition = new Vector3((_next - (_count - 1) * 0.5f) * _gallery._spacing, _height, 0f);
                 bone.localRotation = _rotation;
                 _gallery._bones.Add(bone);
-                _gallery._names.Add(exhibitName);
                 Color = Color.HSVToRGB(_next / (float)_count, 0.6f, 1f);
                 _next++;
+
+                // The name follows the gallery rather than the turning bone, so it always faces the camera.
+                Vector3 below = bone.localPosition + Vector3.down * (_gallery._spacing * LabelDepth);
+                IText label = _gallery._container.CreateText(_gallery.transform, below, Quaternion.identity, exhibitName);
+                label.CharacterSize = _gallery._spacing * LabelSize;
+                label.SetColor(LabelColor);
+                label.IsVisible = _gallery._showNames;
+                _gallery._labels.Add(label);
                 return bone;
             }
         }

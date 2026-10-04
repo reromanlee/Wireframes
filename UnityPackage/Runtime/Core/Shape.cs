@@ -13,6 +13,7 @@ namespace reromanlee.Wireframes
         private EdgeSource _edgeSource;
         private int[] _edgePattern;
         private int[] _edgeSlots;
+        private int _edgeCount;
         private IShapeHost _host;
         private DirtyFlags _dirty;
         private bool _isHidden;
@@ -91,7 +92,7 @@ namespace reromanlee.Wireframes
 
         internal int EdgeCount
         {
-            get => _edgeSlots.Length;
+            get => _edgeCount;
         }
 
         /// <summary>True once a problem with the shape was logged, so each shape logs at most one.</summary>
@@ -122,6 +123,7 @@ namespace reromanlee.Wireframes
             ReleaseBones(host.Bones);
             _edgeSource.Release();
             _host = null;
+            OnDetached();
         }
 
         public abstract void SetColor(Color color);
@@ -133,6 +135,7 @@ namespace reromanlee.Wireframes
         internal void Attach(MeshProxy proxy)
         {
             _edgePattern = _edgeSource.Acquire();
+            _edgeCount = _edgeSource.EdgeCountOf(_edgePattern);
             _edgeSlots = new int[_edgePattern.Length / 2];
             BoneRegistry bones = proxy.Bones;
             AcquireBones(bones);
@@ -147,6 +150,7 @@ namespace reromanlee.Wireframes
                 throw;
             }
             MarkDirty(DirtyFlags.All);
+            OnAttached();
         }
 
         /// <summary>
@@ -163,6 +167,7 @@ namespace reromanlee.Wireframes
             _dirty = DirtyFlags.None;
             _host = null;
             _isSuspended = true;
+            OnDetached();
         }
 
         /// <summary>
@@ -184,6 +189,7 @@ namespace reromanlee.Wireframes
             }
             _isSuspended = false;
             MarkDirty(DirtyFlags.All);
+            OnAttached();
         }
 
         /// <summary>
@@ -200,6 +206,7 @@ namespace reromanlee.Wireframes
             VertexCount = vertexCount;
             _edgeSource = edgeSource;
             _edgePattern = edgeSource.Acquire();
+            _edgeCount = edgeSource.EdgeCountOf(_edgePattern);
             if (_edgeSlots.Length != _edgePattern.Length / 2)
             {
                 _edgeSlots = new int[_edgePattern.Length / 2];
@@ -215,9 +222,40 @@ namespace reromanlee.Wireframes
                 ReleaseBones(host.Bones);
                 _edgeSource.Release();
                 _host = null;
+                OnDetached();
                 throw;
             }
             MarkDirty(DirtyFlags.All);
+        }
+
+        /// <summary>
+        /// Replaces the edges of a shape that owns its pattern while its vertices stay where they are, as a text does when
+        /// its glyphs change. Only the first <paramref name="edgeCount"/> pairs of <paramref name="pattern"/> are drawn,
+        /// so the array can be the current one rewritten in place, with room to spare. The edges are written again on the
+        /// next flush. If they can't be added, the shape ends up hidden and the exception is rethrown.
+        /// </summary>
+        internal void ReplaceEdges(int[] pattern, int edgeCount)
+        {
+            bool isDrawn = _host != null && !_isHidden;
+            if (isDrawn)
+            {
+                // Hiding takes the old edges out of the drawn ones, and showing adds the new ones.
+                _host.Hide(this);
+                _isHidden = true;
+            }
+            _edgeSource.Release();
+            _edgeSource = new EdgeSource(pattern, edgeCount);
+            _edgePattern = pattern;
+            _edgeCount = edgeCount;
+            if (_edgeSlots.Length < pattern.Length / 2)
+            {
+                _edgeSlots = new int[pattern.Length / 2];
+            }
+            if (isDrawn)
+            {
+                _host.Show(this);
+                _isHidden = false;
+            }
         }
 
         internal int GetEdgeSlot(int edge)
@@ -257,16 +295,27 @@ namespace reromanlee.Wireframes
         {
             _edgeSource.Release();
             _host = null;
+            OnDetached();
         }
 
         internal void WriteEdges(EdgeList edges, DirtyRanges ranges)
         {
-            for (int i = 0; i < _edgeSlots.Length; i++)
+            for (int i = 0; i < _edgeCount; i++)
             {
                 int slot = _edgeSlots[i];
                 edges.Set(slot, VertexStart + _edgePattern[i * 2], VertexStart + _edgePattern[i * 2 + 1]);
                 ranges.Add(slot, 1);
             }
+        }
+
+        /// <summary>Called once the shape is in a host: after it is attached or resumed.</summary>
+        protected virtual void OnAttached()
+        {
+        }
+
+        /// <summary>Called once the shape leaves its host: when it is suspended or disposed, or its host goes away.</summary>
+        protected virtual void OnDetached()
+        {
         }
 
         internal abstract void WritePositions(Span<Vector3> positions);

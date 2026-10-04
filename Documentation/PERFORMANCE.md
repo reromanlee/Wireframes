@@ -69,6 +69,8 @@ Up to 1.0, shapes were drawn by a `SkinnedMeshRenderer`. Before 2.0 replaced it 
 | Stadium | 34 | 34 |
 | Frustum with n sides | 2n | 3n |
 | Pyramid | 5 | 8 |
+| Text | About 7 per character of the Default Font, rounded up to a power of two, at least 16 | About 5 per character of the Default Font |
+| Symbol | 16 for most Default Symbols, and 32 or 64 for round ones | 1 to 34 for the Default Symbols |
 
 ### Tips
 
@@ -76,6 +78,7 @@ Up to 1.0, shapes were drawn by a `SkinnedMeshRenderer`. Before 2.0 replaced it 
 2. **Reserve capacity for a known load** with `VertexCapacity` and `EdgeCapacity`, so buffers never grow mid-game.
 3. **Hide shapes that come back** with `IsVisible` instead of disposing and creating them again.
 4. **Lower `segmentCount`** for small or distant round shapes.
-5. **Group shapes in few containers.** Each container has its own bone texture and draw calls.
-6. **Use `Fade` where it helps,** since it doubles a container's draw calls.
-7. **Hide whole containers that are off screen.** Shapes follow arbitrary Transforms, so their meshes have fixed bounds of ±1,000 km and are never frustum-culled.
+5. **Rewrite a text with `SetText`** rather than creating another: it keeps room to grow, so most changes rewrite it in place without allocating.
+6. **Group shapes in few containers.** Each container has its own bone texture and draw calls.
+7. **Use `Fade` where it helps,** since it doubles a container's draw calls.
+8. **Hide whole containers that are off screen.** Shapes follow arbitrary Transforms, so their meshes have fixed bounds of ±1,000 km and are never frustum-culled.
