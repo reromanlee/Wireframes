@@ -6,7 +6,7 @@ Wireframe shapes for Unity that follow Transforms on the GPU: create a shape onc
 
 Lines, polylines, boxes, circles, spheres, capsules, cones and more attach to any Transforms, called bones. The package uploads each bone's matrix once per frame and the vertex shader moves every vertex, so moving shapes cost your code nothing and an edit uploads only what it changed.
 
-<img src=".github/glyphs.jpg" alt="Glyphs from the Text And Symbols sample" width="100%">
+<img src=".github/glyphs.jpg" alt="Text and symbols, from the TextAndSymbols scene of the Shape Gallery sample" width="100%">
 
 Text and symbols are drawn with lines too, in 2D or 3D, from glyph packs you can edit in the Glyph Editor: the package comes with a font of the printable ASCII characters and 23 symbols.
 
@@ -125,9 +125,9 @@ ISymbol marker = _wireframes.CreateSymbol(_target, new Vector3(0f, 2.5f, 0f), Qu
 
 **Or add a shape component to a GameObject, with no code at all.** **Add Component > Wireframes** has one for every shape, from **Line** to **Pyramid**, **Text** and **Symbol**. It draws on its GameObject right away, in Edit Mode, Play Mode and builds, follows it like a mesh, and shows each change to its fields in the next render; disabling it hides the shape.
 
-<img src=".github/glyph-editor-1.jpg" alt="The Glyph editor window with Text glyphs" width="100%">
+<img src=".github/glyph-editor-1.jpg" alt="The Glyph Editor window with text glyphs" width="100%">
 
-<img src=".github/glyph-editor-2.jpg" alt="The Glyph editor window with Symbol glyphs" width="100%">
+<img src=".github/glyph-editor-2.jpg" alt="The Glyph Editor window with symbol glyphs" width="100%">
 
 **Draw glyphs of your own in the Glyph Editor,** in **Window > Wireframes > Glyph Editor**: a gallery of a pack's characters and symbols, and a canvas that edits their lines with exact coordinates.
 
