@@ -72,11 +72,28 @@ namespace reromanlee.Wireframes
             return SymbolKeys.ToSymbol<TSymbol>(_key);
         }
 
-        /// <summary>Sets the symbol, the glyphs and the size at once and lays them out once, for components.</summary>
+        /// <summary>
+        /// True when the shape draws the symbol of <paramref name="key"/> with <paramref name="glyphs"/> as they are now,
+        /// so applying another size only moves points.
+        /// </summary>
+        internal bool Shows(int key, WireframeGlyphs glyphs)
+        {
+            return key == _key && IsLaidOutWith(glyphs);
+        }
+
+        /// <summary>
+        /// Sets the symbol, the glyphs and the size at once and lays them out once, or not at all when nothing changed,
+        /// for components.
+        /// </summary>
         internal void Apply(int key, WireframeGlyphs glyphs, float size)
         {
             EnsureUsable();
-            bool glyphsChanged = ReplaceGlyphs(glyphs) | key != _key;
+            bool glyphsChanged = !Shows(key, glyphs);
+            if (!glyphsChanged && size.Equals(_size))
+            {
+                return;
+            }
+            ReplaceGlyphs(glyphs);
             _key = key;
             _size = size;
             Rebuild(glyphsChanged);

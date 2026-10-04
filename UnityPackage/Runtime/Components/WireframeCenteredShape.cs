@@ -4,8 +4,9 @@ namespace reromanlee.Wireframes
 {
     /// <summary>
     /// Base of the shape components centered on a point: boxes, rectangles, circles, ellipses, stars, spheres,
-    /// ellipsoids and spiked spheres. <see cref="Center"/> and <see cref="Rotation"/> place the shape relative to its
-    /// GameObject, and flat shapes lie in the XZ plane of their rotation, so with no rotation they lie flat on it.
+    /// ellipsoids, spiked spheres, texts and symbols. <see cref="Center"/> and <see cref="Rotation"/> place the shape
+    /// relative to its GameObject. Flat shapes lie in the XZ plane of their rotation, so with no rotation they lie flat on
+    /// it, while texts and symbols stand in its XY plane and read from the -Z side.
     /// </summary>
     public abstract class WireframeCenteredShape : WireframeShape
     {

@@ -69,17 +69,21 @@ namespace reromanlee.Wireframes
         }
 
         /// <summary>
-        /// Replaces the glyphs, without laying them out, for derived shapes that set several fields at once before one
-        /// <see cref="Rebuild"/>. Returns whether they changed.
+        /// True while the shape draws <paramref name="glyphs"/> as they are now: they are its glyphs, and no glyph data
+        /// changed since its last layout.
         /// </summary>
-        protected bool ReplaceGlyphs(WireframeGlyphs glyphs)
+        protected bool IsLaidOutWith(WireframeGlyphs glyphs)
         {
-            if (ReferenceEquals(glyphs, _glyphs))
-            {
-                return false;
-            }
+            return ReferenceEquals(glyphs, _glyphs) && _layoutVersion == GlyphEdits.Version;
+        }
+
+        /// <summary>
+        /// Replaces the glyphs without laying them out, for derived shapes that set several fields at once before one
+        /// <see cref="Rebuild"/>.
+        /// </summary>
+        protected void ReplaceGlyphs(WireframeGlyphs glyphs)
+        {
             _glyphs = glyphs;
-            return true;
         }
 
         /// <summary>

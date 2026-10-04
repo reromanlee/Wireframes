@@ -219,17 +219,30 @@ namespace reromanlee.Wireframes
         }
 
         /// <summary>
-        /// Sets the text, the glyphs and every setting at once and lays them out once, for components, which write all
-        /// their fields together. Settings are taken as they are, already checked.
+        /// True when the shape draws <paramref name="text"/> with <paramref name="glyphs"/> as they are now, so applying
+        /// them with other settings only moves points and never outgrows the shape's room.
+        /// </summary>
+        internal bool Shows(ReadOnlySpan<char> text, WireframeGlyphs glyphs)
+        {
+            return IsLaidOutWith(glyphs) && text.SequenceEqual(new ReadOnlySpan<char>(_characters, 0, _length));
+        }
+
+        /// <summary>
+        /// Sets the text, the glyphs and every setting at once and lays them out once, or not at all when nothing changed,
+        /// for components, which write all their fields together. Settings are taken as they are, already checked.
         /// </summary>
         internal void Apply(ReadOnlySpan<char> text, WireframeGlyphs glyphs, in TextSettings settings)
         {
             EnsureUsable();
-            bool glyphsChanged = ReplaceGlyphs(glyphs);
+            bool glyphsChanged = !Shows(text, glyphs);
+            if (!glyphsChanged && settings.Equals(_settings))
+            {
+                return;
+            }
+            ReplaceGlyphs(glyphs);
             if (!text.SequenceEqual(new ReadOnlySpan<char>(_characters, 0, _length)))
             {
                 CopyText(text);
-                glyphsChanged = true;
             }
             _settings = settings;
             Rebuild(glyphsChanged);

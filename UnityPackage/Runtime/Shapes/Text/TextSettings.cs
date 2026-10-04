@@ -1,9 +1,10 @@
+using System;
 using UnityEngine;
 
 namespace reromanlee.Wireframes
 {
     /// <summary>How a text lays out its characters, shared by <see cref="IText"/> and <see cref="WireframeText"/>.</summary>
-    internal struct TextSettings
+    internal struct TextSettings : IEquatable<TextSettings>
     {
         internal const float DefaultCharacterSpacing = 0.1f;
         internal const float DefaultLineSpacing = 0f;
@@ -44,6 +45,25 @@ namespace reromanlee.Wireframes
                 VerticalAlignment = WireframeVerticalAlignment.Middle,
                 Overflow = WireframeTextOverflow.Overflow
             };
+        }
+
+        public bool Equals(TextSettings other)
+        {
+            return CharacterWidth == other.CharacterWidth && CharacterSize.Equals(other.CharacterSize)
+                   && CharacterSpacing.Equals(other.CharacterSpacing) && LineSpacing.Equals(other.LineSpacing)
+                   && Bounds.Equals(other.Bounds) && HorizontalAlignment == other.HorizontalAlignment
+                   && VerticalAlignment == other.VerticalAlignment && Overflow == other.Overflow;
+        }
+
+        public override bool Equals(object other)
+        {
+            return other is TextSettings settings && Equals(settings);
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(CharacterSize, CharacterSpacing, LineSpacing, Bounds, (int)CharacterWidth,
+                (int)HorizontalAlignment, (int)VerticalAlignment, (int)Overflow);
         }
 
         internal static bool IsDefined(WireframeCharacterWidth width)

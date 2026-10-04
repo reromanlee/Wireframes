@@ -137,6 +137,15 @@ namespace reromanlee.Wireframes
         }
 
         /// <summary>
+        /// False when writing the fields into <paramref name="shape"/>, the drawn one, may create objects, such as a text
+        /// that outgrows its room in its chunk, so callbacks that forbid it leave that to a full refresh.
+        /// </summary>
+        internal virtual bool CanApplyInPlace(Shape shape)
+        {
+            return true;
+        }
+
+        /// <summary>
         /// False when nothing is drawn: for fields that can't make a shape, or for a gizmo outside the Editor.
         /// </summary>
         private bool IsDrawn
@@ -362,7 +371,7 @@ namespace reromanlee.Wireframes
         {
             return _shape == null || _shape.IsDisposed || _shape.IsSuspended || !IsDrawn
                    || _container.Container.IsDisposed || !_container.Key.Equals(CurrentKey())
-                   || _builtSignature != BuildSignature;
+                   || _builtSignature != BuildSignature || !CanApplyInPlace(_shape);
         }
 
         private SharedContainerKey CurrentKey()
