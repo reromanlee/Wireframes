@@ -14,27 +14,41 @@ A shape attaches to Transforms, called bones, and moves, turns and scales with t
 
 ### 17 shapes
 
-| Shape | Usual Create method | What it is |
-|---|---|---|
-| `ILine` | `CreateLine(a, b)` | A segment; each end has its own bone. |
-| `IPolyline` | `CreatePolyline(points)`, `CreatePolygon(points)`, `CreateTriangle(a, b, c)` | Points joined in order, open or closed; each point has its own bone and color. |
-| `IBox` | `CreateBox(cornerA, cornerB)` | A box with a center, a rotation and a `Size`. |
-| `IRectangle` | `CreateRectangle(cornerA, cornerB)` | A flat rectangle. |
-| `IRoundedRectangle` | `CreateRoundedRectangle(cornerA, cornerB, cornerRadius)` | A flat rectangle with round corners. |
-| `ICircle` | `CreateCircle(center, radius)` | A flat circle; `CreateCircle(center, normal, radius)` faces a direction. |
-| `IEllipse` | `CreateEllipse(tipA, tipB, radius)` | A flat ellipse whose long axis runs between two tips. |
-| `IStar` | `CreateStar(center, innerRadius, outerRadius, pointCount)` | A flat star. |
-| `ISphere` | `CreateSphere(center, radius)` | Three great circles. |
-| `IEllipsoid` | `CreateEllipsoid(tipA, tipB, radius)` | Three ellipses, with a radius along each axis. |
-| `ISpikedSphere` | `CreateSpikedSphere(center, baseRadius, spikeLength, spikeCount)` | A 3D star: a Platonic solid with a spike on each face, so 4, 6, 8, 12 or 20 spikes. |
-| `ICylinder` | `CreateCylinder(endA, endB, radius)` | Two rings joined by four lines. |
-| `ICone` | `CreateCone(tip, baseCenter, radius)` | A base ring joined to the tip by four lines. |
-| `ICapsule` | `CreateCapsule(centerA, centerB, radius)` | Two spheres wrapped together, like `Physics.CapsuleCast`; each end can have its own radius. |
-| `IStadium` | `CreateStadium(centerA, centerB, radius)` | The flat outline of a capsule. |
-| `IFrustum` | `CreateFrustum(endA, endB, radiusA, radiusB, sideCount)` | Two regular polygons joined at every corner. Prisms and regular pyramids are frustums too. |
-| `IPyramid` | `CreatePyramid(tip, baseCenter, baseSize)` | A rectangular base joined to a tip, like a camera's view without its near plane. |
+| Shape | Usual Create method | Component | What it is |
+|---|---|---|---|
+| `ILine` | `CreateLine(a, b)` | `WireframeLine` | A segment; each end has its own bone. |
+| `IPolyline` | `CreatePolyline(points)`, `CreatePolygon(points)`, `CreateTriangle(a, b, c)` | `WireframePolyline` | Points joined in order, open or closed; each point has its own bone and color. |
+| `IBox` | `CreateBox(cornerA, cornerB)` | `WireframeBox` | A box with a center, a rotation and a `Size`. |
+| `IRectangle` | `CreateRectangle(cornerA, cornerB)` | `WireframeRectangle` | A flat rectangle. |
+| `IRoundedRectangle` | `CreateRoundedRectangle(cornerA, cornerB, cornerRadius)` | `WireframeRoundedRectangle` | A flat rectangle with round corners. |
+| `ICircle` | `CreateCircle(center, radius)` | `WireframeCircle` | A flat circle; `CreateCircle(center, normal, radius)` faces a direction. |
+| `IEllipse` | `CreateEllipse(tipA, tipB, radius)` | `WireframeEllipse` | A flat ellipse whose long axis runs between two tips. |
+| `IStar` | `CreateStar(center, innerRadius, outerRadius, pointCount)` | `WireframeStar` | A flat star. |
+| `ISphere` | `CreateSphere(center, radius)` | `WireframeSphere` | Three great circles. |
+| `IEllipsoid` | `CreateEllipsoid(tipA, tipB, radius)` | `WireframeEllipsoid` | Three ellipses, with a radius along each axis. |
+| `ISpikedSphere` | `CreateSpikedSphere(center, baseRadius, spikeLength, spikeCount)` | `WireframeSpikedSphere` | A 3D star: a Platonic solid with a spike on each face, so 4, 6, 8, 12 or 20 spikes. |
+| `ICylinder` | `CreateCylinder(endA, endB, radius)` | `WireframeCylinder` | Two rings joined by four lines. |
+| `ICone` | `CreateCone(tip, baseCenter, radius)` | `WireframeCone` | A base ring joined to the tip by four lines. |
+| `ICapsule` | `CreateCapsule(centerA, centerB, radius)` | `WireframeCapsule` | Two spheres wrapped together, like `Physics.CapsuleCast`; each end can have its own radius. |
+| `IStadium` | `CreateStadium(centerA, centerB, radius)` | `WireframeStadium` | The flat outline of a capsule. |
+| `IFrustum` | `CreateFrustum(endA, endB, radiusA, radiusB, sideCount)` | `WireframeFrustum` | Two regular polygons joined at every corner. Prisms and regular pyramids are frustums too. |
+| `IPyramid` | `CreatePyramid(tip, baseCenter, baseSize)` | `WireframePyramid` | A rectangular base joined to a tip, like a camera's view without its near plane. |
 
 Every shape except lines and polylines also has a Create method on a bone, in its local space, one from a position and a rotation, and one without arguments for a white shape of unit size. Round shapes are drawn like Unity's gizmos, with rings and a few lines, from 3 to 1,024 segments per ring.
+
+### Shape components
+
+Every shape has a component that draws it on its GameObject without any code, the same in Edit Mode, Play Mode and builds.
+
+1. The shape follows its GameObject's Transform like a mesh, scale included. Rigid shapes take a `Center` and a `Rotation` relative to it, or for long shapes the two ends of their axis and a `Roll` around it; points of lines and polylines can follow other Transforms.
+2. Every change shows up in the next render, made in the Inspector, by undo, a prefab revert, animation or a script. Components do no work per frame, so a moving GameObject costs nothing more than a moving bone.
+3. Disabling a component, or its GameObject, hides its shape and costs nothing, and enabling it again allocates nothing.
+4. Components share containers, one per combination of occlusion, transparency, layer and gizmo drawing, so hundreds of them draw in a few draw calls. A color with alpha below 1 draws transparent, and a shape draws on its GameObject's layer.
+5. `DrawAsGizmo` draws a shape like a gizmo: in the Scene view, and in the Game view only while its Gizmos button is on. Builds leave such shapes out.
+6. Prefab Mode draws the components of the prefab being edited, in its own scene.
+7. Counts that runtime shapes fix at creation, such as `SegmentCount`, can change on a component, which creates its shape again.
+
+The Hierarchy's Scene visibility toggles don't hide components' wireframes, and the Gizmos menu's per-component checkboxes don't affect gizmo shapes.
 
 ### Edits upload only what they change
 
@@ -49,7 +63,7 @@ Frames that move bones, edit shapes, hide and show them, or change nothing alloc
 A `WireframeContainer` creates and draws shapes, and disposes them when it is disposed or when the scene it was created in unloads. `WireframeContainerSettings` chooses how, and is serializable, so a script can show it in the Inspector.
 
 | Setting | Default | What it does |
-|---|---|---|
+|---|---|---|---|
 | `Occlusion` | `Hide` | What is drawn of lines that other geometry hides: nothing, everything, or a dimmer line. |
 | `UseAlpha` | false | Blends each color by its alpha instead of drawing opaque lines. |
 | `Material` | none | Draws with your material instead of the package's. |
@@ -74,7 +88,7 @@ Shapes are stored in chunks, meshes of up to 65,535 vertices with 16-bit indices
 
 ### Play Mode, Edit Mode and builds
 
-Containers and shapes work the same in Edit Mode, drawing in the Scene and Game views. There, a container is never saved into its scene and never marks it as changed; it is disposed before scripts reload and when its scene closes, unless it persists across scenes. Switching between Edit and Play Mode alone never disposes a container.
+Containers and shapes work the same in Edit Mode, drawing in the Scene and Game views. There, a container is never saved into its scene and never marks it as changed; it is disposed before scripts reload and when its scene closes, unless it persists across scenes. Switching between Edit and Play Mode alone never disposes a container. Shape components draw in Edit Mode as soon as they are added.
 
 ### Visibility
 

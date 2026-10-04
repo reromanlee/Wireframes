@@ -7,19 +7,28 @@ using UnityEditor.Build.Reporting;
 namespace reromanlee.Wireframes.ContinuousIntegration
 {
     /// <summary>
-    /// Builds the Shape Gallery sample for the active build target. Continuous integration copies the package samples
-    /// into Assets/Samples, then GameCI's builder calls <see cref="Build"/> with -executeMethod.
+    /// Builds the Shape Gallery sample for the active build target, starting in its ShapeGallery scene, with its
+    /// ComponentGallery scene too. Continuous integration copies the package samples into Assets/Samples, then GameCI's
+    /// builder calls <see cref="Build"/> with -executeMethod.
     /// </summary>
     public static class PlayerBuild
     {
-        private const string ScenePath = "Assets/Samples/ShapeGallery/ShapeGallery.unity";
+        private static readonly string[] ScenePaths =
+        {
+            "Assets/Samples/ShapeGallery/ShapeGallery.unity",
+            "Assets/Samples/ShapeGallery/ComponentGallery.unity"
+        };
 
         /// <summary>Builds to the path in GameCI's -customBuildPath argument; throwing makes Unity exit with code 1.</summary>
         public static void Build()
         {
-            if (!File.Exists(ScenePath))
+            foreach (string scenePath in ScenePaths)
             {
-                throw new BuildFailedException($"{ScenePath} is missing; copy the package samples into Assets/Samples.");
+                if (!File.Exists(scenePath))
+                {
+                    throw new BuildFailedException(
+                        $"{scenePath} is missing; copy the package samples into Assets/Samples.");
+                }
             }
             BuildTarget target = EditorUserBuildSettings.activeBuildTarget;
             if (target == BuildTarget.Android)
@@ -31,7 +40,7 @@ namespace reromanlee.Wireframes.ContinuousIntegration
 
             BuildReport report = BuildPipeline.BuildPlayer(new BuildPlayerOptions
             {
-                scenes = new[] { ScenePath },
+                scenes = ScenePaths,
                 target = target,
                 targetGroup = BuildPipeline.GetBuildTargetGroup(target),
                 locationPathName = ValueOf("-customBuildPath")

@@ -26,9 +26,11 @@ namespace reromanlee.Wireframes
         private HeadlessHost _headless;
         private WireframeContainer _container;
         private Material[] _materials;
+        private Func<Camera, bool> _cameraFilter;
         private bool _ownsMaterials;
         private bool _isShutDown;
         private bool _hasLoggedFlushFailure;
+        private bool _hasLoggedFilterFailure;
 
         /// <summary>Makes new containers act as they do without a graphics device, so tests can cover server builds.</summary>
         internal static bool SimulateNoGraphics { get; set; }
@@ -100,6 +102,43 @@ namespace reromanlee.Wireframes
         internal BoneTexture BoneTexture
         {
             get => _boneTexture;
+        }
+
+        /// <summary>
+        /// Called during a flush whose bones turned out to include destroyed ones, right after they are read, so the
+        /// shapes on them can be changed in time for the upload. Containers that shape components share use it.
+        /// </summary>
+        internal Action<MeshProxy> BonesDestroyed { get; set; }
+
+        /// <summary>
+        /// Decides for each camera whether the chunks draw, for a container that only some cameras should draw, such as
+        /// one of gizmo shapes; null, the default, draws them for every camera. The chunks are switched off between
+        /// renders, and switched on only while a camera that the filter accepts renders.
+        /// </summary>
+        internal Func<Camera, bool> CameraFilter
+        {
+            get => _cameraFilter;
+            set
+            {
+                bool isFiltered = value != null;
+                if (isFiltered != (_cameraFilter != null) && isActiveAndEnabled)
+                {
+                    if (isFiltered)
+                    {
+                        SubscribeToCameras();
+                    }
+                    else
+                    {
+                        UnsubscribeFromCameras();
+                    }
+                }
+                _cameraFilter = value;
+                if (_chunks != null)
+                {
+                    _chunks.HidesNewChunks = isFiltered;
+                }
+                SetChunksDrawn(!isFiltered);
+            }
         }
 
         internal void Initialize(WireframeContainer container, WireframeContainerSettings settings)
@@ -190,6 +229,10 @@ namespace reromanlee.Wireframes
             using (WireframesMarkers.Flush.Auto())
             {
                 _bones.ReadMatrices();
+                if (_bones.TakeDestroyedBones())
+                {
+                    BonesDestroyed?.Invoke(this);
+                }
                 if (_boneTexture.Upload(_bones))
                 {
                     _chunks.SetBoneTexture(_boneTexture.Texture);
@@ -272,12 +315,35 @@ namespace reromanlee.Wireframes
             // Each fires only under its own pipeline, so both stay subscribed and a pipeline switch needs no handling.
             RenderPipelineManager.beginContextRendering += OnBeginContextRendering;
             Camera.onPreCull += OnPreCullCamera;
+            if (_cameraFilter != null)
+            {
+                SubscribeToCameras();
+            }
         }
 
         private void OnDisable()
         {
             RenderPipelineManager.beginContextRendering -= OnBeginContextRendering;
             Camera.onPreCull -= OnPreCullCamera;
+            UnsubscribeFromCameras();
+        }
+
+        /// <summary>
+        /// Subscribes to every camera's render, for the camera filter. The Built-in Render Pipeline goes through
+        /// <see cref="OnPreCullCamera"/> and <see cref="OnPostRenderCamera"/>, a Scriptable one through these two.
+        /// </summary>
+        private void SubscribeToCameras()
+        {
+            RenderPipelineManager.beginCameraRendering += OnBeginCameraRendering;
+            RenderPipelineManager.endCameraRendering += OnEndCameraRendering;
+            Camera.onPostRender += OnPostRenderCamera;
+        }
+
+        private void UnsubscribeFromCameras()
+        {
+            RenderPipelineManager.beginCameraRendering -= OnBeginCameraRendering;
+            RenderPipelineManager.endCameraRendering -= OnEndCameraRendering;
+            Camera.onPostRender -= OnPostRenderCamera;
         }
 
         private void OnDestroy()
@@ -293,6 +359,60 @@ namespace reromanlee.Wireframes
         private void OnPreCullCamera(Camera camera)
         {
             FlushBeforeRendering();
+            if (_cameraFilter != null)
+            {
+                FilterChunksFor(camera);
+            }
+        }
+
+        private void OnBeginCameraRendering(ScriptableRenderContext context, Camera camera)
+        {
+            FilterChunksFor(camera);
+        }
+
+        private void OnEndCameraRendering(ScriptableRenderContext context, Camera camera)
+        {
+            SetChunksDrawn(false);
+        }
+
+        private void OnPostRenderCamera(Camera camera)
+        {
+            SetChunksDrawn(false);
+        }
+
+        /// <summary>
+        /// Switches the chunks on for <paramref name="camera"/> when the camera filter accepts it, and off otherwise.
+        /// </summary>
+        private void FilterChunksFor(Camera camera)
+        {
+            bool isDrawn = false;
+            try
+            {
+                isDrawn = !_isShutDown && _cameraFilter(camera);
+            }
+            catch (Exception exception)
+            {
+                // Like a failed flush, it must never escape into Unity's rendering nor flood the console.
+                if (!_hasLoggedFilterFailure)
+                {
+                    _hasLoggedFilterFailure = true;
+                    WireframesLog.Error("Deciding which cameras draw the wireframes failed.", exception, this);
+                }
+            }
+            SetChunksDrawn(isDrawn);
+        }
+
+        private void SetChunksDrawn(bool isDrawn)
+        {
+            if (_chunks == null)
+            {
+                return;
+            }
+            IReadOnlyList<MeshChunk> chunks = _chunks.Chunks;
+            for (int i = 0; i < chunks.Count; i++)
+            {
+                chunks[i].Renderer.forceRenderingOff = !isDrawn;
+            }
         }
 
         private void FlushBeforeRendering()
@@ -304,7 +424,8 @@ namespace reromanlee.Wireframes
             try
             {
                 WireframesCounters.Update();
-                if (_chunks == null)
+                // Without chunks there is nothing to draw, as in a container whose shapes are all gone for now.
+                if (_chunks == null || _chunks.Chunks.Count == 0)
                 {
                     return;
                 }

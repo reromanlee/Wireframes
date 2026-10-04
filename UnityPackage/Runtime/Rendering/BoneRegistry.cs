@@ -27,6 +27,7 @@ namespace reromanlee.Wireframes
         private int[] _livePositions = new int[InitialCapacity];
         private int _liveCount;
         private int _end = WorldSlot + 1;
+        private bool _hasDestroyedBones;
 
         internal BoneRegistry()
         {
@@ -135,6 +136,7 @@ namespace reromanlee.Wireframes
                     if (bone == null)
                     {
                         StopReading(slot);
+                        _hasDestroyedBones = true;
                         continue;
                     }
                     Matrix4x4 matrix = bone.localToWorldMatrix;
@@ -145,6 +147,14 @@ namespace reromanlee.Wireframes
                     }
                 }
             }
+        }
+
+        /// <summary>Returns whether reading the bones found any destroyed since the last call, and clears it.</summary>
+        internal bool TakeDestroyedBones()
+        {
+            bool hasDestroyedBones = _hasDestroyedBones;
+            _hasDestroyedBones = false;
+            return hasDestroyedBones;
         }
 
         private void StopReading(int slot)

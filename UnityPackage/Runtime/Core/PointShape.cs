@@ -114,6 +114,11 @@ namespace reromanlee.Wireframes
             for (int i = 0; i < VertexCount; i++)
             {
                 ref ShapePoint point = ref Point(i);
+                // A bone destroyed while the shape was suspended left no pose to hold it by, so it resumes in world space.
+                if (IsDestroyed(point.Bone))
+                {
+                    point.Bone = null;
+                }
                 point.BoneSlot = bones.Acquire(point.Bone);
             }
         }

@@ -5,7 +5,7 @@ namespace reromanlee.Wireframes
     /// <summary>Creates rounded rectangles in a <see cref="WireframeContainer"/>.</summary>
     public static class RoundedRectangleFactory
     {
-        private const float DefaultCornerRadius = 0.25f;
+        internal const float DefaultCornerRadius = 0.25f;
 
         /// <summary>
         /// Creates a white 1 by 1 rectangle with corners of radius 0.25 around the world origin, lying flat in the XZ

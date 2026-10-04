@@ -16,6 +16,7 @@ namespace reromanlee.Wireframes
         private IShapeHost _host;
         private DirtyFlags _dirty;
         private bool _isHidden;
+        private bool _isSuspended;
 
         protected Shape(int vertexCount, EdgeSource edgeSource)
         {
@@ -25,7 +26,16 @@ namespace reromanlee.Wireframes
 
         public bool IsDisposed
         {
-            get => _host == null;
+            get => _host == null && !_isSuspended;
+        }
+
+        /// <summary>
+        /// True while the shape is out of every host after <see cref="Suspend"/>: neither disposed nor usable until
+        /// <see cref="Resume"/>.
+        /// </summary>
+        internal bool IsSuspended
+        {
+            get => _isSuspended;
         }
 
         public bool IsVisible
@@ -96,6 +106,13 @@ namespace reromanlee.Wireframes
         public void Dispose()
         {
             MainThread.Check();
+            if (_isSuspended)
+            {
+                // Its host already took everything else back.
+                _isSuspended = false;
+                _edgeSource.Release();
+                return;
+            }
             if (_host == null)
             {
                 return;
@@ -129,6 +146,43 @@ namespace reromanlee.Wireframes
                 _edgeSource.Release();
                 throw;
             }
+            MarkDirty(DirtyFlags.All);
+        }
+
+        /// <summary>
+        /// Takes the shape out of its host without disposing it: the host takes back its vertices and edges and the
+        /// bones are released, while the shape keeps its state and edge pattern, so <see cref="Resume"/> allocates
+        /// nothing to put it back.
+        /// </summary>
+        internal void Suspend()
+        {
+            IShapeHost host = _host;
+            host.Remove(this);
+            ReleaseBones(host.Bones);
+            // Removing it dropped its queue entry, so it has to be queued again wherever it lands.
+            _dirty = DirtyFlags.None;
+            _host = null;
+            _isSuspended = true;
+        }
+
+        /// <summary>
+        /// Puts a suspended shape into <paramref name="proxy"/>, the one it left or another, and queues all of it to be
+        /// written. If that fails, it stays suspended.
+        /// </summary>
+        internal void Resume(MeshProxy proxy)
+        {
+            BoneRegistry bones = proxy.Bones;
+            AcquireBones(bones);
+            try
+            {
+                _host = proxy.Attach(this);
+            }
+            catch
+            {
+                ReleaseBones(bones);
+                throw;
+            }
+            _isSuspended = false;
             MarkDirty(DirtyFlags.All);
         }
 
