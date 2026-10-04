@@ -10,6 +10,7 @@ namespace reromanlee.Wireframes.Tests
     public class GlyphEnumGeneratorTests
     {
         private const string Folder = "Assets/WireframesGlyphEnumTest";
+        private const string DefaultSymbolsPath = "Packages/com.reromanlee.wireframes/Runtime/Glyphs/Default/Default Symbols.asset";
 
         private WireframeGlyphPack _pack;
 
@@ -125,6 +126,15 @@ namespace reromanlee.Wireframes.Tests
 
             _pack.SetGlyphs(null, new[] { new SymbolGlyph("Star", null) });
             Assert.That(GlyphEnumGenerator.IsOutOfDate(_pack), Is.True);
+        }
+
+        [Test]
+        public void DefaultSymbolsEnum_MatchesItsPack()
+        {
+            WireframeGlyphPack pack = AssetDatabase.LoadAssetAtPath<WireframeGlyphPack>(DefaultSymbolsPath);
+
+            Assert.That(GlyphEnumGenerator.ScriptPathOf(pack), Does.EndWith("/Default/DefaultSymbols.cs"));
+            Assert.That(GlyphEnumGenerator.IsOutOfDate(pack), Is.False, "Generate the Default Symbols enum again.");
         }
     }
 }

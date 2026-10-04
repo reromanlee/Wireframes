@@ -5,7 +5,7 @@ namespace reromanlee.Wireframes
 {
     /// <summary>
     /// Creates symbols in a <see cref="WireframeContainer"/>, named by members of the enums the Glyph Editor generates
-    /// for glyph packs, and drawn with <see cref="WireframeGlyphs.Default"/>.
+    /// for glyph packs, such as <see cref="DefaultSymbols"/>, and drawn with <see cref="WireframeGlyphs.Default"/>.
     /// </summary>
     public static class SymbolFactory
     {

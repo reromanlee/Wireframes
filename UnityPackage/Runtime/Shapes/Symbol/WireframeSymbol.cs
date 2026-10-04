@@ -13,15 +13,12 @@ namespace reromanlee.Wireframes
     [HelpURL(HelpUrl)]
     public sealed class WireframeSymbol : WireframeCenteredShape
     {
-        // The key of the Star symbol, which new components draw.
-        private const int DefaultSymbolKey = 1365736337;
-
         [Tooltip("Glyphs to draw with. Empty draws with the package's Default Glyphs.")]
         [SerializeField] private WireframeGlyphs _glyphs;
 
         [Tooltip("Symbol drawn, from the symbols of the glyphs.")]
         [SymbolKey]
-        [SerializeField] private int _symbol = DefaultSymbolKey;
+        [SerializeField] private int _symbol = (int)DefaultSymbols.Star;
 
         [Tooltip("Width and height of the glyph box, in the GameObject's local units.")]
         [SerializeField] private float _size = ShapeDefaults.Size;
@@ -72,8 +69,9 @@ namespace reromanlee.Wireframes
         }
 
         /// <summary>
-        /// Draws <paramref name="symbol"/>, a member of a generated symbol enum, such as <c>DefaultSymbols.Heart</c>. A
-        /// symbol of the same name from any pack of the glyphs counts, and the enum's None member draws nothing.
+        /// Draws <paramref name="symbol"/>, a member of a generated symbol enum, such as
+        /// <see cref="DefaultSymbols.Heart"/>. A symbol of the same name from any pack of the glyphs counts, and the
+        /// enum's None member draws nothing.
         /// </summary>
         /// <exception cref="ArgumentException"><typeparamref name="TSymbol"/> doesn't have int values.</exception>
         public void SetSymbol<TSymbol>(TSymbol symbol) where TSymbol : unmanaged, Enum

@@ -18,8 +18,9 @@ namespace reromanlee.Wireframes
         float Size { get; set; }
 
         /// <summary>
-        /// Draws <paramref name="symbol"/>, a member of a generated symbol enum. A symbol of the same name from any pack
-        /// of the glyphs counts, and the enum's None member draws nothing.
+        /// Draws <paramref name="symbol"/>, a member of a generated symbol enum, such as
+        /// <see cref="DefaultSymbols.Heart"/>. A symbol of the same name from any pack of the glyphs counts, and the
+        /// enum's None member draws nothing.
         /// </summary>
         /// <exception cref="ArgumentException"><typeparamref name="TSymbol"/> doesn't have int values.</exception>
         void SetSymbol<TSymbol>(TSymbol symbol) where TSymbol : unmanaged, Enum;
