@@ -5,14 +5,9 @@ using UnityEngine.TestTools;
 
 namespace reromanlee.Wireframes.Tests
 {
-    /// <summary>
-    /// Laying text out into points and edges. The glyphs are simple: A is a line from 0.2 to 0.8 on the baseline, B a
-    /// closed square from 0.25 to 0.75, and ? a line from 0.4 to 0.6.
-    /// </summary>
+    /// <summary>Laying text out into points and edges, with the glyphs of <see cref="GlyphTestBase.CreateTestGlyphs"/>.</summary>
     public class TextLayoutTests : GlyphTestBase
     {
-        private const float Baseline = WireframeGlyphPack.Baseline;
-
         private readonly GlyphGeometry _geometry = new();
 
         [Test]
@@ -196,17 +191,6 @@ namespace reromanlee.Wireframes.Tests
             Assert.That(geometry.VertexCapacity, Is.EqualTo(128));
             geometry.Begin(20, 10);
             Assert.That(geometry.VertexCapacity, Is.EqualTo(64));
-        }
-
-        private WireframeGlyphs CreateTestGlyphs()
-        {
-            return CreateGlyphs(CreatePack(new[]
-            {
-                Character('A', Open(0.2f, Baseline, 0.8f, Baseline)),
-                Character('B', Closed(0.25f, Baseline, 0.75f, Baseline, 0.75f, Baseline + 0.5f, 0.25f, Baseline + 0.5f)),
-                Character('?', Open(0.4f, Baseline, 0.6f, Baseline)),
-                Character(' ')
-            }));
         }
 
         /// <summary>Characters 1 unit tall at the top left of 10 by 2 bounds, kept on their lines.</summary>

@@ -45,5 +45,25 @@ namespace reromanlee.Wireframes
                 Overflow = WireframeTextOverflow.Overflow
             };
         }
+
+        internal static bool IsDefined(WireframeCharacterWidth width)
+        {
+            return width is WireframeCharacterWidth.Proportional or WireframeCharacterWidth.Monospace;
+        }
+
+        internal static bool IsDefined(WireframeHorizontalAlignment alignment)
+        {
+            return alignment is >= WireframeHorizontalAlignment.Left and <= WireframeHorizontalAlignment.Right;
+        }
+
+        internal static bool IsDefined(WireframeVerticalAlignment alignment)
+        {
+            return alignment is >= WireframeVerticalAlignment.Top and <= WireframeVerticalAlignment.Bottom;
+        }
+
+        internal static bool IsDefined(WireframeTextOverflow overflow)
+        {
+            return overflow is WireframeTextOverflow.Overflow or WireframeTextOverflow.Wrap;
+        }
     }
 }
