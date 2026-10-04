@@ -37,6 +37,8 @@ A few shapes add an obvious extra, such as `CreateCircle(center, normal, radius)
 
 Lines and polylines are made of points: they are created from world positions, or from one bone per point, each point sitting at its bone's origin. `CreateLine()` starts with both ends at the world origin.
 
+Texts and symbols take what they draw last: `CreateText(text)`, `CreateText(position, rotation, text)` and `CreateText(bone, localPosition, localRotation, text)`, and the same three for `CreateSymbol` with a member of a symbol enum.
+
 ### Bones and spaces
 
 A **bone** is any Transform in a scene that a shape follows; `null` means world space. A prefab asset can't be a bone and throws `ArgumentException`.
@@ -62,10 +64,11 @@ A shape's rotation turns its own axes:
 
 1. **+Y is the normal of flat shapes.** Rectangles, circles, ellipses, stars and stadiums lie in their XZ plane, so with no rotation they lie flat on the ground, or flat around their bone.
 2. **+Z is the axis of long shapes** (`IAxialShape`: cylinders, cones, capsules, stadiums, frustums and pyramids). They start at end A, at their position, and run `Length` along +Z to end B. Setting one end keeps the other where it is: the axis turns by the smallest rotation and `Length` follows. Setting the position moves the whole shape.
-3. Other shapes are centered on their position.
-4. `Quaternion.LookRotation(axis, normal)` is the rotation that points a shape's +Z along `axis` with +Y toward `normal`.
-5. A shape created from two points turns so that its +Y stays as close to world up, or its bone's up, as it can. A stadium or ellipse created that way lies as flat as it can.
-6. Capsule and stadium ends are the centers of their spheres or circles, as in `Physics.CapsuleCast`. When one sphere holds the other, only the bigger one is drawn.
+3. **Texts and symbols stand in their XY plane** and read from its -Z side, so with no rotation they face a camera looking along +Z.
+4. Other shapes are centered on their position.
+5. `Quaternion.LookRotation(axis, normal)` is the rotation that points a shape's +Z along `axis` with +Y toward `normal`.
+6. A shape created from two points turns so that its +Y stays as close to world up, or its bone's up, as it can. A stadium or ellipse created that way lies as flat as it can.
+7. Capsule and stadium ends are the centers of their spheres or circles, as in `Physics.CapsuleCast`. When one sphere holds the other, only the bigger one is drawn.
 
 ### Sizes and resolution
 
@@ -135,13 +138,14 @@ To draw a shape without writing code, add its component to a GameObject: **Add C
 | `WireframeBox`, `WireframeRectangle`, `WireframeRoundedRectangle`, `WireframeCircle`, `WireframeEllipse`, `WireframeStar`, `WireframeSphere`, `WireframeEllipsoid`, `WireframeSpikedSphere` | **Center** and **Rotation**, in Euler angles. Flat shapes lie flat on the GameObject with no rotation. |
 | `WireframeCylinder`, `WireframeCone`, `WireframeCapsule`, `WireframeStadium`, `WireframeFrustum`, `WireframePyramid` | **End A** and **End B**, the ends of the shape's axis, and **Roll** around it. A cone's or pyramid's tip is end A. With no roll, the shape's +Y stays as close to the GameObject's up as the axis allows. |
 | `WireframeLine`, `WireframePolyline` | A **Bone** and a **Position** for each point: the point follows that Transform, or the GameObject when it has none. |
+| `WireframeText`, `WireframeSymbol` | **Center** and **Rotation**, standing in the GameObject's XY plane and read from its -Z side. **Text**, **Glyphs** and the layout fields match [`IText`](#text), and **Symbol** lists the symbols of the component's glyphs by name. |
 
 1. **Every change shows up in the next render,** made in the Inspector, by undo, a prefab revert, animation or a script. A count that runtime shapes fix at creation, such as **Segment Count**, creates the shape again, once you finish typing it, and invalid counts snap to the nearest valid one.
 2. **`enabled` shows and hides the shape.** Disabling the component or its GameObject costs nothing, and enabling it again allocates nothing.
 3. **One color per shape.** **Color** colors all of it, and an alpha below 1 draws it transparent; **Occlusion** works like the container setting. Shapes draw on their GameObject's layer, for camera culling masks.
 4. **Draw As Gizmo** draws the shape like a gizmo: in the Scene view, and in the Game view only while its **Gizmos** button is on. Other cameras never draw it, and builds leave it out. To leave out a whole GameObject meant for debugging, tag it **EditorOnly**, which strips it from builds with its children.
 5. **A destroyed bone counts as none,** so its point follows the GameObject from the next render on. A bone has to be in a scene: one that isn't, such as a prefab asset, is reported once and the GameObject followed instead.
-6. **New components draw what the Create methods without arguments draw,** relative to the GameObject: a white shape of unit size, with long shapes running 1 unit along +Z. A line runs 1 unit forward, and a polyline starts as a small triangle; it draws nothing with fewer than 2 points, or 3 when closed.
+6. **New components draw what the Create methods without arguments draw,** relative to the GameObject: a white shape of unit size, with long shapes running 1 unit along +Z. A line runs 1 unit forward, and a polyline starts as a small triangle; it draws nothing with fewer than 2 points, or 3 when closed. A text starts as "Text" and a symbol as the star, both drawn with the package's Default Glyphs.
 
 Scripts set the same properties, and counts outside their range throw `ArgumentOutOfRangeException`, as Create methods do:
 
@@ -161,6 +165,67 @@ Components share containers, one per combination of occlusion, transparency, lay
 1. The Hierarchy's Scene visibility toggles don't hide components' wireframes, and the per-component checkboxes of the **Gizmos** menu don't affect gizmo shapes.
 2. A script that changes `gameObject.layer` moves the shape to that layer on the component's next change; a change in the Inspector moves it at once.
 3. Clicking a wireframe in the Scene view doesn't select its GameObject.
+
+### Text
+
+`CreateText(position, rotation, text)` creates a text, and `CreateText(bone, localPosition, localRotation, text)` one that follows a bone. A text stands in the XY plane of its rotation and reads from the -Z side, so with no rotation it faces a camera looking along +Z.
+
+```csharp
+IText label = _wireframes.CreateText(_target, new Vector3(0f, 1.5f, 0f), Quaternion.identity, "Target");
+label.CharacterSize = 0.5f;
+label.SetColor(Color.cyan);
+```
+
+1. **Sizes are in glyph boxes.** `CharacterSize` is the height of a glyph box in the bone's units, 1 by default, and each line is one box tall. `CharacterSpacing` adds room after each character and `LineSpacing` between lines, both in boxes: 0.1 and 0 by default.
+2. **`CharacterWidth` sets how far each character moves the next one along.** `Proportional`, the default, gives a character the width of its lines plus the spacing, and a space its pack's space width. `Monospace` gives every character a whole glyph box, so columns line up; with the Default Font, a `CharacterSpacing` of about -0.45 spaces it like a terminal.
+3. **Lines are aligned in `Bounds`,** a rectangle centered on the text's position, 4 by 1 by default: each line by `HorizontalAlignment`, and all of them together by `VerticalAlignment`. With `Overflow` set to `Wrap`, a line wider than the bounds breaks at its last space that fits, or inside a word wider than the bounds; otherwise lines stay as written and run past the bounds.
+4. **`\n` starts a new line,** `\r\n` counts once, a tab takes 4 spaces, and other control characters are skipped.
+5. **A character the glyphs lack is drawn as `?`,** with one warning for each such character. `glyphs.Contains(character)` tells beforehand.
+6. **`SetText` changes the text without allocating** once the text's buffers fit it, so a value can be rewritten every frame. Reading `Text` after `SetText` creates the string once.
+
+```csharp
+private readonly char[] _digits = new char[11];
+
+private void Update()
+{
+    _score.TryFormat(_digits, out int length);
+    _scoreText.SetText(_digits.AsSpan(0, length));
+}
+```
+
+### Symbols
+
+`CreateSymbol(position, rotation, symbol)` creates a symbol named by a member of the enum the Glyph Editor generates for a glyph pack, such as `DefaultSymbols.Heart`, and `CreateSymbol(bone, localPosition, localRotation, symbol)` one that follows a bone. Its glyph box is `Size` across, 1 by default, centered on its position, and stands in the XY plane of its rotation like a text.
+
+```csharp
+ISymbol marker = _wireframes.CreateSymbol(_target, new Vector3(0f, 2f, 0f), Quaternion.identity, DefaultSymbols.Warning);
+marker.SetColor(Color.yellow);
+marker.SetSymbol(DefaultSymbols.Check);
+```
+
+1. A symbol of the same name from any pack of its glyphs counts, so the enum of one pack can name a symbol that another pack draws instead.
+2. `GetSymbol<TSymbol>()` returns the symbol as a member of any symbol enum, or as an undefined value when that enum has no member of its name.
+3. The enum's `None` member draws nothing, and a symbol the glyphs lack is drawn as `?`, with one warning.
+
+### Glyph packs
+
+Texts and symbols draw **glyphs**: lines in a box from 0 to 1 on both axes, whose baseline is 0.25 up from the bottom. A **glyph pack**, `WireframeGlyphPack`, holds characters, found by their character, and symbols, found by their keyword. A **glyph list**, `WireframeGlyphs`, lists packs from the highest priority down: the first pack that has a character or symbol draws it, so a pack overrides the packs below it, and the list's Inspector says which glyphs each pack overrides.
+
+1. **The package's Default Glyphs,** `WireframeGlyphs.Default`, list its Default Font, with the 95 printable ASCII characters, and its Default Symbols, with 23 symbols from `ArrowUp` to `Bolt`. Texts and symbols without glyphs of their own draw with them, and new components get them.
+2. **To draw with glyphs of your own,** create a pack with **Create > Wireframes > Glyph Pack** and edit it in the Glyph Editor. Then create a list with **Create > Wireframes > Glyphs**, put your pack first and the package's packs below it, and set the list as the `Glyphs` of your texts, symbols and components.
+3. **Code names symbols by the enum** that the Glyph Editor's **Generate Enum** writes next to the pack: a member per symbol, valued by its keyword's hash, plus `None`. Keywords are C# identifiers, and lookups compare hashes, never strings. Generate the enum again after adding, renaming or reordering symbols; the button stands out while the enum is out of date.
+4. **Packs installed from a registry, git or a tarball are read-only,** as Unity keeps those packages. **Duplicate to Assets** in the Glyph Editor copies one into your project, where you can edit it.
+
+### Glyph Editor
+
+**Window > Wireframes > Glyph Editor** edits glyph packs; double-clicking a pack, or its Inspector's **Open in Glyph Editor** button, opens it there.
+
+1. **The gallery** shows the pack's characters, sorted by character, and its symbols, in pack order or by name with **A–Z**, each named below its tile, and the search field filters both. **+** adds a character or a symbol, and **+ ASCII** adds an empty glyph for every printable ASCII character the pack lacks. Right-click a tile to rename, duplicate, copy, paste or delete its glyph, and drag symbols into another order, which is their enum's order.
+2. **Clicking a tile opens its glyph** on the canvas beside the gallery. Click a point to select it, and drag it to move it, snapped to the grid unless Shift is held. Ctrl+click, or Cmd+click on macOS, adds a point after the end of the selected stroke, or starts a stroke when none is selected, and double-clicking a line inserts a point there. Delete removes the selected point, the arrow keys nudge it by a grid step, the wheel zooms, the middle button pans, F frames the box, and Esc closes the glyph.
+3. **The details panel** lists each stroke's points as exact X and Y values, adds, reorders and deletes strokes and points, and closes a stroke back to its first point. It also centers the glyph horizontally or vertically: symbols suit both, while characters should stay on the baseline. Proportional text measures characters by their lines, so only monospace text cares where a character sits across its box.
+4. **The preview strip** draws sample text with the pack alone, proportional or monospace, and lists the characters the pack lacks instead of warning about them.
+5. **Pack Settings** sets the enum's name and namespace, the space width, the x-height and cap-height guides and the grid, and **Generate Enum** writes the enum.
+6. Every edit can be undone, texts and symbols that draw with the pack show each edit at once, and Ctrl+S saves the pack.
 
 ### Custom materials
 
@@ -219,7 +284,7 @@ Add the **WireframeCamera** component to a Camera to draw everything that camera
 
 Import them from the package's **Samples** tab in the Package Manager.
 
-1. **Shape Gallery** lays out every shape in three rows, each turning with its own bone. Open its **ShapeGallery** scene and enter Play Mode. Its **ComponentGallery** scene has the same shapes made of components, drawn as soon as it opens, and turning in Play Mode.
+1. **Shape Gallery** lays out the package's shapes in three rows, each turning with its own bone and named below it with text. Open its **ShapeGallery** scene and enter Play Mode. Its **ComponentGallery** scene has the same shapes made of components, drawn as soon as it opens, and turning in Play Mode. Its **TextAndSymbols** scene shows every default symbol, text in both character widths, wrapped and aligned, and a clock and a symbol drawn from code.
 2. **Stress Test** spawns 10,000 lines, 1,000 boxes and 2,000 other shapes on 100 orbiting bones. Add the `StressTest` component to an empty GameObject in a scene with a camera, and enter Play Mode with the Profiler open. Raise **Recolor Per Frame** to measure the cost of edits.
 
 ### Tests

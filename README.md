@@ -6,6 +6,8 @@ Wireframe shapes for Unity that follow Transforms on the GPU: create a shape onc
 
 Lines, polylines, boxes, circles, spheres, capsules, cones and more attach to any Transforms, called bones. The package uploads each bone's matrix once per frame and the vertex shader moves every vertex, so moving shapes cost your code nothing and an edit uploads only what it changed.
 
+Text and symbols are drawn with lines too, in 2D or 3D, from glyph packs you can edit in the Glyph Editor: the package comes with a font of the printable ASCII characters and 23 symbols.
+
 Without writing code, add a shape component to a GameObject: it draws there at once, in Edit Mode too, and shows every change to its fields as you make it.
 
 Shapes draw the same in Play Mode, Edit Mode and player builds, under the Built-in Render Pipeline, URP and HDRP, from desktops and phones to WebGL, while server builds keep them working without drawing.
@@ -13,18 +15,19 @@ Shapes draw the same in Play Mode, Edit Mode and player builds, under the Built-
 ### Features
 
 1. Shapes follow Transforms on the GPU.
-2. 17 shapes, from lines to capsules.
+2. 19 shapes, from lines to text and symbols.
 3. Shape components, edited live in Edit Mode.
-4. Edits upload only what they change.
-5. Steady frames allocate nothing.
-6. Built-in Render Pipeline, URP and HDRP.
-7. Windows, Android, WebGL and more.
-8. Play Mode, Edit Mode and builds.
-9. Hidden lines hide, show or fade.
-10. Shapes hide without being disposed.
-11. Statistics and Profiler markers.
-12. Destroyed bones leave shapes in place.
-13. A camera that draws in wireframe.
+4. A Glyph Editor for fonts and symbols.
+5. Edits upload only what they change.
+6. Steady frames allocate nothing.
+7. Built-in Render Pipeline, URP and HDRP.
+8. Windows, Android, WebGL and more.
+9. Play Mode, Edit Mode and builds.
+10. Hidden lines hide, show or fade.
+11. Shapes hide without being disposed.
+12. Statistics and Profiler markers.
+13. Destroyed bones leave shapes in place.
+14. A camera that draws in wireframe.
 
 Detailed about features - see [FEATURES.md](Documentation/FEATURES.md).
 
@@ -54,10 +57,11 @@ Detailed about performance - see [PERFORMANCE.md](Documentation/PERFORMANCE.md).
 6. Shapes are never frustum-culled.
 7. Shapes are used from the main thread only.
 8. Custom materials skin with the package's HLSL.
+9. Text has no kerning, and the default font has ASCII only.
 
 ### How to install
 
-**From the git URL:** in **Window > Package Manager**, choose **+ > Install package from git URL** and enter the URL below. Add `#2.0.0` to its end to stay on that version.
+**From the git URL:** in **Window > Package Manager**, choose **+ > Install package from git URL** and enter the URL below. Add `#2.1.0` to its end to stay on that version.
 
 ```
 https://github.com/reromanlee/Wireframes.git?path=/UnityPackage
@@ -110,7 +114,16 @@ sphere.Radius = 2f;
 sphere.IsVisible = false;
 ```
 
-**Or add a shape component to a GameObject, with no code at all.** **Add Component > Wireframes** has one for every shape, from **Line** to **Pyramid**. It draws on its GameObject right away, in Edit Mode, Play Mode and builds, follows it like a mesh, and shows each change to its fields in the next render; disabling it hides the shape.
+**Text and symbols are shapes too,** drawn with the package's Default Glyphs unless given glyph packs of your own. Changing a text with `SetText` allocates nothing, so it can show a value that changes every frame.
+
+```csharp
+IText label = _wireframes.CreateText(_target, new Vector3(0f, 1.5f, 0f), Quaternion.identity, "Target");
+ISymbol marker = _wireframes.CreateSymbol(_target, new Vector3(0f, 2.5f, 0f), Quaternion.identity, DefaultSymbols.Warning);
+```
+
+**Or add a shape component to a GameObject, with no code at all.** **Add Component > Wireframes** has one for every shape, from **Line** to **Pyramid**, **Text** and **Symbol**. It draws on its GameObject right away, in Edit Mode, Play Mode and builds, follows it like a mesh, and shows each change to its fields in the next render; disabling it hides the shape.
+
+**Draw glyphs of your own in the Glyph Editor,** in **Window > Wireframes > Glyph Editor**: a gallery of a pack's characters and symbols, and a canvas that edits their lines with exact coordinates.
 
 Detailed about usage - see [USAGE.md](Documentation/USAGE.md).
 

@@ -4,10 +4,10 @@ using UnityEngine;
 namespace reromanlee.Wireframes.Samples
 {
     /// <summary>
-    /// Lays out every shape the package draws in three rows, each named below it with text: shapes made of points and
-    /// flat shapes on top, shapes around a center in the middle and long shapes at the bottom. Each shape follows its own
-    /// bone, and only the bones turn each frame, so the package does no work to animate them. Open the ShapeGallery
-    /// scene and enter Play mode, or add it to an empty GameObject in any scene with a camera and frame that GameObject.
+    /// Lays out the package's shapes in three rows, each named below it with text: shapes made of points and flat shapes
+    /// on top, shapes around a center in the middle and long shapes at the bottom. Each shape follows its own bone, and
+    /// only the bones turn each frame, so the package does no work to animate them. Open the ShapeGallery scene and enter
+    /// Play mode, or add it to an empty GameObject in any scene with a camera and frame that GameObject.
     /// </summary>
     public sealed class ShapeGallery : MonoBehaviour
     {

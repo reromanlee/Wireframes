@@ -12,7 +12,7 @@ A shape attaches to Transforms, called bones, and moves, turns and scales with t
 4. When a bone is destroyed, its shapes stay where they were drawn last and switch to world space.
 5. Any Transform in a scene can be a bone. Nothing is added to it, and a prefab asset is refused with an `ArgumentException`.
 
-### 17 shapes
+### 19 shapes
 
 | Shape | Usual Create method | Component | What it is |
 |---|---|---|---|
@@ -33,8 +33,10 @@ A shape attaches to Transforms, called bones, and moves, turns and scales with t
 | `IStadium` | `CreateStadium(centerA, centerB, radius)` | `WireframeStadium` | The flat outline of a capsule. |
 | `IFrustum` | `CreateFrustum(endA, endB, radiusA, radiusB, sideCount)` | `WireframeFrustum` | Two regular polygons joined at every corner. Prisms and regular pyramids are frustums too. |
 | `IPyramid` | `CreatePyramid(tip, baseCenter, baseSize)` | `WireframePyramid` | A rectangular base joined to a tip, like a camera's view without its near plane. |
+| `IText` | `CreateText(position, rotation, text)` | `WireframeText` | Lines of text drawn with glyphs, aligned in bounds, proportional or monospace. |
+| `ISymbol` | `CreateSymbol(position, rotation, symbol)` | `WireframeSymbol` | A symbol drawn with a glyph, named by a generated enum, such as `DefaultSymbols.Heart`. |
 
-Every shape except lines and polylines also has a Create method on a bone, in its local space, one from a position and a rotation, and one without arguments for a white shape of unit size. Round shapes are drawn like Unity's gizmos, with rings and a few lines, from 3 to 1,024 segments per ring.
+Every shape except lines and polylines also has a Create method on a bone, in its local space, one from a position and a rotation, and one without arguments for a white shape of unit size, or with only what it draws for texts and symbols. Round shapes are drawn like Unity's gizmos, with rings and a few lines, from 3 to 1,024 segments per ring.
 
 ### Shape components
 
@@ -50,13 +52,29 @@ Every shape has a component that draws it on its GameObject without any code, th
 
 The Hierarchy's Scene visibility toggles don't hide components' wireframes, and the Gizmos menu's per-component checkboxes don't affect gizmo shapes.
 
+### Text and symbols
+
+Texts and symbols draw glyphs, made of lines like every other shape, so they stand anywhere in 2D or 3D, follow their bones and draw in the same containers.
+
+1. The package's Default Glyphs draw the 95 printable ASCII characters with its Default Font, a single-line design, and 23 symbols with its Default Symbols, from arrows and checks to media buttons. Texts, symbols and new components use them unless given glyphs of their own.
+2. Text is laid out in bounds: each line aligned left, center or right, the lines together top, middle or bottom, wrapped at spaces or left to run past the bounds, with character and line spacing in glyph boxes.
+3. Characters are proportional, as wide as their lines, or monospace, a whole glyph box each.
+4. `SetText(ReadOnlySpan<char>)` changes a text without allocating once its buffers fit, and a text keeps spare room, so most changes rewrite it in place.
+5. A character or symbol the glyphs lack is drawn as `?`, with one warning for each.
+6. Glyph packs hold characters, found by character, and symbols, found by a keyword. A glyph list puts packs in priority order, the first pack that has a glyph draws it, and its Inspector says which glyphs each pack overrides.
+7. Code names symbols by an enum generated for each pack, whose members are their keywords' hashes, so no lookup compares strings.
+8. The Glyph Editor shows a pack's glyphs in a gallery, with characters and symbols apart, and edits each glyph's strokes on a canvas with a grid, guides and snapping, or point by point with exact X and Y values, with undo. Texts and symbols drawing with the pack follow each edit at once.
+9. Packs installed from a registry, git or a tarball are read-only, and the Glyph Editor duplicates them into the project to edit them.
+
+Text has no kerning, and the Default Font covers ASCII only, so other characters need a pack of your own.
+
 ### Edits upload only what they change
 
 A setter only records the change, and each edited shape is written once per frame however many of its properties changed. Only the changed ranges of the GPU buffers are uploaded, and moving bones uploads nothing but their matrices. Tests check that editing one shape among many uploads that shape alone.
 
 ### Steady frames allocate nothing
 
-Frames that move bones, edit shapes, hide and show them, or change nothing allocate no managed memory, which tests enforce. Freed space is reused by the next shape of the same size and packed away once it fills half a buffer, and memory past the reserved capacity is given back as shapes are disposed.
+Frames that move bones, edit shapes, rewrite texts, hide and show shapes, or change nothing allocate no managed memory, which tests enforce. Freed space is reused by the next shape of the same size and packed away once it fills half a buffer, and memory past the reserved capacity is given back as shapes are disposed.
 
 ### Containers
 
