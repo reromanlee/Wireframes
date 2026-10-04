@@ -129,6 +129,14 @@ namespace reromanlee.Wireframes.Tests
         }
 
         [Test]
+        public void PackThatIsntAnAsset_HasNoEnumScript()
+        {
+            Assert.That(GlyphEnumGenerator.ScriptPathOf(_pack), Is.Empty);
+            Assert.That(GlyphEnumGenerator.IsOutOfDate(_pack), Is.False);
+            Assert.Throws<System.InvalidOperationException>(() => GlyphEnumGenerator.Write(_pack));
+        }
+
+        [Test]
         public void DefaultSymbolsEnum_MatchesItsPack()
         {
             WireframeGlyphPack pack = AssetDatabase.LoadAssetAtPath<WireframeGlyphPack>(DefaultSymbolsPath);

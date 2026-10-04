@@ -104,11 +104,15 @@ namespace reromanlee.Wireframes.Editor
 
         /// <summary>
         /// Where the pack's enum is: the script it was last written to, found by GUID, while that script still names the
-        /// pack, or otherwise a script named after the enum next to the pack.
+        /// pack, or otherwise a script named after the enum next to the pack. Empty for a pack that isn't an asset.
         /// </summary>
         internal static string ScriptPathOf(WireframeGlyphPack pack)
         {
             string packPath = AssetDatabase.GetAssetPath(pack);
+            if (string.IsNullOrEmpty(packPath))
+            {
+                return string.Empty;
+            }
             string scriptGuid = pack.EnumSettings.ScriptGuid;
             if (scriptGuid.Length > 0)
             {
@@ -121,10 +125,17 @@ namespace reromanlee.Wireframes.Editor
             return $"{Path.GetDirectoryName(packPath)?.Replace('\\', '/')}/{EnumNameOf(pack)}.cs";
         }
 
-        /// <summary>True when the pack's enum script is missing or differs from what generating it now would write.</summary>
+        /// <summary>
+        /// True when the pack is an asset whose enum script is missing or differs from what generating it now would write.
+        /// </summary>
         internal static bool IsOutOfDate(WireframeGlyphPack pack)
         {
-            string path = FileUtil.GetPhysicalPath(ScriptPathOf(pack));
+            string scriptPath = ScriptPathOf(pack);
+            if (scriptPath.Length == 0)
+            {
+                return false;
+            }
+            string path = FileUtil.GetPhysicalPath(scriptPath);
             if (!File.Exists(path))
             {
                 return true;

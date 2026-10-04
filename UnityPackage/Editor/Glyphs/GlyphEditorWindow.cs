@@ -278,7 +278,7 @@ namespace reromanlee.Wireframes.Editor
             {
                 Refresh();
             }
-            hasUnsavedChanges = _pack != null && EditorUtility.IsDirty(_pack);
+            hasUnsavedChanges = HasUnsavedChanges();
             saveChangesMessage = _pack != null ? $"The glyph pack '{_pack.name}' has changes that aren't saved." : null;
         }
 
@@ -317,8 +317,10 @@ namespace reromanlee.Wireframes.Editor
         private void RefreshGenerateButton()
         {
             bool hasSymbols = _pack.Symbols.Length > 0 || !string.IsNullOrEmpty(_pack.EnumSettings.ScriptGuid);
-            _generateButton.SetEnabled(hasSymbols && !_isReadOnly);
-            bool isOutOfDate = hasSymbols && !_isReadOnly && GlyphEnumGenerator.IsOutOfDate(_pack);
+            // Only a pack saved as an asset has a place for its enum.
+            bool canGenerate = hasSymbols && !_isReadOnly && AssetDatabase.Contains(_pack);
+            _generateButton.SetEnabled(canGenerate);
+            bool isOutOfDate = canGenerate && GlyphEnumGenerator.IsOutOfDate(_pack);
             _generateButton.EnableInClassList("glyph-editor__generate--out-of-date", isOutOfDate);
             _generateButton.tooltip = isOutOfDate
                 ? "The symbols changed since the enum was generated, so the enum is out of date."
@@ -357,7 +359,13 @@ namespace reromanlee.Wireframes.Editor
             _gallery.RepaintGlyph(OpenGlyph);
             _pane.Refresh();
             _previewStrip.Refresh();
-            hasUnsavedChanges = EditorUtility.IsDirty(_pack);
+            hasUnsavedChanges = HasUnsavedChanges();
+        }
+
+        /// <summary>True when the pack is an asset with changes that aren't saved; a pack only in memory has nowhere to save.</summary>
+        private bool HasUnsavedChanges()
+        {
+            return _pack != null && EditorUtility.IsDirty(_pack) && AssetDatabase.Contains(_pack);
         }
 
         private void AskForNewCharacter(VisualElement anchor)
