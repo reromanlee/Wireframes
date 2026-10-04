@@ -6,7 +6,7 @@ using Is = UnityEngine.TestTools.Constraints.Is;
 
 namespace reromanlee.Wireframes.Tests
 {
-    /// <summary>Hiding shapes and containers without disposing them, and shapes that change their vertex count.</summary>
+    /// <summary>Hiding shapes and containers without disposing them, and shapes that change their vertex or edge count.</summary>
     public class VisibilityTests : WireframesTestBase
     {
         [Test]
@@ -171,6 +171,78 @@ namespace reromanlee.Wireframes.Tests
 
             chain.IsVisible = true;
             AssertChain(container, chain, 6, 1f);
+        }
+
+        [Test]
+        public void ReplacedEdges_AreDrawnFromTheSameVertices()
+        {
+            WireframeContainer container = CreateContainer();
+            ChainShape chain = container.Proxy.Add(new ChainShape(Points(4, 0f)));
+            ILine after = container.CreateLine(Vector3.one, Vector3.one * 2f);
+            container.Proxy.Flush();
+            int vertexStart = chain.VertexStart;
+
+            // Room for 4 edges, of which the first 2 join every other point.
+            chain.ReplaceEdges(new[] { 0, 2, 1, 3, 0, 0, 0, 0 }, 2);
+
+            (Vector3 A, Vector3 B)[] edges = BakeEdges(container, chain);
+            Assert.That(chain.VertexStart, Is.EqualTo(vertexStart));
+            Assert.That(edges, Has.Length.EqualTo(2));
+            AssertApproximately(new Vector3(0f, 0f, 0f), edges[0].A);
+            AssertApproximately(new Vector3(2f, 0f, 0f), edges[0].B);
+            AssertApproximately(new Vector3(1f, 0f, 0f), edges[1].A);
+            AssertApproximately(new Vector3(3f, 0f, 0f), edges[1].B);
+            Assert.That(ChunkOf(chain).Mesh.GetIndices(0), Has.Length.EqualTo((2 + 1) * 2));
+            AssertApproximately(Vector3.one * 2f, BakeEdges(container, after)[0].B);
+        }
+
+        [Test]
+        public void EdgesReplacedWhileHidden_AreDrawnOnceShown()
+        {
+            WireframeContainer container = CreateContainer();
+            ChainShape chain = container.Proxy.Add(new ChainShape(Points(4, 0f)));
+            chain.IsVisible = false;
+
+            chain.ReplaceEdges(new[] { 0, 3 }, 1);
+            container.Proxy.Flush();
+            Assert.That(ChunkOf(chain).Mesh.GetIndices(0), Is.Empty);
+
+            chain.IsVisible = true;
+            (Vector3 A, Vector3 B)[] edges = BakeEdges(container, chain);
+            Assert.That(edges, Has.Length.EqualTo(1));
+            AssertApproximately(Vector3.zero, edges[0].A);
+            AssertApproximately(new Vector3(3f, 0f, 0f), edges[0].B);
+        }
+
+        [Test]
+        public void ReplacingEdgesWithinTheirRoom_AllocatesNothing()
+        {
+            WireframeContainer container = CreateContainer();
+            ChainShape chain = container.Proxy.Add(new ChainShape(Points(8, 0f)));
+            int[] pattern = new int[7 * 2];
+
+            void Replace(int edgeCount)
+            {
+                for (int edge = 0; edge < edgeCount; edge++)
+                {
+                    pattern[edge * 2] = edge;
+                    pattern[edge * 2 + 1] = edge + 1;
+                }
+                chain.ReplaceEdges(pattern, edgeCount);
+                container.Proxy.Flush();
+            }
+
+            void ReplaceBackAndForth()
+            {
+                Replace(7);
+                Replace(2);
+            }
+
+            // Warms up every path, and lets each list grow once to what the edits need between flushes.
+            ReplaceBackAndForth();
+            ReplaceBackAndForth();
+
+            Assert.That(ReplaceBackAndForth, Is.Not.AllocatingGCMemory());
         }
 
         private static Vector3[] Points(int count, float height)
