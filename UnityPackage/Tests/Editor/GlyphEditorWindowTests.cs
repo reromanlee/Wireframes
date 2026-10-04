@@ -22,10 +22,9 @@ namespace reromanlee.Wireframes.Tests
         {
             AssetDatabase.CreateFolder("Assets", "WireframesGlyphEditorTest");
             _pack = ScriptableObject.CreateInstance<WireframeGlyphPack>();
-            GlyphStroke line = new(new[] { new Vector2(0.2f, 0.25f), new Vector2(0.8f, 0.25f) }, false);
             _pack.SetGlyphs(
-                new[] { new CharacterGlyph('A', new[] { line }), new CharacterGlyph('B', null) },
-                new[] { new SymbolGlyph("Heart", new[] { line }) });
+                new[] { new CharacterGlyph('A', new[] { Line() }), new CharacterGlyph('B', null) },
+                new[] { new SymbolGlyph("Heart", new[] { Line() }) });
             AssetDatabase.CreateAsset(_pack, $"{Folder}/Test Pack.asset");
         }
 
@@ -86,6 +85,29 @@ namespace reromanlee.Wireframes.Tests
         }
 
         [UnityTest]
+        public IEnumerator Details_EditPointsCenterTheGlyphAndChangeItsCharacter()
+        {
+            _window = GlyphEditorWindow.Open(_pack);
+            yield return null;
+            GlyphReference a = new(false, 0);
+            _window.Open(a);
+            yield return null;
+            GlyphDetails details = _window.rootVisualElement.Q<GlyphDetails>();
+
+            // Typed values stay in the glyph box.
+            details.Query<FloatField>(className: "glyph-details__coordinate").First().value = -1f;
+            Assert.That(a.StrokesIn(_pack)[0].Points[0], Is.EqualTo(new Vector2(0f, 0.25f)));
+
+            Press(details.Query<Button>().Where(button => button.text == "Center Horizontally").First());
+            Assert.That(a.StrokesIn(_pack)[0].Points[0].x, Is.EqualTo(0.1f).Within(1e-6f));
+            Assert.That(a.StrokesIn(_pack)[0].Points[1].x, Is.EqualTo(0.9f).Within(1e-6f));
+
+            details.Q<TextField>(className: "glyph-details__key").value = "C";
+            Assert.That(_pack.Characters[1].Character, Is.EqualTo('C'));
+            Assert.That(_window.OpenGlyph, Is.EqualTo(new GlyphReference(false, 1)));
+        }
+
+        [UnityTest]
         public IEnumerator EditsMadeElsewhere_ShowUpInTheGallery()
         {
             _window = GlyphEditorWindow.Open(_pack);
@@ -95,6 +117,22 @@ namespace reromanlee.Wireframes.Tests
             yield return new WaitForSecondsRealtime(0.3f);
 
             Assert.That(_window.rootVisualElement.Query<GlyphTile>().ToList(), Has.Count.EqualTo(4));
+        }
+
+        /// <summary>A line from 0.2 to 0.8 on the baseline, with points of its own, since glyphs never share arrays.</summary>
+        private static GlyphStroke Line()
+        {
+            return new GlyphStroke(new[] { new Vector2(0.2f, 0.25f), new Vector2(0.8f, 0.25f) }, false);
+        }
+
+        /// <summary>Presses a button as the keyboard does, which runs its click action.</summary>
+        private static void Press(Button button)
+        {
+            using (NavigationSubmitEvent submit = NavigationSubmitEvent.GetPooled())
+            {
+                submit.target = button;
+                button.SendEvent(submit);
+            }
         }
 
         private static void Click(GlyphCanvas canvas, Vector2 glyphPoint, EventModifiers modifiers)

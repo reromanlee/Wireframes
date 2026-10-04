@@ -5,7 +5,8 @@ using UnityEngine.UIElements;
 namespace reromanlee.Wireframes.Editor
 {
     /// <summary>
-    /// The open glyph: its name, snapping and grid settings and a button that closes it, above the canvas that edits it.
+    /// The open glyph: its name, snapping and grid settings and a button that closes it, above the canvas that edits it
+    /// and the panel of its strokes and points.
     /// </summary>
     internal sealed class GlyphEditorPane : VisualElement
     {
@@ -17,6 +18,7 @@ namespace reromanlee.Wireframes.Editor
             showInputField = true, tooltip = "Divisions of the grid across the glyph box, saved with the pack."
         };
         private readonly GlyphCanvas _canvas = new();
+        private readonly GlyphDetails _details = new();
 
         internal GlyphEditorPane()
         {
@@ -44,14 +46,20 @@ namespace reromanlee.Wireframes.Editor
             Body = new VisualElement();
             Body.AddToClassList("glyph-editor-pane__body");
             Body.Add(_canvas);
+            Body.Add(_details);
             Add(Body);
             _canvas.Edited += () => Edited?.Invoke();
+            _details.Edited += () => Edited?.Invoke();
+            _details.GlyphMoved += glyph => GlyphMoved?.Invoke(glyph);
         }
 
         internal event Action CloseClicked;
 
         /// <summary>Raised after the pane edits the glyph.</summary>
         internal event Action Edited;
+
+        /// <summary>Raised with the glyph's new place after its character changed or its symbol was renamed.</summary>
+        internal event Action<GlyphReference> GlyphMoved;
 
         /// <summary>Where the canvas and the glyph's details go, below the header.</summary>
         internal VisualElement Body { get; }
@@ -79,6 +87,7 @@ namespace reromanlee.Wireframes.Editor
             IsReadOnly = isReadOnly;
             _grid.SetEnabled(!isReadOnly);
             _canvas.Show(editing, glyph, isReadOnly);
+            _details.Show(editing, glyph, isReadOnly, _canvas);
             Refresh();
         }
 
@@ -102,6 +111,7 @@ namespace reromanlee.Wireframes.Editor
                 _code.text = GlyphNames.CodeOf(character);
             }
             _canvas.Refresh();
+            _details.Refresh();
         }
     }
 }

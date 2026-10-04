@@ -251,3 +251,82 @@
 .glyph-editor-pane__grid > .unity-base-field__label {
     min-width: 28px;
 }
+
+/* Glyph details */
+
+.glyph-details {
+    width: 290px;
+    flex-shrink: 0;
+    border-left-width: 1px;
+    border-color: var(--unity-colors-default-border, rgba(0, 0, 0, 0.4));
+    padding: 4px;
+}
+
+.glyph-details__key > .unity-base-field__label {
+    min-width: 70px;
+}
+
+.glyph-details__problem {
+    white-space: normal;
+    color: rgb(255, 196, 0);
+    margin: 0 3px;
+}
+
+.glyph-details__ink {
+    opacity: 0.7;
+    margin: 4px 3px;
+    white-space: normal;
+}
+
+.glyph-details__row {
+    flex-direction: row;
+    align-items: center;
+}
+
+.glyph-details__row > Button {
+    flex-grow: 1;
+}
+
+.glyph-details__stroke {
+    margin-top: 4px;
+}
+
+.glyph-details__point {
+    flex-direction: row;
+    align-items: center;
+    border-radius: 2px;
+}
+
+.glyph-details__point--selected {
+    background-color: var(--unity-colors-highlight-background, #2C5D87);
+}
+
+.glyph-details__index {
+    width: 18px;
+    opacity: 0.6;
+    -unity-text-align: middle-right;
+    padding-right: 2px;
+}
+
+.glyph-details__coordinate {
+    flex-grow: 1;
+    flex-basis: 0;
+    min-width: 50px;
+}
+
+.glyph-details__coordinate > .unity-base-field__label {
+    min-width: 12px;
+    width: 12px;
+}
+
+.glyph-details__small-button {
+    width: 20px;
+    margin-left: 1px;
+    margin-right: 1px;
+    padding: 0;
+}
+
+.glyph-details__add-point {
+    align-self: flex-start;
+    margin-left: 20px;
+}

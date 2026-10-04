@@ -173,6 +173,11 @@ namespace reromanlee.Wireframes.Editor
             _pane = new GlyphEditorPane();
             _pane.CloseClicked += () => Open(GlyphReference.None);
             _pane.Edited += OnGlyphEdited;
+            _pane.GlyphMoved += glyph =>
+            {
+                Open(glyph);
+                Refresh();
+            };
 
             _split = new TwoPaneSplitView(1, EditorPaneWidth, TwoPaneSplitViewOrientation.Horizontal);
             _split.AddToClassList("glyph-editor__split");
