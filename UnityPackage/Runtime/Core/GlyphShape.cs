@@ -53,19 +53,27 @@ namespace reromanlee.Wireframes
         /// <summary>The object that warnings about missing glyphs point to, such as the component that draws the shape.</summary>
         internal Object WarningContext { get; set; }
 
+        /// <summary>Position in the Editor's list of glyph shapes in containers, or -1 while not in it.</summary>
+        internal int LiveIndex { get; set; } = -1;
+
         /// <summary>The glyphs the shape draws with: its own, or the package's default ones when it has none.</summary>
         protected WireframeGlyphs DrawnGlyphs
         {
             get => DrawnGlyphsOf(_glyphs);
         }
 
-        /// <summary>Lays the glyphs out again if any glyph pack or glyph list changed since, as only happens in the Editor.</summary>
-        internal void RebuildIfStale()
+        /// <summary>
+        /// Lays the glyphs out again if any glyph pack or glyph list changed since, as only happens in the Editor, and
+        /// returns whether it did.
+        /// </summary>
+        internal bool RebuildIfStale()
         {
-            if (_layoutVersion != GlyphEdits.Version)
+            if (_layoutVersion == GlyphEdits.Version)
             {
-                Rebuild(true);
+                return false;
             }
+            Rebuild(true);
+            return true;
         }
 
         /// <summary>
@@ -111,6 +119,16 @@ namespace reromanlee.Wireframes
 
         /// <summary>Writes the shape's glyphs into <paramref name="geometry"/>, in its own space.</summary>
         protected abstract void Layout(GlyphGeometry geometry, WireframeGlyphs glyphs);
+
+        protected sealed override void OnAttached()
+        {
+            GlyphShapes.Add(this);
+        }
+
+        protected sealed override void OnDetached()
+        {
+            GlyphShapes.Remove(this);
+        }
 
         protected sealed override void WriteShape(Span<Vector3> positions)
         {

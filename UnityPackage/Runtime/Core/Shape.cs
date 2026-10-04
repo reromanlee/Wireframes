@@ -123,6 +123,7 @@ namespace reromanlee.Wireframes
             ReleaseBones(host.Bones);
             _edgeSource.Release();
             _host = null;
+            OnDetached();
         }
 
         public abstract void SetColor(Color color);
@@ -149,6 +150,7 @@ namespace reromanlee.Wireframes
                 throw;
             }
             MarkDirty(DirtyFlags.All);
+            OnAttached();
         }
 
         /// <summary>
@@ -165,6 +167,7 @@ namespace reromanlee.Wireframes
             _dirty = DirtyFlags.None;
             _host = null;
             _isSuspended = true;
+            OnDetached();
         }
 
         /// <summary>
@@ -186,6 +189,7 @@ namespace reromanlee.Wireframes
             }
             _isSuspended = false;
             MarkDirty(DirtyFlags.All);
+            OnAttached();
         }
 
         /// <summary>
@@ -218,6 +222,7 @@ namespace reromanlee.Wireframes
                 ReleaseBones(host.Bones);
                 _edgeSource.Release();
                 _host = null;
+                OnDetached();
                 throw;
             }
             MarkDirty(DirtyFlags.All);
@@ -290,6 +295,7 @@ namespace reromanlee.Wireframes
         {
             _edgeSource.Release();
             _host = null;
+            OnDetached();
         }
 
         internal void WriteEdges(EdgeList edges, DirtyRanges ranges)
@@ -300,6 +306,16 @@ namespace reromanlee.Wireframes
                 edges.Set(slot, VertexStart + _edgePattern[i * 2], VertexStart + _edgePattern[i * 2 + 1]);
                 ranges.Add(slot, 1);
             }
+        }
+
+        /// <summary>Called once the shape is in a host: after it is attached or resumed.</summary>
+        protected virtual void OnAttached()
+        {
+        }
+
+        /// <summary>Called once the shape leaves its host: when it is suspended or disposed, or its host goes away.</summary>
+        protected virtual void OnDetached()
+        {
         }
 
         internal abstract void WritePositions(Span<Vector3> positions);

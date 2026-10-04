@@ -8,10 +8,11 @@ using Object = UnityEngine.Object;
 
 namespace reromanlee.Wireframes.Tests
 {
-    /// <summary>Texts and symbols in Edit Mode, kept in step with the Inspector.</summary>
+    /// <summary>Texts and symbols in Edit Mode, kept in step with the Inspector and with edits to their glyph packs.</summary>
     public class GlyphEditModeTests
     {
         private readonly List<Object> _objects = new();
+        private readonly List<WireframeContainer> _containers = new();
 
         [SetUp]
         public void OpenEmptyScene()
@@ -22,6 +23,11 @@ namespace reromanlee.Wireframes.Tests
         [TearDown]
         public void DestroyEverything()
         {
+            foreach (WireframeContainer container in _containers)
+            {
+                container.Dispose();
+            }
+            _containers.Clear();
             for (int i = _objects.Count - 1; i >= 0; i--)
             {
                 if (_objects[i] != null)
@@ -63,6 +69,37 @@ namespace reromanlee.Wireframes.Tests
 
             Assert.That(((GlyphText)text.Shape).CharacterSize, Is.EqualTo(2f));
             Assert.That(text.IsDeferred, Is.False);
+        }
+
+        [Test]
+        public void EditedPack_RedrawsItsTextsOnTheEditorsNextUpdateAndUndoToo()
+        {
+            WireframeText component = AddText();
+            WireframeContainer container = new();
+            _containers.Add(container);
+            IText code = container.CreateText("A");
+            code.Glyphs = component.Glyphs;
+            WireframeGlyphPack pack = component.Glyphs.Packs[0];
+            Undo.IncrementCurrentGroup();
+
+            // As the Glyph Editor does: a third point on A's stroke.
+            SerializedObject serialized = new(pack);
+            SerializedProperty points = serialized.FindProperty(WireframeGlyphPack.CharactersField)
+                .GetArrayElementAtIndex(0).FindPropertyRelative(CharacterGlyph.StrokesField)
+                .GetArrayElementAtIndex(0).FindPropertyRelative(GlyphStroke.PointsField);
+            points.arraySize = 3;
+            points.GetArrayElementAtIndex(2).vector2Value = new Vector2(0.8f, 0.75f);
+            serialized.ApplyModifiedProperties();
+            GlyphRefresh.Update();
+
+            Assert.That(component.Shape.EdgeCount, Is.EqualTo(2));
+            Assert.That(((Shape)code).EdgeCount, Is.EqualTo(2));
+
+            Undo.PerformUndo();
+            GlyphRefresh.Update();
+
+            Assert.That(component.Shape.EdgeCount, Is.EqualTo(1));
+            Assert.That(((Shape)code).EdgeCount, Is.EqualTo(1));
         }
 
         /// <summary>A text component that draws "A", a single line, with glyphs made for the test.</summary>
