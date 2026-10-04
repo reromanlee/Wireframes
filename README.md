@@ -2,9 +2,11 @@
 
 Wireframe shapes for Unity that follow Transforms on the GPU: create a shape once, and it moves with its bones.
 
-<img src=".github/wireframes-shapes.jpg" alt="Every shape, from the Shape Gallery sample" width="100%">
+<img src=".github/shapes.jpg" alt="Every shape, from the Shape Gallery sample" width="100%">
 
 Lines, polylines, boxes, circles, spheres, capsules, cones and more attach to any Transforms, called bones. The package uploads each bone's matrix once per frame and the vertex shader moves every vertex, so moving shapes cost your code nothing and an edit uploads only what it changed.
+
+<img src=".github/glyphs.jpg" alt="Glyphs from the Text And Symbols sample" width="100%">
 
 Text and symbols are drawn with lines too, in 2D or 3D, from glyph packs you can edit in the Glyph Editor: the package comes with a font of the printable ASCII characters and 23 symbols.
 
@@ -35,9 +37,9 @@ Detailed about features - see [FEATURES.md](Documentation/FEATURES.md).
 
 **A frame where nothing changed costs about 25 µs** of CPU time for 10,000 lines on 100 bones, one where every bone moved about 0.1 ms, and one with 1,000 color edits about 0.3 ms, all without allocating. Each mesh of up to 65,535 vertices is one draw call, and a vertex takes 20 bytes on the GPU.
 
-**The Stress Test sample, 13,000 shapes on 100 moving bones,** runs whole frames in 0.40 ms of main thread and 0.46 ms of GPU time on Windows (RTX 4070 Ti, Direct3D 12), 0.49 ms of main thread in a WebGL 2 build, and 4.24 ms of main thread and 5.64 ms of GPU time on Android (Poco X3 NFC, Vulkan).
+<img src=".github/stress-test.jpg" alt="The Stress Test sample in Play Mode" width="100%">
 
-<img src=".github/wireframes-stress-test.jpg" alt="The Stress Test sample in Play Mode" width="100%">
+**The Stress Test sample, 13,000 shapes on 100 moving bones,** runs whole frames in 0.40 ms of main thread and 0.46 ms of GPU time on Windows (RTX 4070 Ti, Direct3D 12), 0.49 ms of main thread in a WebGL 2 build, and 4.24 ms of main thread and 5.64 ms of GPU time on Android (Poco X3 NFC, Vulkan).
 
 Detailed about performance - see [PERFORMANCE.md](Documentation/PERFORMANCE.md).
 
@@ -122,6 +124,10 @@ ISymbol marker = _wireframes.CreateSymbol(_target, new Vector3(0f, 2.5f, 0f), Qu
 ```
 
 **Or add a shape component to a GameObject, with no code at all.** **Add Component > Wireframes** has one for every shape, from **Line** to **Pyramid**, **Text** and **Symbol**. It draws on its GameObject right away, in Edit Mode, Play Mode and builds, follows it like a mesh, and shows each change to its fields in the next render; disabling it hides the shape.
+
+<img src=".github/glyph-editor-1.jpg" alt="The Glyph editor window with Text glyphs" width="100%">
+
+<img src=".github/glyph-editor-2.jpg" alt="The Glyph editor window with Symbol glyphs" width="100%">
 
 **Draw glyphs of your own in the Glyph Editor,** in **Window > Wireframes > Glyph Editor**: a gallery of a pack's characters and symbols, and a canvas that edits their lines with exact coordinates.
 
