@@ -108,6 +108,20 @@ namespace reromanlee.Wireframes.Tests
         }
 
         [UnityTest]
+        public IEnumerator PreviewStrip_ListsTheCharactersThePackLacks()
+        {
+            _window = GlyphEditorWindow.Open(_pack);
+            yield return null;
+            GlyphPreviewStrip strip = _window.rootVisualElement.Q<GlyphPreviewStrip>();
+
+            strip.Q<TextField>().value = "ABZ? Z";
+
+            Label missing = strip.Q<Label>(className: "glyph-preview-strip__missing");
+            Assert.That(missing.text, Is.EqualTo("Missing from this pack: Z ?"));
+            LogAssert.NoUnexpectedReceived();
+        }
+
+        [UnityTest]
         public IEnumerator EditsMadeElsewhere_ShowUpInTheGallery()
         {
             _window = GlyphEditorWindow.Open(_pack);

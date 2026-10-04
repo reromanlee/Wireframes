@@ -330,3 +330,34 @@
     align-self: flex-start;
     margin-left: 20px;
 }
+
+/* Preview strip */
+
+.glyph-preview-strip {
+    height: 130px;
+    flex-shrink: 0;
+    border-top-width: 1px;
+    border-color: var(--unity-colors-default-border, rgba(0, 0, 0, 0.4));
+    padding: 2px 4px;
+}
+
+.glyph-preview-strip__controls {
+    flex-direction: row;
+    align-items: center;
+}
+
+.glyph-preview-strip__text {
+    flex-grow: 1;
+    max-height: 36px;
+}
+
+.glyph-preview-strip__preview {
+    flex-grow: 1;
+    color: var(--unity-colors-default-text, #C4C4C4);
+}
+
+.glyph-preview-strip__missing {
+    color: rgb(255, 166, 26);
+    white-space: normal;
+    margin: 0 3px;
+}

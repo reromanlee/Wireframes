@@ -19,6 +19,7 @@ namespace reromanlee.Wireframes.Editor
         private const float EditorPaneWidth = 560f;
         private const float MinimumTileSize = 40f;
         private const float MaximumTileSize = 128f;
+        private const string DefaultPreviewText = "The quick brown fox jumps over the lazy dog. 0123456789";
 
         [SerializeField] private WireframeGlyphPack _pack;
         [SerializeField] private bool _isSymbolOpen;
@@ -26,8 +27,12 @@ namespace reromanlee.Wireframes.Editor
         [SerializeField] private string _openKeyword;
         [SerializeField] private float _tileSize = 64f;
         [SerializeField] private bool _sortsSymbolsByName;
+        [SerializeField] private string _previewText = DefaultPreviewText;
+        [SerializeField] private bool _previewsMonospace;
 
         private GlyphPackEditing _editing;
+        // Lists only the open pack, so the preview shows what the pack itself draws.
+        private WireframeGlyphs _previewGlyphs;
         private bool _isReadOnly;
         private int _seenVersion = -1;
 
@@ -41,6 +46,7 @@ namespace reromanlee.Wireframes.Editor
         private TwoPaneSplitView _split;
         private GlyphGallery _gallery;
         private GlyphEditorPane _pane;
+        private GlyphPreviewStrip _previewStrip;
 
         /// <summary>The glyph open in the editor pane, or none while only the gallery shows.</summary>
         internal GlyphReference OpenGlyph { get; private set; } = GlyphReference.None;
@@ -185,6 +191,11 @@ namespace reromanlee.Wireframes.Editor
             _split.Add(_pane);
             root.Add(_split);
 
+            _previewStrip = new GlyphPreviewStrip(_previewText, _previewsMonospace);
+            _previewStrip.TextChanged += text => _previewText = text;
+            _previewStrip.MonospaceChanged += isMonospace => _previewsMonospace = isMonospace;
+            root.Add(_previewStrip);
+
             root.RegisterCallback<KeyDownEvent>(OnKeyDown);
             Load();
         }
@@ -239,6 +250,9 @@ namespace reromanlee.Wireframes.Editor
             _isReadOnly = _pack != null && GlyphAssets.IsReadOnly(_pack);
             SetShown(_emptyState, _pack == null);
             SetShown(_split, _pack != null);
+            SetShown(_previewStrip, _pack != null);
+            _previewGlyphs.SetPacks(_pack);
+            _previewStrip.Show(_previewGlyphs);
             _gallery.Show(_pack, _isReadOnly);
             Open(FindOpenGlyph());
             Refresh();
@@ -247,11 +261,14 @@ namespace reromanlee.Wireframes.Editor
         private void OnEnable()
         {
             Undo.undoRedoPerformed += Refresh;
+            _previewGlyphs = CreateInstance<WireframeGlyphs>();
+            _previewGlyphs.hideFlags = HideFlags.HideAndDontSave;
         }
 
         private void OnDisable()
         {
             Undo.undoRedoPerformed -= Refresh;
+            DestroyImmediate(_previewGlyphs);
         }
 
         private void OnInspectorUpdate()
@@ -293,6 +310,7 @@ namespace reromanlee.Wireframes.Editor
                 _pane.Refresh();
             }
             SetShown(_readOnlyBanner, _isReadOnly);
+            _previewStrip.Refresh();
             RefreshGenerateButton();
         }
 
@@ -338,6 +356,7 @@ namespace reromanlee.Wireframes.Editor
             _seenVersion = GlyphEdits.Version;
             _gallery.RepaintGlyph(OpenGlyph);
             _pane.Refresh();
+            _previewStrip.Refresh();
             hasUnsavedChanges = EditorUtility.IsDirty(_pack);
         }
 

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -29,14 +30,20 @@ namespace reromanlee.Wireframes
         /// Lays out <paramref name="text"/> with <paramref name="glyphs"/> into <paramref name="geometry"/>. Characters
         /// the glyphs lack are drawn as '?', with one warning for each, shown with <paramref name="context"/>.
         /// </summary>
+        /// <param name="fallbackRanges">
+        /// When given, receives the vertex range of every '?' drawn for a missing character, and nothing is warned about,
+        /// as the Glyph Editor's preview shows them instead.
+        /// </param>
         internal static void Layout(
             ReadOnlySpan<char> text, WireframeGlyphs glyphs, in TextSettings settings, GlyphGeometry geometry,
-            Object context)
+            Object context, List<RangeInt> fallbackRanges = null)
         {
-            int itemCount = FindGlyphs(text, glyphs, settings, context, out int vertexCount, out int edgeCount);
+            fallbackRanges?.Clear();
+            int itemCount = FindGlyphs(
+                text, glyphs, settings, context, fallbackRanges == null, out int vertexCount, out int edgeCount);
             int lineCount = BreakLines(itemCount, settings);
             geometry.Begin(vertexCount, edgeCount);
-            PlaceLines(lineCount, settings, geometry);
+            PlaceLines(lineCount, settings, geometry, fallbackRanges);
             // The shared items would otherwise keep the glyphs' packs referenced.
             Array.Clear(_items, 0, itemCount);
         }
@@ -44,11 +51,11 @@ namespace reromanlee.Wireframes
         /// <summary>Turns the characters into items that know their glyph and how far they move the next one along.</summary>
         private static int FindGlyphs(
             ReadOnlySpan<char> text, WireframeGlyphs glyphs, in TextSettings settings, Object context,
-            out int vertexCount, out int edgeCount)
+            bool reportsMissing, out int vertexCount, out int edgeCount)
         {
             bool isMonospace = settings.CharacterWidth == WireframeCharacterWidth.Monospace;
             float spacing = settings.CharacterSpacing;
-            if (glyphs == null)
+            if (glyphs == null && reportsMissing)
             {
                 GlyphWarnings.ReportMissingDefault(context);
             }
@@ -81,6 +88,7 @@ namespace reromanlee.Wireframes
                     codePoint = char.ConvertToUtf32(character, text[++i]);
                 }
                 ItemKind kind = codePoint == Space ? ItemKind.Space : ItemKind.Glyph;
+                bool isFallback = false;
                 if (glyphs == null || !glyphs.TryResolveCharacter(codePoint, out ResolvedGlyph glyph))
                 {
                     // A space draws nothing anyway, so one missing from the glyphs isn't worth a warning.
@@ -89,7 +97,7 @@ namespace reromanlee.Wireframes
                         _items[count++] = new Item(default, spaceAdvance, 0f, ItemKind.Space);
                         continue;
                     }
-                    if (glyphs != null)
+                    if (glyphs != null && reportsMissing)
                     {
                         GlyphWarnings.ReportMissingCharacter(glyphs, codePoint, context);
                     }
@@ -98,12 +106,13 @@ namespace reromanlee.Wireframes
                         _items[count++] = new Item(default, spaceAdvance, 0f, ItemKind.Glyph);
                         continue;
                     }
+                    isFallback = true;
                 }
                 GlyphMetrics metrics = glyph.Metrics;
                 float advance = (isMonospace ? 1f : glyph.ProportionalWidth) + spacing;
                 // Proportional characters move their ink to the pen, so no glyph keeps the empty room of its box.
                 float inkOffset = isMonospace || !metrics.HasInk ? 0f : -metrics.InkLeft;
-                _items[count++] = new Item(glyph, advance, inkOffset, kind);
+                _items[count++] = new Item(glyph, advance, inkOffset, kind, isFallback);
                 vertexCount += metrics.VertexCount;
                 edgeCount += metrics.EdgeCount;
             }
@@ -169,7 +178,8 @@ namespace reromanlee.Wireframes
         }
 
         /// <summary>Places each line by the alignments, from the top line down, and writes the glyphs of its items.</summary>
-        private static void PlaceLines(int lineCount, in TextSettings settings, GlyphGeometry geometry)
+        private static void PlaceLines(
+            int lineCount, in TextSettings settings, GlyphGeometry geometry, List<RangeInt> fallbackRanges)
         {
             float size = settings.CharacterSize;
             float lineStep = (1f + settings.LineSpacing) * size;
@@ -199,7 +209,12 @@ namespace reromanlee.Wireframes
                     Item item = _items[i];
                     if (item.Glyph.Strokes != null)
                     {
+                        int start = geometry.VertexCount;
                         geometry.AddGlyph(item.Glyph.Strokes, new Vector2(left + (pen + item.InkOffset) * size, bottom), size);
+                        if (item.IsFallback)
+                        {
+                            fallbackRanges?.Add(new RangeInt(start, geometry.VertexCount - start));
+                        }
                     }
                     pen += item.Advance;
                 }
@@ -249,12 +264,16 @@ namespace reromanlee.Wireframes
             internal readonly float InkOffset;
             internal readonly ItemKind Kind;
 
-            internal Item(ResolvedGlyph glyph, float advance, float inkOffset, ItemKind kind)
+            /// <summary>True for a '?' drawn in place of a character the glyphs lack.</summary>
+            internal readonly bool IsFallback;
+
+            internal Item(ResolvedGlyph glyph, float advance, float inkOffset, ItemKind kind, bool isFallback = false)
             {
                 Glyph = glyph;
                 Advance = advance;
                 InkOffset = inkOffset;
                 Kind = kind;
+                IsFallback = isFallback;
             }
         }
 

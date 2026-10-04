@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using NUnit.Framework;
 using UnityEngine;
@@ -157,6 +158,18 @@ namespace reromanlee.Wireframes.Tests
             Assert.That(_geometry.VertexCount, Is.EqualTo(2 + 2 + 2));
             AssertApproximately(new Vector3(-5f + 0.6f, Baseline, 0f), _geometry.Points[2]);
             AssertApproximately(new Vector3(-5f + 0.8f, Baseline, 0f), _geometry.Points[4]);
+        }
+
+        [Test]
+        public void FallbackRanges_TellWhereQuestionMarksAreDrawnInsteadOfWarning()
+        {
+            List<RangeInt> fallbacks = new();
+
+            TextLayout.Layout("AZB", CreateTestGlyphs(), TopLeft(WireframeCharacterWidth.Proportional, 0f), _geometry,
+                null, fallbacks);
+
+            Assert.That(fallbacks, Is.EqualTo(new[] { new RangeInt(2, 2) }));
+            LogAssert.NoUnexpectedReceived();
         }
 
         [Test]
