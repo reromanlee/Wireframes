@@ -200,3 +200,54 @@
 .glyph-popup__field > .unity-base-field__label {
     min-width: 120px;
 }
+
+/* Glyph canvas */
+
+.glyph-canvas {
+    flex-grow: 1;
+    min-width: 200px;
+    min-height: 200px;
+    overflow: hidden;
+    color: var(--unity-colors-default-text, #C4C4C4);
+    border-width: 1px;
+    border-color: rgba(0, 0, 0, 0);
+}
+
+.glyph-canvas:focus {
+    border-color: var(--unity-colors-highlight-background, #2C5D87);
+}
+
+.glyph-canvas__unit {
+    position: absolute;
+    width: 20px;
+    font-size: 9px;
+    opacity: 0.6;
+    padding: 0;
+    margin: 0;
+    -unity-text-align: middle-center;
+}
+
+.glyph-canvas__guide {
+    position: absolute;
+    font-size: 9px;
+    opacity: 0.7;
+    padding: 0;
+    margin: 0;
+}
+
+.glyph-editor-pane__snap {
+    margin-right: 8px;
+}
+
+.glyph-editor-pane__snap > .unity-toggle__input {
+    margin-left: 2px;
+}
+
+.glyph-editor-pane__grid {
+    width: 160px;
+    margin-right: 6px;
+}
+
+.glyph-editor-pane__grid > .unity-base-field__label {
+    min-width: 28px;
+}

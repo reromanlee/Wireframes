@@ -145,10 +145,8 @@ namespace reromanlee.Wireframes.Editor
                 _order.Add(i);
             }
             _order.Sort((a, b) => characters[a].Character.CompareTo(characters[b].Character));
-            Fill(_characterGrid, _characterTiles, false);
+            Fill(_characterGrid, _characterTiles, false, _addCharacter, _addMissingAscii);
             _characterSection.text = $"Characters ({characters.Length})";
-            _characterGrid.Add(_addCharacter);
-            _characterGrid.Add(_addMissingAscii);
             _lacksAscii = !HasAllAscii(characters);
 
             SymbolGlyph[] symbols = _pack.Symbols;
@@ -161,28 +159,54 @@ namespace reromanlee.Wireframes.Editor
             {
                 _order.Sort((a, b) => string.Compare(symbols[a].Keyword, symbols[b].Keyword, StringComparison.OrdinalIgnoreCase));
             }
-            Fill(_symbolGrid, _symbolTiles, true);
+            Fill(_symbolGrid, _symbolTiles, true, _addSymbol);
             _symbolSection.text = $"Symbols ({symbols.Length})";
-            _symbolGrid.Add(_addSymbol);
 
             ApplyFilter();
             ApplySelection();
         }
 
-        private void Fill(VisualElement grid, List<GlyphTile> tiles, bool isSymbol)
+        /// <summary>
+        /// Shows the glyphs of <see cref="_order"/> in a grid's tiles, then its buttons. The tiles stay in place while
+        /// their number does, so an edit only changes what they show.
+        /// </summary>
+        private void Fill(VisualElement grid, List<GlyphTile> tiles, bool isSymbol, params Button[] buttons)
         {
+            bool isRebuilt = tiles.Count != _order.Count || grid.childCount != tiles.Count + buttons.Length;
             while (tiles.Count < _order.Count)
             {
                 tiles.Add(CreateTile());
             }
             tiles.RemoveRange(_order.Count, tiles.Count - _order.Count);
-            grid.Clear();
+            if (isRebuilt)
+            {
+                grid.Clear();
+                foreach (GlyphTile tile in tiles)
+                {
+                    grid.Add(tile);
+                }
+                foreach (Button button in buttons)
+                {
+                    grid.Add(button);
+                }
+            }
             for (int i = 0; i < _order.Count; i++)
             {
-                GlyphTile tile = tiles[i];
-                tile.Show(new GlyphReference(isSymbol, _order[i]), _pack);
-                tile.SetSize(_tileSize);
-                grid.Add(tile);
+                tiles[i].Show(new GlyphReference(isSymbol, _order[i]), _pack);
+                tiles[i].SetSize(_tileSize);
+            }
+        }
+
+        /// <summary>Redraws the tile of <paramref name="glyph"/>, after an edit that changed nothing else.</summary>
+        internal void RepaintGlyph(GlyphReference glyph)
+        {
+            foreach (GlyphTile tile in glyph.IsSymbol ? _symbolTiles : _characterTiles)
+            {
+                if (tile.Glyph.Equals(glyph))
+                {
+                    tile.Show(glyph, _pack);
+                    return;
+                }
             }
         }
 

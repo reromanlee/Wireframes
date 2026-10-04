@@ -172,6 +172,7 @@ namespace reromanlee.Wireframes.Editor
 
             _pane = new GlyphEditorPane();
             _pane.CloseClicked += () => Open(GlyphReference.None);
+            _pane.Edited += OnGlyphEdited;
 
             _split = new TwoPaneSplitView(1, EditorPaneWidth, TwoPaneSplitViewOrientation.Horizontal);
             _split.AddToClassList("glyph-editor__split");
@@ -324,6 +325,15 @@ namespace reromanlee.Wireframes.Editor
             }
             edit();
             Refresh();
+        }
+
+        /// <summary>Follows an edit the pane made to the open glyph, which changes nothing outside its tile.</summary>
+        private void OnGlyphEdited()
+        {
+            _seenVersion = GlyphEdits.Version;
+            _gallery.RepaintGlyph(OpenGlyph);
+            _pane.Refresh();
+            hasUnsavedChanges = EditorUtility.IsDirty(_pack);
         }
 
         private void AskForNewCharacter(VisualElement anchor)
