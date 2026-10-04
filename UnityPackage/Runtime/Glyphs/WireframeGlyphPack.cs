@@ -22,12 +22,12 @@ namespace reromanlee.Wireframes
         /// <summary>Height of the baseline in every pack's glyph box, so characters from different packs line up.</summary>
         internal const float Baseline = 0.25f;
 
-        internal const float DefaultSpaceWidth = 0.5f;
-        internal const float DefaultXHeight = 14f / 24f;
-        internal const float DefaultCapHeight = 20f / 24f;
-        internal const int DefaultGridDivisions = 12;
+        internal const float DefaultSpaceWidth = 0.25f;
+        internal const float DefaultXHeight = 0.65f;
+        internal const float DefaultCapHeight = 0.85f;
+        internal const int DefaultGridDivisions = 20;
         internal const int MinimumGridDivisions = 2;
-        internal const int MaximumGridDivisions = 24;
+        internal const int MaximumGridDivisions = 40;
 
         internal const string SpaceWidthField = nameof(_spaceWidth);
         internal const string XHeightField = nameof(_xHeight);

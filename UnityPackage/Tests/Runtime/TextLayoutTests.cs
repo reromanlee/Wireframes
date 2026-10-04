@@ -9,6 +9,9 @@ namespace reromanlee.Wireframes.Tests
     /// <summary>Laying text out into points and edges, with the glyphs of <see cref="GlyphTestBase.CreateTestGlyphs"/>.</summary>
     public class TextLayoutTests : GlyphTestBase
     {
+        // Width of the test glyphs' space, which has no lines, so it takes its pack's space width.
+        private const float Space = WireframeGlyphPack.DefaultSpaceWidth;
+
         private readonly GlyphGeometry _geometry = new();
 
         [Test]
@@ -97,13 +100,13 @@ namespace reromanlee.Wireframes.Tests
         {
             TextSettings settings = TopLeft(WireframeCharacterWidth.Proportional, 0f);
             settings.Overflow = WireframeTextOverflow.Wrap;
-            // AB is 1.1 wide and a space 0.5, so "AB AB" takes 2.7 and a third word needs a line of its own.
+            // AB is 1.1 wide, so "AB AB" fits in 3 and a third word needs a line of its own.
             settings.Bounds = new Vector2(3f, 2f);
 
             TextLayout.Layout("AB AB AB", CreateTestGlyphs(), settings, _geometry, null);
 
             Assert.That(_geometry.VertexCount, Is.EqualTo(3 * 6));
-            AssertApproximately(new Vector3(-1.5f + 1.6f, 1f - 1f + Baseline, 0f), _geometry.Points[6]);
+            AssertApproximately(new Vector3(-1.5f + 1.1f + Space, 1f - 1f + Baseline, 0f), _geometry.Points[6]);
             AssertApproximately(new Vector3(-1.5f, 1f - 2f + Baseline, 0f), _geometry.Points[12]);
         }
 
@@ -129,7 +132,7 @@ namespace reromanlee.Wireframes.Tests
 
             TextLayout.Layout("AB AB", CreateTestGlyphs(), settings, _geometry, null);
 
-            AssertApproximately(new Vector3(-0.5f + 1.6f, Baseline, 0f), _geometry.Points[6]);
+            AssertApproximately(new Vector3(-0.5f + 1.1f + Space, Baseline, 0f), _geometry.Points[6]);
         }
 
         [Test]
@@ -139,8 +142,8 @@ namespace reromanlee.Wireframes.Tests
 
             TextLayout.Layout("A\t\u0007B", CreateTestGlyphs(), settings, _geometry, null);
 
-            // A tab advances 4 spaces of 0.5.
-            AssertApproximately(new Vector3(-5f + 0.6f + 2f, Baseline, 0f), _geometry.Points[2]);
+            // A tab advances 4 spaces.
+            AssertApproximately(new Vector3(-5f + 0.6f + 4f * Space, Baseline, 0f), _geometry.Points[2]);
         }
 
         [Test]
