@@ -8,15 +8,16 @@ namespace reromanlee.Wireframes.ContinuousIntegration
 {
     /// <summary>
     /// Builds the Shape Gallery sample for the active build target, starting in its ShapeGallery scene, with its
-    /// ComponentGallery scene too. Continuous integration copies the package samples into Assets/Samples, then GameCI's
-    /// builder calls <see cref="Build"/> with -executeMethod.
+    /// ComponentGallery and TextAndSymbols scenes too. Continuous integration copies the package samples into
+    /// Assets/Samples, then GameCI's builder calls <see cref="Build"/> with -executeMethod.
     /// </summary>
     public static class PlayerBuild
     {
         private static readonly string[] ScenePaths =
         {
             "Assets/Samples/ShapeGallery/ShapeGallery.unity",
-            "Assets/Samples/ShapeGallery/ComponentGallery.unity"
+            "Assets/Samples/ShapeGallery/ComponentGallery.unity",
+            "Assets/Samples/ShapeGallery/TextAndSymbols.unity"
         };
 
         /// <summary>Builds to the path in GameCI's -customBuildPath argument; throwing makes Unity exit with code 1.</summary>
