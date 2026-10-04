@@ -1,22 +1,29 @@
-# Wireframes (Unreleased)
+# Wireframes 2.1.0
 
 ### What's new
 
 1. Shape components draw a shape on their GameObject without code, in Edit Mode, Play Mode and builds: **Add Component > Wireframes** has one for every shape, such as `WireframeSphere` and `WireframeLine`.
-2. Every change to a component shows up in the next render, made in the Inspector, by undo, animation or a script, and components do no work per frame.
-3. Disabling a component or its GameObject hides its shape at no cost, and enabling it again allocates nothing.
-4. Components share containers by occlusion, transparency and layer, so many of them draw in a few draw calls; a color with alpha below 1 draws transparent, and shapes draw on their GameObject's layer.
-5. `DrawAsGizmo` draws a component's shape like a gizmo, in the Scene view and in the Game view while its Gizmos button is on, and builds leave it out.
-6. Prefab Mode draws the components of the prefab being edited.
-7. The Shape Gallery sample has a ComponentGallery scene made of components, and continuous integration builds it too.
-8. A container without shapes skips its work before each render once its empty chunks are released.
+2. Text and symbols are drawn with lines like every other shape, in 2D or 3D: `CreateText` and `CreateSymbol` create them in a container, and the `WireframeText` and `WireframeSymbol` components draw them on GameObjects.
+3. The package's Default Glyphs draw the 95 printable ASCII characters with its Default Font, and 23 symbols, such as `DefaultSymbols.Warning`, with its Default Symbols.
+4. The Glyph Editor, in **Window > Wireframes > Glyph Editor**, shows a glyph pack's characters and symbols in a gallery and edits each glyph's lines on a canvas or as exact X and Y values, with undo, while texts and symbols that draw with the pack follow each edit.
+5. Every change to a component shows up in the next render, made in the Inspector, by undo, animation or a script, and components do no work per frame.
+6. Text is aligned in its bounds, wraps at spaces or runs past them, has proportional or monospace characters with character and line spacing, and changes every frame without allocating through `SetText(ReadOnlySpan<char>)`.
+7. Glyph packs, made with **Create > Wireframes > Glyph Pack**, are listed in a `WireframeGlyphs`, where the first pack that has a glyph draws it and the Inspector says which glyphs each pack overrides; code names symbols by the enum the Glyph Editor generates for each pack, so no lookup compares strings.
+8. Disabling a component or its GameObject hides its shape at no cost, and enabling it again allocates nothing.
+9. Components share containers by occlusion, transparency and layer, so many of them draw in a few draw calls; a color with alpha below 1 draws transparent, and shapes draw on their GameObject's layer.
+10. `DrawAsGizmo` draws a component's shape like a gizmo, in the Scene view and in the Game view while its Gizmos button is on, and builds leave it out.
+11. Prefab Mode draws the components of the prefab being edited.
+12. A character or symbol the glyphs lack is drawn as `?`, with one warning for each.
+13. The Shape Gallery sample names its shapes with text and has two more scenes, ComponentGallery, made of components, and TextAndSymbols, and continuous integration builds all three.
+14. A container without shapes skips its work before each render once its empty chunks are released.
 
 ### Known issues
 
 1. The Hierarchy's Scene visibility toggles don't hide components' wireframes, and the Gizmos menu's per-component checkboxes don't affect gizmo shapes.
 2. Clicking a component's wireframe in the Scene view doesn't select its GameObject.
 3. A script that changes a GameObject's layer moves its components' shapes to that layer on their next change.
-4. Stereo rendering for XR is untested.
+4. Text has no kerning, and the Default Font has only the printable ASCII characters.
+5. Stereo rendering for XR is untested.
 
 # Wireframes 2.0.0
 

@@ -1,8 +1,8 @@
 {
   "name": "com.reromanlee.wireframes",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "displayName": "Wireframes",
-  "description": "Wireframe shapes that follow Transforms through GPU skinning: lines, polylines, boxes, circles, spheres, capsules, cones and more. Create a shape once and it moves with its bones on the GPU, with no per-frame work from your code, in Play and Edit Mode, under the Built-in Render Pipeline, URP and HDRP. Shape components draw them on GameObjects without code, edited live in Edit Mode.",
+  "description": "Wireframe shapes that follow Transforms through GPU skinning: lines, polylines, boxes, circles, spheres, capsules, cones, text, symbols and more. Create a shape once and it moves with its bones on the GPU, with no per-frame work from your code, in Play and Edit Mode, under the Built-in Render Pipeline, URP and HDRP. Shape components draw them on GameObjects without code, edited live in Edit Mode, and the Glyph Editor draws fonts and symbols of your own.",
   "unity": "2022.3",
   "license": "MIT",
   "documentationUrl": "https://github.com/reromanlee/Wireframes#readme",
@@ -15,7 +15,9 @@
     "draw",
     "gizmos",
     "visualization",
-    "skinning"
+    "skinning",
+    "text",
+    "glyphs"
   ],
   "licensesUrl": "https://github.com/reromanlee/Wireframes/blob/main/LICENSE.md",
   "author": {
