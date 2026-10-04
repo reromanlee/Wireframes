@@ -9,7 +9,8 @@ namespace reromanlee.Wireframes.Tests
 
         /// <summary>
         /// Glyphs simple enough to check by hand: A is a line from 0.2 to 0.8 on the baseline, B a closed square from
-        /// 0.25 to 0.75, ? a line from 0.4 to 0.6, and the space has no lines. The Heart symbol is a closed triangle.
+        /// 0.25 to 0.75, ? a line from 0.4 to 0.6, and the space has no lines. The Heart symbol is a closed triangle
+        /// filling the box, and the Star symbol a line across its middle.
         /// </summary>
         private protected WireframeGlyphs CreateTestGlyphs()
         {
@@ -21,7 +22,7 @@ namespace reromanlee.Wireframes.Tests
                     Character('?', Open(0.4f, Baseline, 0.6f, Baseline)),
                     Character(' ')
                 },
-                new[] { Symbol("Heart", Closed(0f, 0f, 1f, 0f, 0.5f, 1f)) }));
+                new[] { Symbol("Heart", Closed(0f, 0f, 1f, 0f, 0.5f, 1f)), Symbol("Star", Open(0f, 0.5f, 1f, 0.5f)) }));
         }
 
         private protected WireframeGlyphPack CreatePack(CharacterGlyph[] characters, SymbolGlyph[] symbols = null)

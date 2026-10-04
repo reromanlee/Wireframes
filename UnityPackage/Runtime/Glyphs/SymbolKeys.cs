@@ -46,13 +46,16 @@ namespace reromanlee.Wireframes
         /// <exception cref="ArgumentException"><typeparamref name="TSymbol"/> doesn't have int values.</exception>
         internal static int Of<TSymbol>(TSymbol symbol) where TSymbol : unmanaged, Enum
         {
-            if (UnsafeUtility.SizeOf<TSymbol>() != sizeof(int))
-            {
-                throw new ArgumentException(
-                    $"{typeof(TSymbol).Name} isn't a symbol enum. Symbol enums have int values, like the ones the "
-                    + "Glyph Editor generates.", nameof(symbol));
-            }
+            CheckSymbolEnum<TSymbol>(nameof(symbol));
             return UnsafeUtility.As<TSymbol, int>(ref symbol);
+        }
+
+        /// <summary>The member of a generated symbol enum whose value is <paramref name="key"/>, made without boxing.</summary>
+        /// <exception cref="ArgumentException"><typeparamref name="TSymbol"/> doesn't have int values.</exception>
+        internal static TSymbol ToSymbol<TSymbol>(int key) where TSymbol : unmanaged, Enum
+        {
+            CheckSymbolEnum<TSymbol>("TSymbol");
+            return UnsafeUtility.As<int, TSymbol>(ref key);
         }
 
         /// <summary>
@@ -88,6 +91,16 @@ namespace reromanlee.Wireframes
         private static bool IsIdentifierStart(char character)
         {
             return character is >= 'A' and <= 'Z' or >= 'a' and <= 'z' or '_';
+        }
+
+        private static void CheckSymbolEnum<TSymbol>(string parameterName) where TSymbol : unmanaged, Enum
+        {
+            if (UnsafeUtility.SizeOf<TSymbol>() != sizeof(int))
+            {
+                throw new ArgumentException(
+                    $"{typeof(TSymbol).Name} isn't a symbol enum. Symbol enums have int values, like the ones the "
+                    + "Glyph Editor generates.", parameterName);
+            }
         }
     }
 }
